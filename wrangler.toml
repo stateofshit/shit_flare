@@ -1,10 +1,6 @@
-# Wrangler configuration for deploying this static site to Cloudflare Workers Sites
-# Replace YOUR_ACCOUNT_ID with your Cloudflare Account ID before using locally with `wrangler`.
-# On Wrangler v3.109.0+, Wrangler may auto-generate a PR to update settings after the build.
-
 name = "shit-flare"
 compatibility_date = "2026-07-30"
-account_id = "YOUR_ACCOUNT_ID"
+account_id = "10afa4fafa5072f324a2c8e50df20955"
 workers_dev = true
 
 [site]
