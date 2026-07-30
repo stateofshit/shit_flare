@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SDUI Co-Design Workspace</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Tailwind Configuration for custom theme styles -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f5f7ff',
+              100: '#ebf0ff',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              900: '#1e3a8a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="h-full overflow-hidden flex flex-col text-slate-800 antialiased font-sans select-none">
+
+  <!-- TOP HEADER BAR -->
+  <header class="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between shrink-0 shadow-sm z-10">
+    <div class="flex items-center gap-3">
+      <div class="h-9 w-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-blue-600 flex items-center justify-center text-white font-black text-lg shadow-md">
+        Ω
+      </div>
+      <div>
+        <h1 class="font-bold text-lg leading-tight tracking-tight text-slate-900">Deterministic Co-Design Studio</h1>
+        <p class="text-xs text-slate-500">Pure-Client Server-Driven UI (SDUI) Playground • No AI Dependencies</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-4">
+      <div class="flex bg-slate-100 rounded-lg p-1 text-xs shrink-0">
+        <button id="btn-view-desktop" onclick="setViewport('desktop')" class="px-3 py-1.5 rounded-md font-medium text-slate-700 bg-white shadow-sm transition">Desktop</button>
+        <button id="btn-view-tablet" onclick="setViewport('tablet')" class="px-3 py-1.5 rounded-md font-medium text-slate-500 hover:text-slate-700 transition">Tablet</button>
+        <button id="btn-view-mobile" onclick="setViewport('mobile')" class="px-3 py-1.5 rounded-md font-medium text-slate-500 hover:text-slate-700 transition">Mobile</button>
+      </div>
+      <div class="h-5 w-px bg-slate-200"></div>
+      <!-- Undo/Redo Engine Quick Controls -->
+      <div class="flex items-center gap-1.5">
+        <button id="btn-undo" onclick="undo()" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 disabled:opacity-40 disabled:hover:bg-slate-100 rounded-lg transition" title="Undo (Ctrl+Z)" disabled>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3"></path></svg>
+        </button>
+        <button id="btn-redo" onclick="redo()" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 disabled:opacity-40 disabled:hover:bg-slate-100 rounded-lg transition" title="Redo (Ctrl+Y)" disabled>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l6-6m0 0l-6-6m6 6H9a6 6 0 000 12h3"></path></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN GRID WORKSPACE -->
+  <main class="flex-1 overflow-hidden flex flex-row">
+
+    <!-- LEFT PANEL: DESIGN SYSTEM TOKENS & PRESETS -->
+    <aside class="w-80 border-r border-slate-200 bg-white flex flex-col shrink-0 overflow-y-auto">
+      <!-- Feature 3: Global Design Token Swapper -->
+      <div class="p-5 border-b border-slate-200">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-bold text-indigo-700 uppercase tracking-wider">Global Design System Tokens</span>
+          <span class="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded font-mono">Theme Config</span>
+        </div>
+        
+        <div class="space-y-4">
+          <!-- Radius Control -->
+          <div>
+            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Border Corner Radius</label>
+            <div class="grid grid-cols-4 gap-1 bg-slate-100 p-1 rounded-lg">
+              <button onclick="setGlobalRadius('none')" id="radius-none" class="py-1 text-[10px] font-semibold text-slate-700 rounded transition bg-white shadow-sm">None</button>
+              <button onclick="setGlobalRadius('sm')" id="radius-sm" class="py-1 text-[10px] font-semibold text-slate-500 rounded transition">SM</button>
+              <button onclick="setGlobalRadius('md')" id="radius-md" class="py-1 text-[10px] font-semibold text-slate-500 rounded transition">MD</button>
+              <button onclick="setGlobalRadius('xl')" id="radius-xl" class="py-1 text-[10px] font-semibold text-slate-500 rounded transition">XL</button>
+            </div>
+          </div>
+
+          <!-- Color Theme Engine Selection -->
+          <div>
+            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Primary Color System</label>
+            <div class="grid grid-cols-1 gap-2">
+              <button onclick="setGlobalTheme('oceanic')" id="theme-oceanic" class="flex items-center gap-2 p-2 border-2 border-indigo-600 bg-indigo-50/40 rounded-xl text-left transition">
+                <span class="h-4 w-4 rounded-full bg-blue-600"></span>
+                <div>
+                  <p class="text-xs font-bold text-slate-800">Oceanic Indigo</p>
+                  <p class="text-[9px] text-slate-400">High contrast modern technical brand</p>
+                </div>
+              </button>
+              <button onclick="setGlobalTheme('emerald')" id="theme-emerald" class="flex items-center gap-2 p-2 border border-slate-200 hover:border-slate-300 rounded-xl text-left transition">
+                <span class="h-4 w-4 rounded-full bg-emerald-600"></span>
+                <div>
+                  <p class="text-xs font-bold text-slate-700">Emerald Mint</p>
+                  <p class="text-[9px] text-slate-400">Eco-conscious organic software design</p>
+                </div>
+              </button>
+              <button onclick="setGlobalTheme('midnight')" id="theme-midnight" class="flex items-center gap-2 p-2 border border-slate-200 hover:border-slate-300 rounded-xl text-left transition">
+                <span class="h-4 w-4 rounded-full bg-slate-800"></span>
+                <div>
+                  <p class="text-xs font-bold text-slate-700">Midnight Charcoal</p>
+                  <p class="text-[9px] text-slate-400">Premium sophisticated dark core system</p>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Spacing Metrics Scaling -->
+          <div>
+            <div class="flex justify-between mb-1">
+              <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Canvas Padding Bounds</label>
+              <span id="label-global-padding" class="text-[10px] font-mono text-indigo-600 font-bold">Medium (64px)</span>
+            </div>
+            <input type="range" min="1" max="3" value="2" id="padding-slider" oninput="setGlobalPadding(this.value)"
+              class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature 4: Interactive Layout Presets -->
+      <div class="p-5">
+        <span class="text-xs font-bold text-indigo-700 uppercase tracking-wider mb-3 block">Deterministic Presets</span>
+        <p class="text-[11px] text-slate-400 mb-4 leading-normal">Instantly load comprehensive custom landing arrangements designed strictly within our visual layout system constraints.</p>
+        
+        <div class="space-y-2">
+          <button onclick="loadPreset('saas')" class="w-full p-3 bg-slate-50 border border-slate-200 hover:bg-slate-100/70 hover:border-slate-300 text-left rounded-xl transition flex items-center justify-between">
+            <div>
+              <p class="text-xs font-bold text-slate-800">🚀 SaaS Launch Stack</p>
+              <p class="text-[10px] text-slate-500">Hero, Stats Matrix, and Testimonial layout</p>
+            </div>
+            <span class="text-slate-400">→</span>
+          </button>
+          
+          <button onclick="loadPreset('pricing')" class="w-full p-3 bg-slate-50 border border-slate-200 hover:bg-slate-100/70 hover:border-slate-300 text-left rounded-xl transition flex items-center justify-between">
+            <div>
+              <p class="text-xs font-bold text-slate-800">💰 Pricing Matrix</p>
+              <p class="text-[10px] text-slate-500">Targeted pricing structures and feature blocks</p>
+            </div>
+            <span class="text-slate-400">→</span>
+          </button>
+          
+          <button onclick="loadPreset('minimal')" class="w-full p-3 bg-slate-50 border border-slate-200 hover:bg-slate-100/70 hover:border-slate-300 text-left rounded-xl transition flex items-center justify-between">
+            <div>
+              <p class="text-xs font-bold text-slate-800">💎 Minimalist Landing</p>
+              <p class="text-[10px] text-slate-500">Hero banner with key features only</p>
+            </div>
+            <span class="text-slate-400">→</span>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CENTER AREA: LIVE VIEWPORT INTERFACE WITH INLINE EDITING -->
+    <section class="flex-1 bg-slate-100 overflow-y-auto p-6 flex flex-col items-center">
+      <div id="canvas-container" class="w-full max-w-5xl transition-all duration-300">
+        <div class="bg-white border border-slate-200 rounded-2xl shadow-lg overflow-hidden min-h-[700px] flex flex-col">
+          <!-- Frame Window Controls -->
+          <div class="bg-slate-50 border-b border-slate-100 px-4 py-3 flex items-center justify-between shrink-0 select-none">
+            <div class="flex items-center gap-1.5">
+              <span class="w-3 h-3 rounded-full bg-rose-400"></span>
+              <span class="w-3 h-3 rounded-full bg-amber-400"></span>
+              <span class="w-3 h-3 rounded-full bg-emerald-400"></span>
+              <span class="text-xs text-slate-400 font-medium ml-2 select-none tracking-wide">Dynamic Interactive Canvas</span>
+            </div>
+            <div class="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-2 py-1 rounded tracking-wider uppercase">
+              Feature 1: Click Texts to Edit Inline
+            </div>
+          </div>
+
+          <!-- Dynamic Visual Registry Mount Point -->
+          <div id="canvas-viewport" class="flex-1 p-6 space-y-6 overflow-y-auto">
+            <!-- Dynamic elements render here -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT PANEL: CO-DESIGN CONTROLLER -->
+    <aside class="w-96 border-l border-slate-200 bg-white flex flex-col shrink-0 overflow-hidden">
+      <!-- Tabs Nav -->
+      <div class="flex border-b border-slate-200 text-xs bg-slate-50 shrink-0 select-none">
+        <button id="tab-catalog" onclick="switchRightTab('catalog')" class="flex-1 py-3 text-center border-b-2 border-indigo-600 font-semibold text-indigo-600">
+          Component Catalog
+        </button>
+        <button id="tab-ast" onclick="switchRightTab('ast')" class="flex-1 py-3 text-center border-b-2 border-transparent font-semibold text-slate-500 hover:text-slate-700 hover:bg-slate-100/50">
+          Active AST
+        </button>
+        <button id="tab-patches" onclick="switchRightTab('patches')" class="flex-1 py-3 text-center border-b-2 border-transparent font-semibold text-slate-500 hover:text-slate-700 hover:bg-slate-100/50">
+          RFC 6902 Logs
+        </button>
+      </div>
+
+      <!-- TAB CONTENT: Component Catalog -->
+      <div id="panel-catalog" class="flex-1 overflow-y-auto p-4 space-y-4">
+        <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Available System Vocabularies</h3>
+        <p class="text-xs text-slate-500">Insert design components directly. Visual edits maintain exact structural schema validity.</p>
+        
+        <div class="grid grid-cols-2 gap-2 pt-2">
+          <!-- Hero Catalog Item -->
+          <button onclick="insertComponent('Hero')" class="group p-3 border border-slate-200 rounded-xl hover:border-indigo-500 hover:bg-indigo-50/50 text-left transition flex flex-col justify-between h-24">
+            <div>
+              <span class="text-xs font-bold text-slate-800">Hero Section</span>
+              <p class="text-[10px] text-slate-400 mt-1 line-clamp-2">High conversion splash component with custom CTAs.</p>
+            </div>
+            <span class="text-[9px] text-indigo-500 font-mono tracking-wide uppercase group-hover:text-indigo-600">Insert +</span>
+          </button>
+
+          <!-- Stats Catalog Item -->
+          <button onclick="insertComponent('Stats')" class="group p-3 border border-slate-200 rounded-xl hover:border-indigo-500 hover:bg-indigo-50/50 text-left transition flex flex-col justify-between h-24">
+            <div>
+              <span class="text-xs font-bold text-slate-800">Stats Indicators</span>
+              <p class="text-[10px] text-slate-400 mt-1 line-clamp-2">Numeric indicator matrices for impact and credibility.</p>
+            </div>
+            <span class="text-[9px] text-indigo-500 font-mono tracking-wide uppercase group-hover:text-indigo-600">Insert +</span>
+          </button>
+
+          <!-- Feature Grid Catalog Item -->
+          <button onclick="insertComponent('FeatureGrid')" class="group p-3 border border-slate-200 rounded-xl hover:border-indigo-500 hover:bg-indigo-50/50 text-left transition flex flex-col justify-between h-24">
+            <div>
+              <span class="text-xs font-bold text-slate-800">Feature Matrix</span>
+              <p class="text-[10px] text-slate-400 mt-1 line-clamp-2">3-column feature showcase with grid coordinate math.</p>
+            </div>
+            <span class="text-[9px] text-indigo-500 font-mono tracking-wide uppercase group-hover:text-indigo-600">Insert +</span>
+          </button>
+
+          <!-- Testimonial Catalog Item -->
+          <button onclick="insertComponent('Testimonial')" class="group p-3 border border-slate-200 rounded-xl hover:border-indigo-500 hover:bg-indigo-50/50 text-left transition flex flex-col justify-between h-24">
+            <div>
+              <span class="text-xs font-bold text-slate-800">Testimonials</span>
+              <p class="text-[10px] text-slate-400 mt-1 line-clamp-2">Direct quote block with layout validation tokens.</p>
+            </div>
+            <span class="text-[9px] text-indigo-500 font-mono tracking-wide uppercase group-hover:text-indigo-600">Insert +</span>
+          </button>
+
+          <!-- Pricing Catalog Item -->
+          <button onclick="insertComponent('Pricing')" class="group p-3 border border-slate-200 rounded-xl hover:border-indigo-500 hover:bg-indigo-50/50 text-left transition flex flex-col justify-between h-24">
+            <div>
+              <span class="text-xs font-bold text-slate-800">Pricing Tier Matrix</span>
+              <p class="text-[10px] text-slate-400 mt-1 line-clamp-2">Subscription rate structures with styling rules.</p>
+            </div>
+            <span class="text-[9px] text-indigo-500 font-mono tracking-wide uppercase group-hover:text-indigo-600">Insert +</span>
+          </button>
+
+          <!-- Footer Catalog Item -->
+          <button onclick="insertComponent('Footer')" class="group p-3 border border-slate-200 rounded-xl hover:border-indigo-500 hover:bg-indigo-50/50 text-left transition flex flex-col justify-between h-24">
+            <div>
+              <span class="text-xs font-bold text-slate-800">Footer Block</span>
+              <p class="text-[10px] text-slate-400 mt-1 line-clamp-2">Standard copyright bounds and navigation listings.</p>
+            </div>
+            <span class="text-[9px] text-indigo-500 font-mono tracking-wide uppercase group-hover:text-indigo-600">Insert +</span>
+          </button>
+        </div>
+
+        <!-- Token Guard System Panel -->
+        <div class="mt-6 border border-slate-200 rounded-xl p-4 bg-slate-50/50 select-none">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-xs font-bold text-indigo-700 uppercase tracking-wider">Design Token Safety Bounds</span>
+          </div>
+          <p class="text-[11px] text-slate-500 leading-normal mb-3">
+            This design editor directly enforces deterministic structural limits. Component edits will automatically inherit variables defined in your global workspace settings.
+          </p>
+        </div>
+      </div>
+
+      <!-- TAB CONTENT: raw active ast -->
+      <div id="panel-ast" class="hidden flex-1 flex flex-col overflow-hidden">
+        <div class="p-4 border-b border-slate-100 shrink-0">
+          <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">JSON Abstract Syntax Tree</h3>
+          <p class="text-xs text-slate-400">Immutable AST state rendering in runtime.</p>
+        </div>
+        <div class="flex-1 overflow-auto bg-slate-900 p-4">
+          <pre id="json-ast-preview" class="text-[11px] text-emerald-400 font-mono leading-relaxed select-text whitespace-pre-wrap h-full outline-none" contenteditable="true" onblur="updateASTFromRawEditor(this)"></pre>
+        </div>
+      </div>
+
+      <!-- TAB CONTENT: RFC 6902 Patch logs -->
+      <div id="panel-patches" class="hidden flex-1 flex flex-col overflow-hidden">
+        <div class="p-4 border-b border-slate-100 shrink-0">
+          <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">RFC 6902 Operations Log</h3>
+          <p class="text-xs text-slate-400">Atomic state patches generated dynamically during collaboration.</p>
+        </div>
+        <div class="flex-1 overflow-y-auto bg-slate-50 p-4 space-y-2" id="patch-logs-container">
+          <!-- Live patch log blocks map here -->
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- DYNAMIC INTERACTION: CONFIGURATION MODAL (PROPERTIES INSPECTOR) -->
+  <div id="property-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl border border-slate-200 overflow-hidden flex flex-col">
+      <div class="bg-slate-50 px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-bold text-indigo-700 bg-indigo-50 px-2 py-1 rounded uppercase tracking-wider">Configure Component</span>
+          <span id="modal-component-id" class="text-xs text-slate-400 font-mono"></span>
+        </div>
+        <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600 transition font-bold text-lg">×</button>
+      </div>
+      <!-- Feature 5: Advanced Component Form Builder -->
+      <div class="p-6 overflow-y-auto max-h-[450px]" id="modal-fields-container">
+        <!-- Dynamic nested element builder fields go here -->
+      </div>
+      <div class="bg-slate-50 px-6 py-3 border-t border-slate-100 flex justify-end gap-2 shrink-0">
+        <button onclick="closeEditModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 rounded-lg text-xs font-semibold text-slate-700 transition">Cancel</button>
+        <button onclick="saveComponentProperties()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-xs font-semibold text-white transition shadow-sm">Save & Update AST</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ERROR NOTIFICATION POPUP -->
+  <div id="toast-notification" class="fixed bottom-6 right-6 transform translate-y-24 opacity-0 bg-slate-900 text-white border border-slate-800 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 transition-all duration-300 z-50">
+    <span id="toast-icon" class="text-emerald-400 text-sm">✓</span>
+    <span id="toast-message" class="text-xs font-semibold leading-none">Toast content goes here</span>
+  </div>
+
+  <!-- APPLICATION CONTROLLER LOGIC -->
+  <script>
+    // Component Presets (Feature 4 Data Structures)
+    const LAYOUT_PRESETS = {
+      saas: {
+        type: "Page",
+        children: [
+          {
+            id: "hero_1",
+            type: "Hero",
+            props: {
+              title: "Deploy SaaS Landing Pages Instantly",
+              subtitle: "Build, configure, and compile beautiful modern frontends utilizing deterministic SDUI design contracts.",
+              ctaText: "Begin Launch",
+              align: "center",
+              bgGradient: "from-indigo-600 to-blue-700"
+            }
+          },
+          {
+            id: "stats_1",
+            type: "Stats",
+            props: {
+              title: "Global Launch Statistics",
+              items: [
+                { label: "Deployment Success Rate", value: "99.98%" },
+                { label: "Average Rendering Time", value: "12ms" },
+                { label: "Enterprise Customers", value: "1,500+" }
+              ]
+            }
+          },
+          {
+            id: "testimonial_1",
+            type: "Testimonial",
+            props: {
+              quote: "The visual curation interface saved us hundreds of engineering hours. Our non-technical teams direct and organize visual hierarchies safely.",
+              author: "Sarah Jenkins",
+              role: "VP of Product at ScaleHQ"
+            }
+          }
+        ]
+      },
+      pricing: {
+        type: "Page",
+        children: [
+          {
+            id: "hero_pricing",
+            type: "Hero",
+            props: {
+              title: "Flexible Enterprise Pricing",
+              subtitle: "Choose the package tailored specifically for your engineering and creative operations.",
+              ctaText: "View Documentation",
+              align: "center",
+              bgGradient: "from-slate-800 to-slate-900"
+            }
+          },
+          {
+            id: "pricing_matrix",
+            type: "Pricing",
+            props: {
+              title: "Available Subscription Packages",
+              plans: [
+                { name: "SaaS Core", price: "$49/mo", features: ["Full Schema Validation", "3 Custom Domains", "Standard CDN Integration"] },
+                { name: "Enterprise Pro", price: "$189/mo", features: ["Custom Token Mapper", "99.99% Guaranteed SLA", "Dedicated Operations Channel"] }
+              ]
+            }
+          }
+        ]
+      },
+      minimal: {
+        type: "Page",
+        children: [
+          {
+            id: "hero_minimal",
+            type: "Hero",
+            props: {
+              title: "Sophisticated Simplicity",
+              subtitle: "A minimal playground designed to showcase clean alignment, structured components, and high readability.",
+              ctaText: "Get Started",
+              align: "left",
+              bgGradient: "from-emerald-600 to-teal-800"
+            }
+          },
+          {
+            id: "features_minimal",
+            type: "FeatureGrid",
+            props: {
+              title: "Core Design Philosophies",
+              features: [
+                { title: "No Code Bloat", desc: "Pure deterministic structural generation translates directly into reusable markup." },
+                { title: "Universal Consistency", desc: "Global border and padding tokens prevent design system drift completely." }
+              ]
+            }
+          }
+        ]
+      }
+    };
+
+    // Global Token Customizations (Feature 3 Memory States)
+    let globalDesignTokens = {
+      radiusClass: 'rounded-xl', // default
+      themeId: 'oceanic',
+      paddingClass: 'py-14 px-8'
+    };
+
+    // Setup active state tracking & History Stack (Feature 2 Memory States)
+    let activeAST = JSON.parse(JSON.stringify(LAYOUT_PRESETS.saas));
+    let historyStack = [JSON.stringify(activeAST)];
+    let historyIndex = 0;
+    
+    let patchLogs = [];
+    let activeEditComponentId = null;
+
+    // Undo / Redo Mechanics (Feature 2)
+    function saveStateToHistory(meta = "Layout Mutation") {
+      // If we made updates after undoing, truncate remaining stack elements
+      if (historyIndex < historyStack.length - 1) {
+        historyStack = historyStack.slice(0, historyIndex + 1);
+      }
+      
+      const serialized = JSON.stringify(activeAST);
+      historyStack.push(serialized);
+      historyIndex++;
+      
+      updateHistoryButtons();
+    }
+
+    function undo() {
+      if (historyIndex > 0) {
+        historyIndex--;
+        activeAST = JSON.parse(historyStack[historyIndex]);
+        renderWorkspace();
+        updateHistoryButtons();
+        showToast("Action undone.");
+        logPatch({
+          op: "undo",
+          path: "/",
+          meta: "Reverted last layout mutation"
+        });
+      }
+    }
+
+    function redo() {
+      if (historyIndex < historyStack.length - 1) {
+        historyIndex++;
+        activeAST = JSON.parse(historyStack[historyIndex]);
+        renderWorkspace();
+        updateHistoryButtons();
+        showToast("Action redone.");
+        logPatch({
+          op: "redo",
+          path: "/",
+          meta: "Applied previously undone layout mutation"
+        });
+      }
+    }
+
+    function updateHistoryButtons() {
+      document.getElementById('btn-undo').disabled = (historyIndex === 0);
+      document.getElementById('btn-redo').disabled = (historyIndex === historyStack.length - 1);
+    }
+
+    // Dynamic Viewport Adjuster
+    function setViewport(size) {
+      const container = document.getElementById('canvas-container');
+      const buttons = {
+        desktop: document.getElementById('btn-view-desktop'),
+        tablet: document.getElementById('btn-view-tablet'),
+        mobile: document.getElementById('btn-view-mobile')
+      };
+
+      container.classList.remove('max-w-5xl', 'max-w-2xl', 'max-w-sm');
+      Object.keys(buttons).forEach(k => {
+        buttons[k].classList.remove('bg-white', 'shadow-sm', 'text-slate-700');
+        buttons[k].classList.add('text-slate-500', 'hover:text-slate-700');
+      });
+
+      if (size === 'desktop') {
+        container.classList.add('max-w-5xl');
+        buttons.desktop.classList.add('bg-white', 'shadow-sm', 'text-slate-700');
+      } else if (size === 'tablet') {
+        container.classList.add('max-w-2xl');
+        buttons.tablet.classList.add('bg-white', 'shadow-sm', 'text-slate-700');
+      } else if (size === 'mobile') {
+        container.classList.add('max-w-sm');
+        buttons.mobile.classList.add('bg-white', 'shadow-sm', 'text-slate-700');
+      }
+    }
+
+    // Right Sidebar Tab Customizer
+    function switchRightTab(tabId) {
+      const tabs = ['catalog', 'ast', 'patches'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tab-${t}`);
+        const panel = document.getElementById(`panel-${t}`);
+        if (t === tabId) {
+          btn.classList.add('border-indigo-600', 'text-indigo-600');
+          btn.classList.remove('border-transparent', 'text-slate-500');
+          panel.classList.remove('hidden');
+        } else {
+          btn.classList.remove('border-indigo-600', 'text-indigo-600');
+          btn.classList.add('border-transparent', 'text-slate-500');
+          panel.classList.add('hidden');
+        }
+      });
+    }
+
+    // Manual RAW editor fallback
+    function updateASTFromRawEditor(preElement) {
+      try {
+        const text = preElement.innerText;
+        const parsed = JSON.parse(text);
+        if (parsed && parsed.type === 'Page' && Array.isArray(parsed.children)) {
+          activeAST = parsed;
+          saveStateToHistory("Manual raw code modification");
+          logPatch({
+            op: "replace",
+            path: "/",
+            value: parsed,
+            meta: "Direct JSON editor state synchronize"
+          });
+          renderWorkspace();
+          showToast("Active AST updated!");
+        } else {
+          throw new Error("Missing active Page structure.");
+        }
+      } catch (err) {
+        showToast("Invalid JSON AST Structure", true);
+        preElement.innerText = JSON.stringify(activeAST, null, 2);
+      }
+    }
+
+    // Direct Text Inline Writing Sync (Feature 1 Action Processor)
+    function syncInlineText(id, pathArray, newValue) {
+      const comp = activeAST.children.find(c => c.id === id);
+      if (!comp) return;
+
+      // Update inner AST value dynamically
+      let currentObj = comp.props;
+      for (let i = 0; i < pathArray.length - 1; i++) {
+        currentObj = currentObj[pathArray[i]];
+      }
+      const lastKey = pathArray[pathArray.length - 1];
+      const oldValue = currentObj[lastKey];
+
+      if (oldValue !== newValue) {
+        currentObj[lastKey] = newValue;
+        
+        // Log individual patch
+        logPatch({
+          op: "replace",
+          path: `/children/${activeAST.children.indexOf(comp)}/props/${pathArray.join('/')}`,
+          value: newValue,
+          meta: `Inline editable: Modified element in [${id}]`
+        });
+
+        // Sync internal structural state without full viewport redraw to avoid layout focus losses
+        saveStateToHistory("Inline text mutation");
+        document.getElementById('json-ast-preview').innerText = JSON.stringify(activeAST, null, 2);
+      }
+    }
+
+    // Feature 3 UI Handler Functions
+    function setGlobalRadius(radiusKey) {
+      const radii = {
+        none: 'rounded-none',
+        sm: 'rounded-lg',
+        md: 'rounded-2xl',
+        xl: 'rounded-[2rem]'
+      };
+      
+      globalDesignTokens.radiusClass = radii[radiusKey];
+      
+      // Update Selection buttons
+      ['none', 'sm', 'md', 'xl'].forEach(key => {
+        const btn = document.getElementById(`radius-${key}`);
+        btn.classList.remove('bg-white', 'shadow-sm', 'text-slate-700');
+        btn.classList.add('text-slate-500');
+      });
+      document.getElementById(`radius-${radiusKey}`).classList.add('bg-white', 'shadow-sm', 'text-slate-700');
+      document.getElementById(`radius-${radiusKey}`).classList.remove('text-slate-500');
+
+      logPatch({
+        op: "replace",
+        path: "/designSystem/radius",
+        value: globalDesignTokens.radiusClass,
+        meta: `Global token mutation: Set corner radius to ${radiusKey}`
+      });
+      renderWorkspace();
+      showToast("Design system radius applied!");
+    }
+
+    function setGlobalTheme(themeId) {
+      globalDesignTokens.themeId = themeId;
+      
+      ['oceanic', 'emerald', 'midnight'].forEach(key => {
+        const btn = document.getElementById(`theme-${key}`);
+        btn.classList.remove('border-indigo-600', 'bg-indigo-50/40');
+        btn.classList.add('border-slate-200');
+      });
+      document.getElementById(`theme-${themeId}`).classList.remove('border-slate-200');
+      document.getElementById(`theme-${themeId}`).classList.add('border-indigo-600', 'bg-indigo-50/40');
+
+      logPatch({
+        op: "replace",
+        path: "/designSystem/theme",
+        value: themeId,
+        meta: `Global token mutation: Configured brand palette to ${themeId}`
+      });
+      renderWorkspace();
+      showToast("Global brand theme applied!");
+    }
+
+    function setGlobalPadding(sliderValue) {
+      const paddings = {
+        1: { label: "Tight (32px)", class: "py-8 px-6" },
+        2: { label: "Medium (64px)", class: "py-14 px-8" },
+        3: { label: "Spacious (96px)", class: "py-24 px-12" }
+      };
+
+      globalDesignTokens.paddingClass = paddings[sliderValue].class;
+      document.getElementById('label-global-padding').innerText = paddings[sliderValue].label;
+
+      logPatch({
+        op: "replace",
+        path: "/designSystem/padding",
+        value: globalDesignTokens.paddingClass,
+        meta: `Global token mutation: Updated padding scales to value: ${sliderValue}`
+      });
+      renderWorkspace();
+    }
+
+    // Feature 4: Interactive Preset Loader Action
+    function loadPreset(presetKey) {
+      if (LAYOUT_PRESETS[presetKey]) {
+        activeAST = JSON.parse(JSON.stringify(LAYOUT_PRESETS[presetKey]));
+        saveStateToHistory(`Loaded preset: ${presetKey}`);
+        logPatch({
+          op: "replace",
+          path: "/",
+          value: activeAST,
+          meta: `Loaded preset design arrangement: ${presetKey}`
+        });
+        renderWorkspace();
+        showToast(`Template configured: ${presetKey.toUpperCase()}`);
+      }
+    }
+
+    // Render Canvas Registry Mapping Engine
+    function renderWorkspace() {
+      const viewport = document.getElementById('canvas-viewport');
+      viewport.innerHTML = '';
+
+      if (!activeAST.children || activeAST.children.length === 0) {
+        viewport.innerHTML = `
+          <div class="flex flex-col items-center justify-center py-24 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
+            <span class="text-3xl mb-2">📥</span>
+            <p class="text-xs font-semibold text-slate-500">Workspace layout empty</p>
+            <p class="text-[11px] text-slate-400 mt-1">Insert high fidelity components from catalog.</p>
+          </div>
+        `;
+        document.getElementById('json-ast-preview').innerText = JSON.stringify(activeAST, null, 2);
+        return;
+      }
+
+      // Design theme color mapping configuration variables
+      const themeConfig = {
+        oceanic: {
+          bgGradDefault: "from-blue-600 to-indigo-700",
+          accentColor: "text-blue-600",
+          cardAccent: "bg-blue-50 border-blue-100",
+          badgeColor: "bg-white/20 text-white/90",
+          primaryBtn: "bg-white text-indigo-600 hover:bg-slate-50",
+          subCardBtn: "bg-slate-800 hover:bg-slate-900 text-white"
+        },
+        emerald: {
+          bgGradDefault: "from-emerald-600 to-teal-800",
+          accentColor: "text-emerald-600",
+          cardAccent: "bg-emerald-50 border-emerald-100",
+          badgeColor: "bg-emerald-500/20 text-emerald-100",
+          primaryBtn: "bg-white text-emerald-700 hover:bg-emerald-50",
+          subCardBtn: "bg-emerald-700 hover:bg-emerald-800 text-white"
+        },
+        midnight: {
+          bgGradDefault: "from-slate-800 to-slate-900",
+          accentColor: "text-slate-900",
+          cardAccent: "bg-slate-100 border-slate-200",
+          badgeColor: "bg-white/10 text-slate-300",
+          primaryBtn: "bg-white text-slate-900 hover:bg-slate-50",
+          subCardBtn: "bg-slate-900 hover:bg-black text-white"
+        }
+      }[globalDesignTokens.themeId];
+
+      activeAST.children.forEach((comp, idx) => {
+        let compHTML = '';
+        const props = comp.props || {};
+        const radiusClass = globalDesignTokens.radiusClass;
+        const paddingClass = globalDesignTokens.paddingClass;
+
+        switch(comp.type) {
+          case 'Hero':
+            const alignClass = props.align === 'center' ? 'text-center' : 'text-left';
+            const gradient = props.bgGradient || themeConfig.bgGradDefault;
+            compHTML = `
+              <div class="bg-gradient-to-tr ${gradient} text-white ${paddingClass} ${radiusClass} shadow-md flex items-center relative overflow-hidden">
+                <div class="absolute inset-0 bg-grid-white/[0.05] [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0))]"></div>
+                <div class="relative w-full ${alignClass}">
+                  <span class="text-[10px] uppercase tracking-widest font-extrabold ${themeConfig.badgeColor} px-2.5 py-1 rounded-full">Interactive Component</span>
+                  
+                  <h1 contenteditable="true" 
+                      onblur="syncInlineText('${comp.id}', ['title'], this.innerText)"
+                      class="text-2xl md:text-4xl font-extrabold tracking-tight mt-3 max-w-2xl outline-none border-b border-transparent hover:border-white/20 focus:border-white/60 focus:bg-white/5 px-1 py-0.5 rounded transition ${props.align === 'center' ? 'mx-auto' : ''}">${props.title || 'Untitled Hero'}</h1>
+                  
+                  <p contenteditable="true"
+                     onblur="syncInlineText('${comp.id}', ['subtitle'], this.innerText)"
+                     class="text-sm text-indigo-100 max-w-xl ${props.align === 'center' ? 'mx-auto' : ''} mt-3 leading-relaxed outline-none border-b border-transparent hover:border-white/20 focus:border-white/60 focus:bg-white/5 px-1 py-0.5 rounded transition">${props.subtitle || ''}</p>
+                  
+                  <button class="mt-6 px-5 py-2.5 ${themeConfig.primaryBtn} font-bold ${radiusClass === 'rounded-none' ? 'rounded-none' : 'rounded-lg'} shadow-sm transition text-xs select-none">${props.ctaText || 'Learn More'}</button>
+                </div>
+              </div>
+            `;
+            break;
+
+          case 'Stats':
+            const items = props.items || [];
+            let itemsHTML = items.map((item, itemIdx) => `
+              <div class="text-center p-4 bg-white border border-slate-100 ${radiusClass} shadow-sm">
+                <p contenteditable="true" 
+                   onblur="syncInlineText('${comp.id}', ['items', ${itemIdx}, 'value'], this.innerText)"
+                   class="text-2xl font-black tracking-tight outline-none border-b border-transparent hover:border-slate-300 focus:border-indigo-600 rounded transition ${themeConfig.accentColor}">${item.value || '0'}</p>
+                <p contenteditable="true"
+                   onblur="syncInlineText('${comp.id}', ['items', ${itemIdx}, 'label'], this.innerText)"
+                   class="text-[11px] text-slate-500 font-semibold mt-1 uppercase tracking-wider outline-none border-b border-transparent hover:border-slate-300 focus:border-indigo-600 rounded transition">${item.label || 'Indicator'}</p>
+              </div>
+            `).join('');
+
+            compHTML = `
+              <div class="space-y-3">
+                ${props.title ? `<h3 contenteditable="true" onblur="syncInlineText('${comp.id}', ['title'], this.innerText)" class="text-xs font-bold text-slate-400 uppercase tracking-widest text-center outline-none hover:text-slate-600 transition">${props.title}</h3>` : ''}
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  ${itemsHTML || '<p class="text-xs text-slate-400 col-span-3 text-center">No indicators currently. Edit to configure.</p>'}
+                </div>
+              </div>
+            `;
+            break;
+
+          case 'FeatureGrid':
+            const features = props.features || [];
+            let featuresHTML = features.map((feat, featIdx) => `
+              <div class="bg-slate-50 p-4 ${radiusClass} border border-slate-100">
+                <div class="h-8 w-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 text-sm font-semibold mb-3">✦</div>
+                <h4 contenteditable="true"
+                    onblur="syncInlineText('${comp.id}', ['features', ${featIdx}, 'title'], this.innerText)"
+                    class="text-xs font-bold text-slate-800 outline-none border-b border-transparent hover:border-slate-300 focus:border-indigo-600 rounded transition">${feat.title || 'Feature Title'}</h4>
+                <p contenteditable="true"
+                   onblur="syncInlineText('${comp.id}', ['features', ${featIdx}, 'desc'], this.innerText)"
+                   class="text-[11px] text-slate-500 mt-2 leading-relaxed outline-none border-b border-transparent hover:border-slate-300 focus:border-indigo-600 rounded transition">${feat.desc || 'Provide descriptive point criteria details.'}</p>
+              </div>
+            `).join('');
+
+            compHTML = `
+              <div class="space-y-4">
+                <div class="text-center">
+                  <h3 contenteditable="true" 
+                      onblur="syncInlineText('${comp.id}', ['title'], this.innerText)"
+                      class="text-md font-extrabold tracking-tight text-slate-800 outline-none hover:text-indigo-600 transition">${props.title || 'Capabilities Showcase'}</h3>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  ${featuresHTML || '<p class="text-xs text-slate-400 col-span-3 text-center">No structural features cataloged.</p>'}
+                </div>
+              </div>
+            `;
+            break;
+
+          case 'Testimonial':
+            compHTML = `
+              <div class="${themeConfig.cardAccent} border p-6 ${radiusClass} relative">
+                <span class="absolute top-4 left-4 text-4xl text-indigo-200 select-none font-serif leading-none">“</span>
+                <div class="relative pl-6">
+                  <p contenteditable="true"
+                     onblur="syncInlineText('${comp.id}', ['quote'], this.innerText)"
+                     class="text-xs italic text-slate-700 leading-relaxed outline-none border-b border-transparent hover:border-slate-300 focus:border-indigo-600 rounded transition">${props.quote || 'Insert user quote statement.'}</p>
+                  <div class="mt-4 flex items-center gap-2 select-none">
+                    <div class="h-6 w-6 rounded-full bg-slate-300 flex items-center justify-center text-[10px] font-bold text-slate-600 uppercase">${(props.author || 'U').charAt(0)}</div>
+                    <div>
+                      <h4 contenteditable="true"
+                          onblur="syncInlineText('${comp.id}', ['author'], this.innerText)"
+                          class="text-[11px] font-bold text-slate-800 leading-none outline-none border-b border-transparent hover:border-slate-300 focus:border-indigo-600 rounded transition">${props.author || 'Anonymous'}</h4>
+                      <p contenteditable="true"
+                         onblur="syncInlineText('${comp.id}', ['role'], this.innerText)"
+                         class="text-[9px] text-slate-400 mt-0.5 outline-none border-b border-transparent hover:border-slate-300 focus:border-indigo-600 rounded transition">${props.role || 'Designated Stakeholder'}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+            break;
+
+          case 'Pricing':
+            const plans = props.plans || [];
+            let plansHTML = plans.map((p, pIdx) => `
+              <div class="bg-white border border-slate-200 ${radiusClass} p-5 flex flex-col justify-between shadow-sm relative overflow-hidden">
+                <div>
+                  <h4 contenteditable="true"
+                      onblur="syncInlineText('${comp.id}', ['plans', ${pIdx}, 'name'], this.innerText)"
+                      class="text-xs font-extrabold text-slate-800 uppercase tracking-wider outline-none border-b border-transparent hover:border-slate-300 focus:border-indigo-600 rounded transition">${p.name}</h4>
+                  <p contenteditable="true"
+                     onblur="syncInlineText('${comp.id}', ['plans', ${pIdx}, 'price'], this.innerText)"
+                     class="text-xl font-black text-slate-900 mt-2 outline-none border-b border-transparent hover:border-slate-300 focus:border-indigo-600 rounded transition">${p.price}</p>
+                  <ul class="space-y-1.5 mt-4 text-[10px] text-slate-500">
+                    ${(p.features || []).map(f => `<li>✓ ${f}</li>`).join('')}
+                  </ul>
+                </div>
+                <button class="mt-6 w-full py-2 ${themeConfig.subCardBtn} ${radiusClass === 'rounded-none' ? 'rounded-none' : 'rounded'} font-bold text-[10px] transition select-none">Acquire Tier</button>
+              </div>
+            `).join('');
+
+            compHTML = `
+              <div class="space-y-4">
+                <div class="text-center">
+                  <h3 contenteditable="true"
+                      onblur="syncInlineText('${comp.id}', ['title'], this.innerText)"
+                      class="text-xs font-bold text-slate-400 uppercase tracking-widest outline-none hover:text-slate-600 transition">${props.title || 'Enterprise Pricing Plans'}</h3>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  ${plansHTML}
+                </div>
+              </div>
+            `;
+            break;
+
+          case 'Footer':
+            compHTML = `
+              <footer class="bg-slate-900 text-slate-400 py-8 px-6 ${radiusClass} text-center">
+                <p contenteditable="true"
+                   onblur="syncInlineText('${comp.id}', ['companyName'], this.innerText)"
+                   class="text-[11px] font-semibold text-slate-300 inline-block outline-none hover:text-white transition">${props.companyName || 'Corporate Blueprint, Inc.'}</p>
+                <p contenteditable="true"
+                   onblur="syncInlineText('${comp.id}', ['copyrightText'], this.innerText)"
+                   class="text-[9px] text-slate-500 mt-2 block outline-none hover:text-slate-400 transition">${props.copyrightText || '© 2026. Bounded Layout Specifications. All rights reserved.'}</p>
+              </footer>
+            `;
+            break;
+
+          default:
+            compHTML = `<div class="p-4 bg-slate-100 text-xs text-slate-500 italic rounded">Unrecognized component definition: ${comp.type}</div>`;
+        }
+
+        // Action block generation inside structural boundaries
+        const wrapper = document.createElement('div');
+        wrapper.className = "group relative border border-transparent hover:border-indigo-500 rounded-2xl transition duration-200 p-1";
+        wrapper.innerHTML = `
+          ${compHTML}
+          <!-- Reordering & deletion context widget bar -->
+          <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition bg-white/95 backdrop-blur shadow-md border rounded-lg px-2 py-1 flex items-center gap-1 z-10 text-[10px] text-slate-600 select-none">
+            <span class="font-bold text-indigo-600 px-1 uppercase tracking-wider text-[9px]">${comp.type}</span>
+            <span class="h-4 w-px bg-slate-200 mx-1"></span>
+            <button onclick="moveComponent('${comp.id}', -1)" class="p-1 hover:bg-slate-100 rounded text-slate-600" title="Move Up">↑</button>
+            <button onclick="moveComponent('${comp.id}', 1)" class="p-1 hover:bg-slate-100 rounded text-slate-600" title="Move Down">↓</button>
+            <button onclick="openEditModal('${comp.id}')" class="p-1 hover:bg-slate-100 rounded text-indigo-600 font-semibold" title="Edit Properties">⚙️ Edit Settings</button>
+            <button onclick="deleteComponent('${comp.id}')" class="p-1 hover:bg-slate-100 rounded text-rose-500" title="Delete">🗑️</button>
+          </div>
+        `;
+        viewport.appendChild(wrapper);
+      });
+
+      // Render raw state to text block
+      document.getElementById('json-ast-preview').innerText = JSON.stringify(activeAST, null, 2);
+    }
+
+    // AST insertion algorithm
+    function insertComponent(type) {
+      const id = `${type.toLowerCase()}_${Date.now().toString().slice(-4)}`;
+      let defaultProps = {};
+
+      switch (type) {
+        case 'Hero':
+          defaultProps = {
+            title: "Dynamic Landing Statement",
+            subtitle: "Crafted deterministically through Server-Driven visual schemas.",
+            ctaText: "Discover",
+            align: "center",
+            bgGradient: ""
+          };
+          break;
+        case 'Stats':
+          defaultProps = {
+            title: "Performance Benchmarks",
+            items: [
+              { label: "Operational uptime", value: "99.9%" },
+              { label: "Compliance Standard", value: "100%" }
+            ]
+          };
+          break;
+        case 'FeatureGrid':
+          defaultProps = {
+            title: "Technological Capabilities",
+            features: [
+              { title: "Dynamic Redux", desc: "Decouples presentation models from client compilations." },
+              { title: "Self-Healing State", desc: "Instantly validates components according to internal token rules." }
+            ]
+          };
+          break;
+        case 'Testimonial':
+          defaultProps = {
+            quote: "This pipeline fundamentally transformed our design system. We no longer write broken raw HTML components.",
+            author: "Director of UX Engineering",
+            role: "Enterprise Systems Architecture"
+          };
+          break;
+        case 'Pricing':
+          defaultProps = {
+            title: "System Subscription Scales",
+            plans: [
+              { name: "Pro Developer", price: "$99/mo", features: ["Unlimited state rendering", "Full custom system mapper"] }
+            ]
+          };
+          break;
+        case 'Footer':
+          defaultProps = {
+            companyName: "Dynamic Design Inc.",
+            copyrightText: "© 2026. All rights and systems verified."
+          };
+          break;
+      }
+
+      const newComponent = { id, type, props: defaultProps };
+      activeAST.children.push(newComponent);
+      saveStateToHistory(`Inserted component ${type}`);
+
+      logPatch({
+        op: "add",
+        path: `/children/${activeAST.children.length - 1}`,
+        value: newComponent,
+        meta: `Curation Catalog: Added component type [${type}] with unique id: ${id}`
+      });
+
+      renderWorkspace();
+      showToast(`Inserted ${type} Component!`);
+    }
+
+    // Node deletion algorithm
+    function deleteComponent(id) {
+      const idx = activeAST.children.findIndex(c => c.id === id);
+      if (idx !== -1) {
+        const deleted = activeAST.children[idx];
+        activeAST.children.splice(idx, 1);
+        saveStateToHistory(`Removed component: ${id}`);
+
+        logPatch({
+          op: "remove",
+          path: `/children/${idx}`,
+          meta: `Curation Catalog: Removed component [${deleted.type}] id: ${id}`
+        });
+
+        renderWorkspace();
+        showToast(`Removed Component: ${id}`);
+      }
+    }
+
+    // Rearrange components order
+    function moveComponent(id, direction) {
+      const idx = activeAST.children.findIndex(c => c.id === id);
+      if (idx === -1) return;
+      
+      const targetIdx = idx + direction;
+      if (targetIdx < 0 || targetIdx >= activeAST.children.length) return;
+
+      const temp = activeAST.children[idx];
+      activeAST.children[idx] = activeAST.children[targetIdx];
+      activeAST.children[targetIdx] = temp;
+      saveStateToHistory(`Rearranged layout order`);
+
+      logPatch({
+        op: "move",
+        from: `/children/${idx}`,
+        path: `/children/${targetIdx}`,
+        meta: `Curation Catalog: Swapped order index positions of component: ${id}`
+      });
+
+      renderWorkspace();
+    }
+
+    // Feature 5: Schema Dynamic Property Field Builder
+    function openEditModal(id) {
+      const comp = activeAST.children.find(c => c.id === id);
+      if (!comp) return;
+
+      activeEditComponentId = id;
+      document.getElementById('modal-component-id').innerText = `[${comp.type}] id: ${id}`;
+      const container = document.getElementById('modal-fields-container');
+      container.innerHTML = '';
+
+      const props = comp.props || {};
+
+      if (comp.type === 'Hero') {
+        container.innerHTML = `
+          <div class="space-y-4 text-xs">
+            <div>
+              <label class="block font-bold text-slate-700 uppercase tracking-wide mb-1">Headline Text</label>
+              <input type="text" id="prop-hero-title" value="${props.title || ''}" class="w-full p-2 bg-slate-50 border rounded-lg focus:ring-1 focus:ring-indigo-500 outline-none">
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 uppercase tracking-wide mb-1">Sub-Headline Statement</label>
+              <textarea id="prop-hero-subtitle" class="w-full p-2 bg-slate-50 border rounded-lg h-20 focus:ring-1 focus:ring-indigo-500 outline-none">${props.subtitle || ''}</textarea>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block font-bold text-slate-700 uppercase tracking-wide mb-1">CTA Label</label>
+                <input type="text" id="prop-hero-ctatext" value="${props.ctaText || ''}" class="w-full p-2 bg-slate-50 border rounded-lg focus:ring-1 focus:ring-indigo-500 outline-none">
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 uppercase tracking-wide mb-1">Text Alignment</label>
+                <select id="prop-hero-align" class="w-full p-2 bg-slate-50 border rounded-lg focus:ring-1 focus:ring-indigo-500 outline-none">
+                  <option value="center" ${props.align === 'center' ? 'selected' : ''}>Center</option>
+                  <option value="left" ${props.align === 'left' ? 'selected' : ''}>Left</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 uppercase tracking-wide mb-1">Color Tokens Theme Override</label>
+              <select id="prop-hero-bgGradient" class="w-full p-2 bg-slate-50 border rounded-lg focus:ring-1 focus:ring-indigo-500 outline-none">
+                <option value="">Default (Inherit Global System theme)</option>
+                <option value="from-rose-600 to-amber-600" ${props.bgGradient === 'from-rose-600 to-amber-600' ? 'selected' : ''}>Sunset Velvet (Orange/Rose)</option>
+                <option value="from-indigo-900 via-purple-900 to-pink-900" ${props.bgGradient === 'from-indigo-900 via-purple-900 to-pink-900' ? 'selected' : ''}>Deep Cosmos (Triple Violet)</option>
+              </select>
+            </div>
+          </div>
+        `;
+      } else if (comp.type === 'Stats') {
+        container.innerHTML = `
+          <div class="space-y-4 text-xs">
+            <div>
+              <label class="block font-bold text-slate-700 uppercase tracking-wide mb-1">Metrics Title Header</label>
+              <input type="text" id="prop-stats-title" value="${props.title || ''}" class="w-full p-2 bg-slate-50 border rounded-lg focus:ring-1 focus:ring-indigo-500 outline-none">
+            </div>
+            <div class="border-t pt-3 border-slate-100">
+              <div class="flex items-center justify-between mb-2">
+                <label class="block font-bold text-slate-700 uppercase tracking-wide">Metric Items Matrix</label>
+                <button type="button" onclick="addStatsItem()" class="text-[10px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded font-bold hover:bg-indigo-100">+ Add Metric</button>
+              </div>
+              <div id="stats-items-list" class="space-y-3 max-h-48 overflow-y-auto pr-1">
+                ${(props.items || []).map((it, idx) => `
+                  <div class="flex items-center gap-2 p-2 bg-slate-50 rounded-lg border border-slate-200" data-idx="${idx}">
+                    <input type="text" placeholder="Value (e.g. 99%)" class="w-1/3 p-1.5 bg-white border rounded text-xs stat-item-val" value="${it.value || ''}">
+                    <input type="text" placeholder="Label text" class="flex-1 p-1.5 bg-white border rounded text-xs stat-item-lbl" value="${it.label || ''}">
+                    <button type="button" onclick="removeStatsItem(${idx})" class="p-1 text-red-500 hover:bg-red-50 rounded">🗑️</button>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (comp.type === 'FeatureGrid') {
+        container.innerHTML = `
+          <div class="space-y-4 text-xs">
+            <div>
+              <label class="block font-bold text-slate-700 uppercase tracking-wide mb-1">Showcase Header Title</label>
+              <input type="text" id="prop-feature-title" value="${props.title || ''}" class="w-full p-2 bg-slate-50 border rounded-lg focus:ring-1 focus:ring-indigo-500 outline-none">
+            </div>
+            <div class="border-t pt-3 border-slate-100">
+              <div class="flex items-center justify-between mb-2">
+                <label class="block font-bold text-slate-700 uppercase tracking-wide">Feature Columns Configuration</label>
+                <button type="button" onclick="addFeatureItem()" class="text-[10px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded font-bold hover:bg-indigo-100">+ Add Feature</button>
+              </div>
+              <div id="features-items-list" class="space-y-3 max-h-48 overflow-y-auto pr-1">
+                ${(props.features || []).map((fe, idx) => `
+                  <div class="p-2 bg-slate-50 rounded-lg border border-slate-200 relative" data-idx="${idx}">
+                    <button type="button" onclick="removeFeatureItem(${idx})" class="absolute top-2 right-2 text-red-500 hover:bg-red-50 p-1 rounded">🗑️</button>
+                    <div class="space-y-2">
+                      <input type="text" placeholder="Feature Headline" class="w-4/5 p-1.5 bg-white border rounded text-xs feat-item-title" value="${fe.title || ''}">
+                      <textarea placeholder="Feature details description text" class="w-full p-1.5 bg-white border rounded text-xs h-12 feat-item-desc">${fe.desc || ''}</textarea>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (comp.type === 'Testimonial') {
+        container.innerHTML = `
+          <div class="space-y-4 text-xs">
+            <div>
+              <label class="block font-bold text-slate-700 uppercase tracking-wide mb-1">Stakeholder Feedback Quote</label>
+              <textarea id="prop-testimonial-quote" class="w-full p-2 bg-slate-50 border rounded-lg h-24 focus:ring-1 focus:ring-indigo-500 outline-none">${props.quote || ''}</textarea>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block font-bold text-slate-700 uppercase tracking-wide mb-1">Author Name</label>
+                <input type="text" id="prop-testimonial-author" value="${props.author || ''}" class="w-full p-2 bg-slate-50 border rounded-lg focus:ring-1 focus:ring-indigo-500 outline-none">
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 uppercase tracking-wide mb-1">Role / Affiliation</label>
+                <input type="text" id="prop-testimonial-role" value="${props.role || ''}" class="w-full p-2 bg-slate-50 border rounded-lg focus:ring-1 focus:ring-indigo-500 outline-none">
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (comp.type === 'Pricing') {
+        container.innerHTML = `
+          <div class="space-y-4 text-xs">
+            <div>
+              <label class="block font-bold text-slate-700 uppercase tracking-wide mb-1">Pricing Grid Header</label>
+              <input type="text" id="prop-pricing-title" value="${props.title || ''}" class="w-full p-2 bg-slate-50 border rounded-lg focus:ring-1 focus:ring-indigo-500 outline-none">
+            </div>
+            <div class="border-t pt-3 border-slate-100">
+              <div class="flex items-center justify-between mb-2">
+                <label class="block font-bold text-slate-700 uppercase tracking-wide">Pricing Tiers Configuration</label>
+                <button type="button" onclick="addPricingPlan()" class="text-[10px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded font-bold hover:bg-indigo-100">+ Add Tier</button>
+              </div>
+              <div id="pricing-items-list" class="space-y-4 max-h-48 overflow-y-auto pr-1">
+                ${(props.plans || []).map((pl, idx) => `
+                  <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-200 relative space-y-2" data-idx="${idx}">
+                    <button type="button" onclick="removePricingPlan(${idx})" class="absolute top-2 right-2 text-red-500 hover:bg-red-50 p-1 rounded">🗑️</button>
+                    <div class="grid grid-cols-2 gap-2">
+                      <input type="text" placeholder="Tier Name (e.g. Starter)" class="p-1.5 bg-white border rounded text-xs plan-item-name" value="${pl.name || ''}">
+                      <input type="text" placeholder="Price (e.g. $29/mo)" class="p-1.5 bg-white border rounded text-xs plan-item-price" value="${pl.price || ''}">
+                    </div>
+                    <div>
+                      <input type="text" placeholder="Features (Comma separated string)" class="w-full p-1.5 bg-white border rounded text-xs plan-item-features" value="${(pl.features || []).join(', ')}">
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (comp.type === 'Footer') {
+        container.innerHTML = `
+          <div class="space-y-4 text-xs">
+            <div>
+              <label class="block font-bold text-slate-700 uppercase tracking-wide mb-1">Enterprise Corporation Title</label>
+              <input type="text" id="prop-footer-name" value="${props.companyName || ''}" class="w-full p-2 bg-slate-50 border rounded-lg focus:ring-1 focus:ring-indigo-500 outline-none">
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 uppercase tracking-wide mb-1">Copyright Disclaimer Statement</label>
+              <input type="text" id="prop-footer-copy" value="${props.copyrightText || ''}" class="w-full p-2 bg-slate-50 border rounded-lg focus:ring-1 focus:ring-indigo-500 outline-none">
+            </div>
+          </div>
+        `;
+      }
+
+      document.getElementById('property-modal').classList.remove('hidden');
+    }
+
+    // Dynamic field sub-elements helpers (Feature 5 Add / Remove Utilities)
+    function addStatsItem() {
+      const container = document.getElementById('stats-items-list');
+      const idx = container.children.length;
+      const div = document.createElement('div');
+      div.className = "flex items-center gap-2 p-2 bg-slate-50 rounded-lg border border-slate-200 animate-in slide-in-from-top-1 duration-150";
+      div.setAttribute('data-idx', idx);
+      div.innerHTML = `
+        <input type="text" placeholder="Value" class="w-1/3 p-1.5 bg-white border rounded text-xs stat-item-val" value="">
+        <input type="text" placeholder="Label text" class="flex-1 p-1.5 bg-white border rounded text-xs stat-item-lbl" value="">
+        <button type="button" onclick="removeStatsItem(${idx})" class="p-1 text-red-500 hover:bg-red-50 rounded">🗑️</button>
+      `;
+      container.appendChild(div);
+    }
+
+    function removeStatsItem(idx) {
+      const elements = document.querySelectorAll('#stats-items-list [data-idx]');
+      elements.forEach(el => {
+        if (parseInt(el.getAttribute('data-idx')) === idx) {
+          el.remove();
+        }
+      });
+    }
+
+    function addFeatureItem() {
+      const container = document.getElementById('features-items-list');
+      const idx = container.children.length;
+      const div = document.createElement('div');
+      div.className = "p-2 bg-slate-50 rounded-lg border border-slate-200 relative animate-in slide-in-from-top-1 duration-150";
+      div.setAttribute('data-idx', idx);
+      div.innerHTML = `
+        <button type="button" onclick="removeFeatureItem(${idx})" class="absolute top-2 right-2 text-red-500 hover:bg-red-50 p-1 rounded">🗑️</button>
+        <div class="space-y-2">
+          <input type="text" placeholder="Feature Headline" class="w-4/5 p-1.5 bg-white border rounded text-xs feat-item-title" value="">
+          <textarea placeholder="Feature details description text" class="w-full p-1.5 bg-white border rounded text-xs h-12 feat-item-desc"></textarea>
+        </div>
+      `;
+      container.appendChild(div);
+    }
+
+    function removeFeatureItem(idx) {
+      const elements = document.querySelectorAll('#features-items-list [data-idx]');
+      elements.forEach(el => {
+        if (parseInt(el.getAttribute('data-idx')) === idx) {
+          el.remove();
+        }
+      });
+    }
+
+    function addPricingPlan() {
+      const container = document.getElementById('pricing-items-list');
+      const idx = container.children.length;
+      const div = document.createElement('div');
+      div.className = "p-2.5 bg-slate-50 rounded-lg border border-slate-200 relative space-y-2 animate-in slide-in-from-top-1 duration-150";
+      div.setAttribute('data-idx', idx);
+      div.innerHTML = `
+        <button type="button" onclick="removePricingPlan(${idx})" class="absolute top-2 right-2 text-red-500 hover:bg-red-50 p-1 rounded">🗑️</button>
+        <div class="grid grid-cols-2 gap-2">
+          <input type="text" placeholder="Tier Name" class="p-1.5 bg-white border rounded text-xs plan-item-name" value="">
+          <input type="text" placeholder="Price" class="p-1.5 bg-white border rounded text-xs plan-item-price" value="">
+        </div>
+        <div>
+          <input type="text" placeholder="Features (Comma separated)" class="w-full p-1.5 bg-white border rounded text-xs plan-item-features" value="">
+        </div>
+      `;
+      container.appendChild(div);
+    }
+
+    function removePricingPlan(idx) {
+      const elements = document.querySelectorAll('#pricing-items-list [data-idx]');
+      elements.forEach(el => {
+        if (parseInt(el.getAttribute('data-idx')) === idx) {
+          el.remove();
+        }
+      });
+    }
+
+    function closeEditModal() {
+      document.getElementById('property-modal').classList.add('hidden');
+      activeEditComponentId = null;
+    }
+
+    // Modal properties commit back to active AST with RFC6902 Log generation
+    function saveComponentProperties() {
+      const id = activeEditComponentId;
+      const comp = activeAST.children.find(c => c.id === id);
+      if (!comp) return;
+
+      let newProps = {};
+
+      try {
+        if (comp.type === 'Hero') {
+          newProps = {
+            title: document.getElementById('prop-hero-title').value,
+            subtitle: document.getElementById('prop-hero-subtitle').value,
+            ctaText: document.getElementById('prop-hero-ctatext').value,
+            align: document.getElementById('prop-hero-align').value,
+            bgGradient: document.getElementById('prop-hero-bgGradient').value
+          };
+        } else if (comp.type === 'Stats') {
+          const valInputs = document.querySelectorAll('.stat-item-val');
+          const lblInputs = document.querySelectorAll('.stat-item-lbl');
+          const items = [];
+          
+          valInputs.forEach((inp, i) => {
+            items.push({
+              value: inp.value,
+              label: lblInputs[i].value
+            });
+          });
+
+          newProps = {
+            title: document.getElementById('prop-stats-title').value,
+            items: items
+          };
+        } else if (comp.type === 'FeatureGrid') {
+          const titInputs = document.querySelectorAll('.feat-item-title');
+          const descInputs = document.querySelectorAll('.feat-item-desc');
+          const features = [];
+
+          titInputs.forEach((inp, i) => {
+            features.push({
+              title: inp.value,
+              desc: descInputs[i].value
+            });
+          });
+
+          newProps = {
+            title: document.getElementById('prop-feature-title').value,
+            features: features
+          };
+        } else if (comp.type === 'Testimonial') {
+          newProps = {
+            quote: document.getElementById('prop-testimonial-quote').value,
+            author: document.getElementById('prop-testimonial-author').value,
+            role: document.getElementById('prop-testimonial-role').value
+          };
+        } else if (comp.type === 'Pricing') {
+          const nameInputs = document.querySelectorAll('.plan-item-name');
+          const priceInputs = document.querySelectorAll('.plan-item-price');
+          const featInputs = document.querySelectorAll('.plan-item-features');
+          const plans = [];
+
+          nameInputs.forEach((inp, i) => {
+            const rawFeatures = featInputs[i].value.split(',').map(f => f.trim()).filter(f => f.length > 0);
+            plans.push({
+              name: inp.value,
+              price: priceInputs[i].value,
+              features: rawFeatures
+            });
+          });
+
+          newProps = {
+            title: document.getElementById('prop-pricing-title').value,
+            plans: plans
+          };
+        } else if (comp.type === 'Footer') {
+          newProps = {
+            companyName: document.getElementById('prop-footer-name').value,
+            copyrightText: document.getElementById('prop-footer-copy').value
+          };
+        }
+
+        comp.props = newProps;
+        saveStateToHistory(`Configured component ${comp.type}`);
+
+        logPatch({
+          op: "replace",
+          path: `/children/${activeAST.children.indexOf(comp)}/props`,
+          value: newProps,
+          meta: `Properties Builder: Custom modifications saved for id [${id}]`
+        });
+
+        renderWorkspace();
+        closeEditModal();
+        showToast("Component configuration properties committed!");
+      } catch (err) {
+        showToast("Parser Error: Please inspect array syntax parameters.", true);
+      }
+    }
+
+    // Logger for state auditing and RFC 6902 replication 
+    function logPatch(patch) {
+      const timestamp = new Date().toLocaleTimeString();
+      const item = { ...patch, timestamp };
+      patchLogs.unshift(item);
+
+      const container = document.getElementById('patch-logs-container');
+      const block = document.createElement('div');
+      block.className = "bg-white border border-slate-200 rounded-xl p-3 shadow-sm text-[11px] font-mono leading-relaxed";
+      block.innerHTML = `
+        <div class="flex items-center justify-between border-b border-slate-100 pb-1.5 mb-1.5 select-none">
+          <span class="font-bold text-slate-400 uppercase tracking-wider text-[9px]">${item.timestamp}</span>
+          <span class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${
+            item.op === 'add' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
+            item.op === 'remove' ? 'bg-rose-50 text-rose-700 border border-rose-100' :
+            item.op === 'replace' ? 'bg-blue-50 text-blue-700 border border-blue-100' :
+            'bg-slate-100 text-slate-600 border border-slate-200'
+          }">${item.op}</span>
+        </div>
+        <p class="text-[10px] text-slate-500 font-semibold mb-2 select-none">${item.meta || 'Dynamic Layout Mutation'}</p>
+        <div class="bg-slate-900 p-2 rounded text-emerald-400 overflow-x-auto select-text whitespace-pre">path: "${item.path}"<br>${item.value ? `value: ${JSON.stringify(item.value)}` : ''}</div>
+      `;
+      container.insertBefore(block, container.firstChild);
+    }
+
+    // Interactive Notification Toast
+    function showToast(message, isError = false) {
+      const toast = document.getElementById('toast-notification');
+      const text = document.getElementById('toast-message');
+      const icon = document.getElementById('toast-icon');
+
+      text.innerText = message;
+      if (isError) {
+        toast.classList.add('bg-rose-950', 'border-rose-900');
+        toast.classList.remove('bg-slate-900', 'border-slate-800');
+        icon.innerText = "✕";
+        icon.className = "text-rose-400 text-sm";
+      } else {
+        toast.classList.add('bg-slate-900', 'border-slate-800');
+        toast.classList.remove('bg-rose-950', 'border-rose-900');
+        icon.innerText = "✓";
+        icon.className = "text-emerald-400 text-sm";
+      }
+
+      toast.classList.remove('translate-y-24', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-24', 'opacity-0');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 4000);
+    }
+
+    // Keyboard Undo / Redo Shortcuts Setup (Ctrl + Z, Ctrl + Y)
+    window.addEventListener('keydown', function (e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+        e.preventDefault();
+        undo();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
+        e.preventDefault();
+        redo();
+      }
+    });
+
+    // Run when workspace mounts
+    window.onload = function() {
+      renderWorkspace();
+    };
+  </script>
+</body>
+</html>

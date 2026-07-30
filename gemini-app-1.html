@@ -1,0 +1,1525 @@
+<!doctype html>
+<html lang="en" class="h-full bg-slate-50">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SDUI Co-Design Workspace</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind Configuration for custom theme styles -->
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                50: "#f5f7ff",
+                100: "#ebf0ff",
+                500: "#3b82f6",
+                600: "#2563eb",
+                700: "#1d4ed8",
+                900: "#1e3a8a",
+              },
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body
+    class="h-full overflow-hidden flex flex-col text-slate-800 antialiased font-sans"
+  >
+    <!-- TOP HEADER BAR -->
+    <header
+      class="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between shrink-0 shadow-sm z-10"
+    >
+      <div class="flex items-center gap-3">
+        <div
+          class="h-9 w-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-black text-lg shadow-md"
+        >
+          Ω
+        </div>
+        <div>
+          <h1
+            class="font-bold text-lg leading-tight tracking-tight text-slate-900"
+          >
+            SDUI Co-Design Workspace
+          </h1>
+          <p class="text-xs text-slate-500">
+            Collaborative Server-Driven UI Orchestrator & Bidirectional AST Sync
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <div class="flex bg-slate-100 rounded-lg p-1 text-xs">
+          <button
+            id="btn-view-desktop"
+            onclick="setViewport('desktop')"
+            class="px-3 py-1.5 rounded-md font-medium text-slate-700 bg-white shadow-sm transition"
+          >
+            Desktop
+          </button>
+          <button
+            id="btn-view-tablet"
+            onclick="setViewport('tablet')"
+            class="px-3 py-1.5 rounded-md font-medium text-slate-500 hover:text-slate-700 transition"
+          >
+            Tablet
+          </button>
+          <button
+            id="btn-view-mobile"
+            onclick="setViewport('mobile')"
+            class="px-3 py-1.5 rounded-md font-medium text-slate-500 hover:text-slate-700 transition"
+          >
+            Mobile
+          </button>
+        </div>
+        <div class="h-5 w-px bg-slate-200"></div>
+        <div class="flex items-center gap-2">
+          <span
+            class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"
+          ></span>
+          <span class="text-xs font-semibold text-slate-600 tracking-wide"
+            >AGENT: ACTIVE & MONITORING</span
+          >
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN GRID WORKSPACE -->
+    <main class="flex-1 overflow-hidden flex flex-row">
+      <!-- LEFT PANEL: AGENT CONSOLE (CHAT & STATE ENGINE) -->
+      <aside
+        class="w-96 border-r border-slate-200 bg-white flex flex-col shrink-0 overflow-hidden"
+      >
+        <!-- Session Header -->
+        <div
+          class="p-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between"
+        >
+          <span
+            class="text-xs font-bold text-slate-500 uppercase tracking-wider"
+            >Design Agent Dialogue</span
+          >
+          <button
+            onclick="resetAST()"
+            class="text-xs text-slate-500 hover:text-indigo-600 hover:underline font-medium"
+          >
+            Reset AST
+          </button>
+        </div>
+
+        <!-- Dialogue History -->
+        <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4">
+          <!-- Message 1 (Agent Initializing) -->
+          <div class="flex gap-3 items-start">
+            <div
+              class="h-8 w-8 rounded-lg bg-blue-100 border border-blue-200 flex items-center justify-center text-blue-600 text-sm font-semibold shrink-0"
+            >
+              🤖
+            </div>
+            <div
+              class="bg-slate-100 text-slate-700 p-3 rounded-2xl rounded-tl-none text-xs leading-relaxed max-w-[85%]"
+            >
+              Welcome to the Co-Design Workspace. I am your Schema-Driven Layout
+              Agent.
+              <br /><br />
+              I operate strictly on your layout's serializable
+              <strong>JSON Abstract Syntax Tree (AST)</strong>. Ask me to add
+              headers, change statistics, style pricing tables, or rebuild
+              pages. I will perform precise layout changes according to the
+              component catalog.
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat Progress Loader -->
+        <div
+          id="agent-thinking"
+          class="hidden px-4 py-2 border-t border-slate-100 bg-blue-50/50 flex items-center gap-3 transition"
+        >
+          <div class="flex space-x-1.5">
+            <div
+              class="w-2.5 h-2.5 bg-blue-600 rounded-full animate-bounce"
+              style="animation-delay: 0.1s"
+            ></div>
+            <div
+              class="w-2.5 h-2.5 bg-blue-600 rounded-full animate-bounce"
+              style="animation-delay: 0.2s"
+            ></div>
+            <div
+              class="w-2.5 h-2.5 bg-blue-600 rounded-full animate-bounce"
+              style="animation-delay: 0.3s"
+            ></div>
+          </div>
+          <span class="text-xs font-semibold text-blue-700 animate-pulse"
+            >Orchestrator calculation spatial constraints...</span
+          >
+        </div>
+
+        <!-- Agent Input Bar -->
+        <div class="p-4 border-t border-slate-200 bg-slate-50">
+          <form onsubmit="handleAgentQuery(event)" class="relative flex gap-2">
+            <input
+              id="agent-input"
+              type="text"
+              placeholder="e.g., 'add a stats grid below the hero'"
+              autocomplete="off"
+              class="w-full pl-3 pr-12 py-2.5 bg-white border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition placeholder:text-slate-400"
+            />
+            <button
+              type="submit"
+              class="absolute right-1.5 top-1.5 h-8 w-8 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center justify-center transition shadow-sm font-bold text-sm"
+            >
+              →
+            </button>
+          </form>
+          <p class="text-[10px] text-slate-400 mt-2 text-center">
+            Changes comply with token validation standards (Zod/JSON Schema).
+          </p>
+        </div>
+      </aside>
+
+      <!-- CENTER AREA: LIVE VIEWPORT INTERFACE -->
+      <section
+        class="flex-1 bg-slate-100 overflow-y-auto p-6 flex flex-col items-center"
+      >
+        <!-- Workspace Ruler / Canvas Frame -->
+        <div
+          id="canvas-container"
+          class="w-full max-w-5xl transition-all duration-300"
+        >
+          <div
+            class="bg-white border border-slate-200 rounded-2xl shadow-lg overflow-hidden min-h-[700px] flex flex-col"
+          >
+            <!-- Frame Window Controls -->
+            <div
+              class="bg-slate-50 border-b border-slate-100 px-4 py-2.5 flex items-center justify-between shrink-0"
+            >
+              <div class="flex items-center gap-1.5">
+                <span class="w-3 h-3 rounded-full bg-rose-400"></span>
+                <span class="w-3 h-3 rounded-full bg-amber-400"></span>
+                <span class="w-3 h-3 rounded-full bg-emerald-400"></span>
+                <span
+                  class="text-xs text-slate-400 font-medium ml-2 select-none tracking-wide"
+                  >Live Canvas Viewport</span
+                >
+              </div>
+              <div
+                class="text-[10px] bg-indigo-50 text-indigo-700 font-semibold px-2 py-1 rounded"
+              >
+                STATE DIRECT PATHS ENABLED
+              </div>
+            </div>
+
+            <!-- Dynamic Visual Registry Mount Point -->
+            <div
+              id="canvas-viewport"
+              class="flex-1 p-6 space-y-6 overflow-y-auto"
+            >
+              <!-- Dynamic elements render here -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT PANEL: CO-DESIGN CONTROLLER (AST, CATALOG, PATCH LOGS) -->
+      <aside
+        class="w-96 border-l border-slate-200 bg-white flex flex-col shrink-0 overflow-hidden"
+      >
+        <!-- Tabs Nav -->
+        <div
+          class="flex border-b border-slate-200 text-xs bg-slate-50 shrink-0"
+        >
+          <button
+            id="tab-catalog"
+            onclick="switchRightTab('catalog')"
+            class="flex-1 py-3 text-center border-b-2 border-blue-600 font-semibold text-blue-600"
+          >
+            Component Catalog
+          </button>
+          <button
+            id="tab-ast"
+            onclick="switchRightTab('ast')"
+            class="flex-1 py-3 text-center border-b-2 border-transparent font-semibold text-slate-500 hover:text-slate-700 hover:bg-slate-100/50"
+          >
+            Active AST
+          </button>
+          <button
+            id="tab-patches"
+            onclick="switchRightTab('patches')"
+            class="flex-1 py-3 text-center border-b-2 border-transparent font-semibold text-slate-500 hover:text-slate-700 hover:bg-slate-100/50"
+          >
+            RFC 6902 Logs
+          </button>
+        </div>
+
+        <!-- TAB CONTENT: component catalog -->
+        <div id="panel-catalog" class="flex-1 overflow-y-auto p-4 space-y-4">
+          <h3
+            class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2"
+          >
+            Available System Vocabularies
+          </h3>
+          <p class="text-xs text-slate-500">
+            Insert design components directly. Visual edits maintain exact
+            structural schema validity.
+          </p>
+
+          <div class="grid grid-cols-2 gap-2 pt-2">
+            <!-- Hero Catalog Item -->
+            <button
+              onclick="insertComponent('Hero')"
+              class="group p-3 border border-slate-200 rounded-xl hover:border-blue-500 hover:bg-blue-50/50 text-left transition flex flex-col justify-between h-24"
+            >
+              <div>
+                <span class="text-xs font-bold text-slate-800"
+                  >Hero Section</span
+                >
+                <p class="text-[10px] text-slate-400 mt-1 line-clamp-2">
+                  High conversion splash component with custom CTAs.
+                </p>
+              </div>
+              <span
+                class="text-[9px] text-indigo-500 font-mono tracking-wide uppercase group-hover:text-blue-600"
+                >Insert +</span
+              >
+            </button>
+
+            <!-- Stats Catalog Item -->
+            <button
+              onclick="insertComponent('Stats')"
+              class="group p-3 border border-slate-200 rounded-xl hover:border-blue-500 hover:bg-blue-50/50 text-left transition flex flex-col justify-between h-24"
+            >
+              <div>
+                <span class="text-xs font-bold text-slate-800"
+                  >Stats Indicators</span
+                >
+                <p class="text-[10px] text-slate-400 mt-1 line-clamp-2">
+                  Numeric indicator matrices for impact and credibility.
+                </p>
+              </div>
+              <span
+                class="text-[9px] text-indigo-500 font-mono tracking-wide uppercase group-hover:text-blue-600"
+                >Insert +</span
+              >
+            </button>
+
+            <!-- Feature Grid Catalog Item -->
+            <button
+              onclick="insertComponent('FeatureGrid')"
+              class="group p-3 border border-slate-200 rounded-xl hover:border-blue-500 hover:bg-blue-50/50 text-left transition flex flex-col justify-between h-24"
+            >
+              <div>
+                <span class="text-xs font-bold text-slate-800"
+                  >Feature Matrix</span
+                >
+                <p class="text-[10px] text-slate-400 mt-1 line-clamp-2">
+                  3-column feature showcase with grid coordinate math.
+                </p>
+              </div>
+              <span
+                class="text-[9px] text-indigo-500 font-mono tracking-wide uppercase group-hover:text-blue-600"
+                >Insert +</span
+              >
+            </button>
+
+            <!-- Testimonial Catalog Item -->
+            <button
+              onclick="insertComponent('Testimonial')"
+              class="group p-3 border border-slate-200 rounded-xl hover:border-blue-500 hover:bg-blue-50/50 text-left transition flex flex-col justify-between h-24"
+            >
+              <div>
+                <span class="text-xs font-bold text-slate-800"
+                  >Testimonials</span
+                >
+                <p class="text-[10px] text-slate-400 mt-1 line-clamp-2">
+                  Direct quote block with layout validation tokens.
+                </p>
+              </div>
+              <span
+                class="text-[9px] text-indigo-500 font-mono tracking-wide uppercase group-hover:text-blue-600"
+                >Insert +</span
+              >
+            </button>
+
+            <!-- Pricing Catalog Item -->
+            <button
+              onclick="insertComponent('Pricing')"
+              class="group p-3 border border-slate-200 rounded-xl hover:border-blue-500 hover:bg-blue-50/50 text-left transition flex flex-col justify-between h-24"
+            >
+              <div>
+                <span class="text-xs font-bold text-slate-800"
+                  >Pricing Tier Matrix</span
+                >
+                <p class="text-[10px] text-slate-400 mt-1 line-clamp-2">
+                  Subscription rate structures with styling rules.
+                </p>
+              </div>
+              <span
+                class="text-[9px] text-indigo-500 font-mono tracking-wide uppercase group-hover:text-blue-600"
+                >Insert +</span
+              >
+            </button>
+
+            <!-- Footer Catalog Item -->
+            <button
+              onclick="insertComponent('Footer')"
+              class="group p-3 border border-slate-200 rounded-xl hover:border-blue-500 hover:bg-blue-50/50 text-left transition flex flex-col justify-between h-24"
+            >
+              <div>
+                <span class="text-xs font-bold text-slate-800"
+                  >Footer Block</span
+                >
+                <p class="text-[10px] text-slate-400 mt-1 line-clamp-2">
+                  Standard copyright bounds and navigation listings.
+                </p>
+              </div>
+              <span
+                class="text-[9px] text-indigo-500 font-mono tracking-wide uppercase group-hover:text-blue-600"
+                >Insert +</span
+              >
+            </button>
+          </div>
+
+          <!-- Token Guard System Panel -->
+          <div
+            class="mt-6 border border-slate-200 rounded-xl p-4 bg-slate-50/50"
+          >
+            <div class="flex items-center gap-2 mb-2">
+              <span
+                class="text-xs font-bold text-indigo-700 uppercase tracking-wider"
+                >Style Tokens Guard (Bounded)</span
+              >
+            </div>
+            <p class="text-[11px] text-slate-500 leading-normal mb-3">
+              The design engine forces complete alignment with brand parameters.
+              Unconstrained hex colors or pixel spacings are rejected by the
+              validation parser.
+            </p>
+            <div class="space-y-2">
+              <div>
+                <span class="text-[10px] font-bold text-slate-400 uppercase"
+                  >Colors</span
+                >
+                <div class="flex gap-1.5 mt-1">
+                  <span
+                    class="h-5 px-2 bg-indigo-600 text-white rounded text-[10px] flex items-center"
+                    >Primary</span
+                  >
+                  <span
+                    class="h-5 px-2 bg-slate-800 text-white rounded text-[10px] flex items-center"
+                    >Secondary</span
+                  >
+                  <span
+                    class="h-5 px-2 bg-slate-100 text-slate-600 rounded text-[10px] flex items-center border"
+                    >Muted</span
+                  >
+                </div>
+              </div>
+              <div>
+                <span class="text-[10px] font-bold text-slate-400 uppercase"
+                  >Padding Bounds</span
+                >
+                <div class="flex gap-1.5 mt-1">
+                  <span
+                    class="font-mono text-[10px] bg-slate-100 px-1.5 py-0.5 rounded border text-slate-600"
+                    >p-4</span
+                  >
+                  <span
+                    class="font-mono text-[10px] bg-slate-100 px-1.5 py-0.5 rounded border text-slate-600"
+                    >p-8</span
+                  >
+                  <span
+                    class="font-mono text-[10px] bg-slate-100 px-1.5 py-0.5 rounded border text-slate-600"
+                    >p-12</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB CONTENT: raw active ast -->
+        <div id="panel-ast" class="hidden flex-1 flex flex-col overflow-hidden">
+          <div class="p-4 border-b border-slate-100 shrink-0">
+            <h3
+              class="text-xs font-bold text-slate-500 uppercase tracking-wider"
+            >
+              JSON Abstract Syntax Tree
+            </h3>
+            <p class="text-xs text-slate-400">
+              Immutable AST state rendering in runtime.
+            </p>
+          </div>
+          <div class="flex-1 overflow-auto bg-slate-900 p-4">
+            <pre
+              id="json-ast-preview"
+              class="text-[11px] text-emerald-400 font-mono leading-relaxed select-text whitespace-pre-wrap h-full outline-none"
+              contenteditable="true"
+              onblur="updateASTFromRawEditor(this)"
+            ></pre>
+          </div>
+        </div>
+
+        <!-- TAB CONTENT: RFC 6902 Patch logs -->
+        <div
+          id="panel-patches"
+          class="hidden flex-1 flex flex-col overflow-hidden"
+        >
+          <div class="p-4 border-b border-slate-100 shrink-0">
+            <h3
+              class="text-xs font-bold text-slate-500 uppercase tracking-wider"
+            >
+              RFC 6902 Operations Log
+            </h3>
+            <p class="text-xs text-slate-400">
+              Atomic state patches generated dynamically during collaboration.
+            </p>
+          </div>
+          <div
+            class="flex-1 overflow-y-auto bg-slate-50 p-4 space-y-2"
+            id="patch-logs-container"
+          >
+            <!-- Live patch log blocks map here -->
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <!-- DYNAMIC INTERACTION: CONFIGURATION MODAL (PROPERTIES INSPECTOR) -->
+    <div
+      id="property-modal"
+      class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+    >
+      <div
+        class="bg-white rounded-2xl w-full max-w-lg shadow-2xl border border-slate-200 overflow-hidden flex flex-col animate-in fade-in duration-200"
+      >
+        <div
+          class="bg-slate-50 px-6 py-4 border-b border-slate-100 flex items-center justify-between"
+        >
+          <div class="flex items-center gap-2">
+            <span
+              class="text-xs font-bold text-indigo-700 bg-indigo-50 px-2 py-1 rounded uppercase tracking-wider"
+              >Configure Component</span
+            >
+            <span
+              id="modal-component-id"
+              class="text-xs text-slate-400 font-mono"
+            ></span>
+          </div>
+          <button
+            onclick="closeEditModal()"
+            class="text-slate-400 hover:text-slate-600 transition font-bold text-lg"
+          >
+            ×
+          </button>
+        </div>
+        <div
+          class="p-6 overflow-y-auto max-h-[450px]"
+          id="modal-fields-container"
+        >
+          <!-- Dynamic fields populated from registry property schema -->
+        </div>
+        <div
+          class="bg-slate-50 px-6 py-3 border-t border-slate-100 flex justify-end gap-2 shrink-0"
+        >
+          <button
+            onclick="closeEditModal()"
+            class="px-4 py-2 bg-slate-200 hover:bg-slate-300 rounded-lg text-xs font-semibold text-slate-700 transition"
+          >
+            Cancel
+          </button>
+          <button
+            onclick="saveComponentProperties()"
+            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-xs font-semibold text-white transition shadow-sm"
+          >
+            Save & Update AST
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ERROR NOTIFICATION POPUP -->
+    <div
+      id="toast-notification"
+      class="fixed bottom-6 right-6 transform translate-y-24 opacity-0 bg-slate-900 text-white border border-slate-800 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 transition-all duration-300 z-50"
+    >
+      <span class="text-emerald-400 text-sm">✓</span>
+      <span id="toast-message" class="text-xs font-semibold leading-none"
+        >Toast content goes here</span
+      >
+    </div>
+
+    <!-- APPLICATION CONTROLLER LOGIC -->
+    <script>
+      // System variables provided by the container
+      const apiKey = ""; // Will be replaced by preview runner at runtime if authenticated
+      const appId =
+        typeof __app_id !== "undefined" ? __app_id : "default-sdui-workspace";
+
+      // Model targeting parameters for spatial planning calculations
+      const MODEL_ID = "gemini-2.5-flash-preview-09-2025";
+
+      // Standard baseline Page AST matching initial specification
+      const INITIAL_PAGE_AST = {
+        type: "Page",
+        children: [
+          {
+            id: "hero_1",
+            type: "Hero",
+            props: {
+              title: "Zero-Fragility Web Experiences",
+              subtitle:
+                "Enforcing deterministic rendering rules via unified Schema-Driven visual layers.",
+              ctaText: "Explore Specification",
+              ctaTheme: "primary",
+              align: "center",
+              bgGradient: "from-blue-600 to-indigo-700",
+            },
+          },
+          {
+            id: "stats_1",
+            type: "Stats",
+            props: {
+              title: "Performance Benchmarks",
+              items: [
+                { label: "Rendering Velocity", value: "99.8%" },
+                { label: "Design Drift Rate", value: "0.0%" },
+                { label: "Client-Side Executables", value: "Zero" },
+              ],
+            },
+          },
+        ],
+      };
+
+      // Deep mutable copy for actively curated layout
+      let activeAST = JSON.parse(JSON.stringify(INITIAL_PAGE_AST));
+      let patchLogs = [];
+      let activeEditComponentId = null;
+
+      // Viewport scaling controller
+      function setViewport(size) {
+        const container = document.getElementById("canvas-container");
+        const buttons = {
+          desktop: document.getElementById("btn-view-desktop"),
+          tablet: document.getElementById("btn-view-tablet"),
+          mobile: document.getElementById("btn-view-mobile"),
+        };
+
+        // Reset states
+        container.classList.remove("max-w-5xl", "max-w-2xl", "max-w-sm");
+        Object.keys(buttons).forEach((k) => {
+          buttons[k].classList.remove(
+            "bg-white",
+            "shadow-sm",
+            "text-slate-700",
+          );
+          buttons[k].classList.add("text-slate-500", "hover:text-slate-700");
+        });
+
+        // Set new size parameters
+        if (size === "desktop") {
+          container.classList.add("max-w-5xl");
+          buttons.desktop.classList.add(
+            "bg-white",
+            "shadow-sm",
+            "text-slate-700",
+          );
+        } else if (size === "tablet") {
+          container.classList.add("max-w-2xl");
+          buttons.tablet.classList.add(
+            "bg-white",
+            "shadow-sm",
+            "text-slate-700",
+          );
+        } else if (size === "mobile") {
+          container.classList.add("max-w-sm");
+          buttons.mobile.classList.add(
+            "bg-white",
+            "shadow-sm",
+            "text-slate-700",
+          );
+        }
+      }
+
+      // Right Sidebar Tab Switcher
+      function switchRightTab(tabId) {
+        const tabs = ["catalog", "ast", "patches"];
+        tabs.forEach((t) => {
+          const btn = document.getElementById(`tab-${t}`);
+          const panel = document.getElementById(`panel-${t}`);
+          if (t === tabId) {
+            btn.classList.add("border-blue-600", "text-blue-600");
+            btn.classList.remove("border-transparent", "text-slate-500");
+            panel.classList.remove("hidden");
+          } else {
+            btn.classList.remove("border-blue-600", "text-blue-600");
+            btn.classList.add("border-transparent", "text-slate-500");
+            panel.classList.add("hidden");
+          }
+        });
+      }
+
+      // AST Raw Editor Update
+      function updateASTFromRawEditor(preElement) {
+        try {
+          const text = preElement.innerText;
+          const parsed = JSON.parse(text);
+          if (
+            parsed &&
+            parsed.type === "Page" &&
+            Array.isArray(parsed.children)
+          ) {
+            // Log manual code edit patch block
+            logPatch({
+              op: "replace",
+              path: "/",
+              value: parsed,
+              meta: "Manual AST Editing Workspace override",
+            });
+            activeAST = parsed;
+            renderWorkspace();
+            showToast("AST updated successfully!");
+          } else {
+            throw new Error("Invalid schema root identifier.");
+          }
+        } catch (err) {
+          showToast("Error parsing JSON: " + err.message, true);
+          preElement.innerText = JSON.stringify(activeAST, null, 2);
+        }
+      }
+
+      // Dynamic UI Builder & Component Registry Mapper
+      function renderWorkspace() {
+        const viewport = document.getElementById("canvas-viewport");
+        viewport.innerHTML = "";
+
+        if (!activeAST.children || activeAST.children.length === 0) {
+          viewport.innerHTML = `
+          <div class="flex flex-col items-center justify-center py-20 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
+            <span class="text-3xl mb-2">📥</span>
+            <p class="text-xs font-semibold text-slate-500">Workspace is empty</p>
+            <p class="text-[11px] text-slate-400 mt-1">Insert a component from the Catalog or command the AI Agent.</p>
+          </div>
+        `;
+          document.getElementById("json-ast-preview").innerText =
+            JSON.stringify(activeAST, null, 2);
+          return;
+        }
+
+        activeAST.children.forEach((comp, idx) => {
+          let compHTML = "";
+          const props = comp.props || {};
+
+          switch (comp.type) {
+            case "Hero":
+              const alignClass =
+                props.align === "center" ? "text-center" : "text-left";
+              const gradient =
+                props.bgGradient || "from-indigo-600 to-violet-700";
+              compHTML = `
+              <div class="bg-gradient-to-tr ${gradient} text-white py-14 px-8 rounded-2xl shadow-md flex items-center relative overflow-hidden">
+                <div class="absolute inset-0 bg-grid-white/[0.05] [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0))]"></div>
+                <div class="relative w-full ${alignClass}">
+                  <span class="text-[10px] uppercase tracking-widest font-extrabold bg-white/20 px-2.5 py-1 rounded-full text-white/90">Featured Insight</span>
+                  <h1 class="text-2xl md:text-4xl font-extrabold tracking-tight mt-3 max-w-2xl ${props.align === "center" ? "mx-auto" : ""}">${props.title || "Untitled Hero"}</h1>
+                  <p class="text-sm text-indigo-100 max-w-xl ${props.align === "center" ? "mx-auto" : ""} mt-3 leading-relaxed">${props.subtitle || ""}</p>
+                  <button class="mt-6 px-5 py-2.5 bg-white text-indigo-600 font-bold rounded-lg shadow-sm hover:bg-slate-50 transition text-xs">${props.ctaText || "Learn More"}</button>
+                </div>
+              </div>
+            `;
+              break;
+
+            case "Stats":
+              const items = props.items || [];
+              let itemsHTML = items
+                .map(
+                  (item) => `
+              <div class="text-center p-4 bg-white border border-slate-100 rounded-xl shadow-sm">
+                <p class="text-2xl font-black tracking-tight text-blue-600">${item.value || "0"}</p>
+                <p class="text-[11px] text-slate-500 font-medium mt-1 uppercase tracking-wider">${item.label || "Indicator"}</p>
+              </div>
+            `,
+                )
+                .join("");
+
+              compHTML = `
+              <div class="space-y-3">
+                ${props.title ? `<h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest text-center">${props.title}</h3>` : ""}
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  ${itemsHTML || '<p class="text-xs text-slate-400 col-span-3 text-center">No stats indicators configured.</p>'}
+                </div>
+              </div>
+            `;
+              break;
+
+            case "FeatureGrid":
+              const features = props.features || [];
+              let featuresHTML = features
+                .map(
+                  (feat) => `
+              <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                <div class="h-8 w-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 text-sm font-semibold mb-3">✦</div>
+                <h4 class="text-xs font-bold text-slate-800">${feat.title || "Feature Title"}</h4>
+                <p class="text-[11px] text-slate-500 mt-2 leading-relaxed">${feat.desc || "Details about this technology coordinate point."}</p>
+              </div>
+            `,
+                )
+                .join("");
+
+              compHTML = `
+              <div class="space-y-4">
+                <div class="text-center">
+                  <h3 class="text-md font-extrabold tracking-tight text-slate-800">${props.title || "Key Capabilities"}</h3>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  ${featuresHTML || '<p class="text-xs text-slate-400 col-span-3 text-center">No structural features cataloged.</p>'}
+                </div>
+              </div>
+            `;
+              break;
+
+            case "Testimonial":
+              compHTML = `
+              <div class="bg-indigo-50/50 border border-indigo-100 p-6 rounded-2xl relative">
+                <span class="absolute top-4 left-4 text-4xl text-indigo-200 select-none font-serif leading-none">“</span>
+                <div class="relative pl-6">
+                  <p class="text-xs italic text-slate-700 leading-relaxed">${props.quote || "No feedback defined yet."}</p>
+                  <div class="mt-4 flex items-center gap-2">
+                    <div class="h-6 w-6 rounded-full bg-slate-300 flex items-center justify-center text-[10px] font-bold text-slate-600 uppercase">${(props.author || "U").charAt(0)}</div>
+                    <div>
+                      <h4 class="text-[11px] font-bold text-slate-800 leading-none">${props.author || "Anonymous"}</h4>
+                      <p class="text-[9px] text-slate-400 mt-0.5">${props.role || "Designated Stakeholder"}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+              break;
+
+            case "Pricing":
+              const plans = props.plans || [
+                {
+                  name: "Standard",
+                  price: "$49/mo",
+                  features: [
+                    "1 Model integration",
+                    "Deterministic pipeline",
+                    "Static catalog",
+                  ],
+                },
+                {
+                  name: "Scale",
+                  price: "$149/mo",
+                  features: [
+                    "Unlimited models",
+                    "Self-healing schemas",
+                    "Advanced layout tokens",
+                  ],
+                },
+              ];
+              let plansHTML = plans
+                .map(
+                  (p) => `
+              <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-sm relative overflow-hidden">
+                <div>
+                  <h4 class="text-xs font-extrabold text-slate-800 uppercase tracking-wider">${p.name}</h4>
+                  <p class="text-xl font-black text-slate-900 mt-2">${p.price}</p>
+                  <ul class="space-y-1.5 mt-4 text-[10px] text-slate-500">
+                    ${(p.features || []).map((f) => `<li>✓ ${f}</li>`).join("")}
+                  </ul>
+                </div>
+                <button class="mt-6 w-full py-2 bg-slate-800 hover:bg-slate-900 text-white rounded font-bold text-[10px] transition">Acquire Tier</button>
+              </div>
+            `,
+                )
+                .join("");
+
+              compHTML = `
+              <div class="space-y-4">
+                <div class="text-center">
+                  <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest">${props.title || "Enterprise Rate Models"}</h3>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  ${plansHTML}
+                </div>
+              </div>
+            `;
+              break;
+
+            case "Footer":
+              compHTML = `
+              <footer class="bg-slate-900 text-slate-400 py-8 px-6 rounded-2xl text-center">
+                <p class="text-[11px] font-semibold text-slate-300">${props.companyName || "Corporate Blueprint, Inc."}</p>
+                <p class="text-[9px] text-slate-500 mt-2">${props.copyrightText || "© 2026. Bounded Layout Specifications. All rights reserved."}</p>
+              </footer>
+            `;
+              break;
+
+            default:
+              compHTML = `<div class="p-4 bg-slate-100 text-xs text-slate-500 italic rounded">Unrecognized component definition: ${comp.type}</div>`;
+          }
+
+          // Structural Wrappers containing editing nodes for Bidirectional human configuration
+          const wrapper = document.createElement("div");
+          wrapper.className =
+            "group relative border border-transparent hover:border-blue-500 rounded-2xl transition duration-200 p-1";
+          wrapper.innerHTML = `
+          ${compHTML}
+          <!-- Curated Drag and Drop Control Box -->
+          <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition bg-white/95 backdrop-blur shadow-md border rounded-lg px-2 py-1 flex items-center gap-1 z-10 text-[10px] text-slate-600">
+            <span class="font-bold text-indigo-600 px-1 uppercase tracking-wider text-[9px]">${comp.type}</span>
+            <span class="h-4 w-px bg-slate-200 mx-1"></span>
+            <button onclick="moveComponent('${comp.id}', -1)" class="p-1 hover:bg-slate-100 rounded text-slate-600" title="Move Up">↑</button>
+            <button onclick="moveComponent('${comp.id}', 1)" class="p-1 hover:bg-slate-100 rounded text-slate-600" title="Move Down">↓</button>
+            <button onclick="openEditModal('${comp.id}')" class="p-1 hover:bg-slate-100 rounded text-blue-600 font-semibold" title="Edit Properties">⚙️ Edit</button>
+            <button onclick="deleteComponent('${comp.id}')" class="p-1 hover:bg-slate-100 rounded text-red-500" title="Delete">🗑️</button>
+          </div>
+        `;
+          viewport.appendChild(wrapper);
+        });
+
+        // Synchronize AST display editor
+        document.getElementById("json-ast-preview").innerText = JSON.stringify(
+          activeAST,
+          null,
+          2,
+        );
+      }
+
+      // Dynamic insertion parameter factory
+      function insertComponent(type) {
+        const id = `${type.toLowerCase()}_${Date.now().toString().slice(-4)}`;
+        let defaultProps = {};
+
+        switch (type) {
+          case "Hero":
+            defaultProps = {
+              title: "Dynamic Landing Statement",
+              subtitle:
+                "Crafted deterministically through Server-Driven visual schemas.",
+              ctaText: "Discover",
+              ctaTheme: "primary",
+              align: "center",
+              bgGradient: "from-blue-600 to-indigo-700",
+            };
+            break;
+          case "Stats":
+            defaultProps = {
+              title: "Impact Performance",
+              items: [
+                { label: "Operational uptime", value: "99.9%" },
+                { label: "Design compliance", value: "100%" },
+              ],
+            };
+            break;
+          case "FeatureGrid":
+            defaultProps = {
+              title: "Technological Capabilities",
+              features: [
+                {
+                  title: "Dynamic Redux",
+                  desc: "Decouples presentation models from client compilations.",
+                },
+                {
+                  title: "Self-Healing State",
+                  desc: "Zod layers programmatically validate components instantly.",
+                },
+              ],
+            };
+            break;
+          case "Testimonial":
+            defaultProps = {
+              quote:
+                "This pipeline fundamentally transformed our design system. We no longer write broken raw HTML components.",
+              author: "Director of UX Engineering",
+              role: "Enterprise Systems Architecture",
+            };
+            break;
+          case "Pricing":
+            defaultProps = {
+              title: "Service Packages",
+              plans: [
+                {
+                  name: "Pro",
+                  price: "$99/mo",
+                  features: [
+                    "Unified catalog mapping",
+                    "Dynamic state pointer sync",
+                  ],
+                },
+              ],
+            };
+            break;
+          case "Footer":
+            defaultProps = {
+              companyName: "Dynamic Design Inc.",
+              copyrightText: "© 2026. All rights and systems verified.",
+            };
+            break;
+        }
+
+        const newComponent = { id, type, props: defaultProps };
+        activeAST.children.push(newComponent);
+
+        // Log RFC 6902 Patch action
+        logPatch({
+          op: "add",
+          path: `/children/${activeAST.children.length - 1}`,
+          value: newComponent,
+          meta: `Visual curation inserted component ${type}`,
+        });
+
+        renderWorkspace();
+        showToast(`Inserted ${type} Component!`);
+      }
+
+      // AST Mutator: Deletes node securely
+      function deleteComponent(id) {
+        const idx = activeAST.children.findIndex((c) => c.id === id);
+        if (idx !== -1) {
+          const deleted = activeAST.children[idx];
+          activeAST.children.splice(idx, 1);
+
+          // Log RFC 6902 Patch action
+          logPatch({
+            op: "remove",
+            path: `/children/${idx}`,
+            meta: `Removed component [${deleted.type}] id: ${id}`,
+          });
+
+          renderWorkspace();
+          showToast(`Removed Component: ${id}`);
+        }
+      }
+
+      // AST Mutator: Reorders node
+      function moveComponent(id, direction) {
+        const idx = activeAST.children.findIndex((c) => c.id === id);
+        if (idx === -1) return;
+
+        const targetIdx = idx + direction;
+        if (targetIdx < 0 || targetIdx >= activeAST.children.length) return;
+
+        // Swap positions
+        const temp = activeAST.children[idx];
+        activeAST.children[idx] = activeAST.children[targetIdx];
+        activeAST.children[targetIdx] = temp;
+
+        // Log RFC 6902 Patch actions
+        logPatch({
+          op: "move",
+          from: `/children/${idx}`,
+          path: `/children/${targetIdx}`,
+          meta: `Moved component ${id} ${direction > 0 ? "Down" : "Up"}`,
+        });
+
+        renderWorkspace();
+      }
+
+      // Dynamic Configuration Modal Engine
+      function openEditModal(id) {
+        const comp = activeAST.children.find((c) => c.id === id);
+        if (!comp) return;
+
+        activeEditComponentId = id;
+        document.getElementById("modal-component-id").innerText =
+          `[${comp.type}] id: ${id}`;
+        const container = document.getElementById("modal-fields-container");
+        container.innerHTML = "";
+
+        // Render custom configuration inputs relative to Component specification
+        const props = comp.props || {};
+
+        if (comp.type === "Hero") {
+          container.innerHTML = `
+          <div class="space-y-4 text-xs">
+            <div>
+              <label class="block font-bold text-slate-700 uppercase tracking-wide mb-1">Headline Text</label>
+              <input type="text" id="prop-hero-title" value="${props.title || ""}" class="w-full p-2 bg-slate-50 border rounded-lg focus:ring-1 focus:ring-blue-500 outline-none">
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 uppercase tracking-wide mb-1">Sub-Headline Statement</label>
+              <textarea id="prop-hero-subtitle" class="w-full p-2 bg-slate-50 border rounded-lg h-20 focus:ring-1 focus:ring-blue-500 outline-none">${props.subtitle || ""}</textarea>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block font-bold text-slate-700 uppercase tracking-wide mb-1">CTA Label</label>
+                <input type="text" id="prop-hero-ctatext" value="${props.ctaText || ""}" class="w-full p-2 bg-slate-50 border rounded-lg focus:ring-1 focus:ring-blue-500 outline-none">
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 uppercase tracking-wide mb-1">Text Alignment</label>
+                <select id="prop-hero-align" class="w-full p-2 bg-slate-50 border rounded-lg focus:ring-1 focus:ring-blue-500 outline-none">
+                  <option value="center" ${props.align === "center" ? "selected" : ""}>Center</option>
+                  <option value="left" ${props.align === "left" ? "selected" : ""}>Left</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 uppercase tracking-wide mb-1">Color Tokens Theme</label>
+              <select id="prop-hero-bgGradient" class="w-full p-2 bg-slate-50 border rounded-lg focus:ring-1 focus:ring-blue-500 outline-none">
+                <option value="from-blue-600 to-indigo-700" ${props.bgGradient === "from-blue-600 to-indigo-700" ? "selected" : ""}>Standard Oceanic Gradient</option>
+                <option value="from-slate-800 to-slate-900" ${props.bgGradient === "from-slate-800 to-slate-900" ? "selected" : ""}>Neutral Deep Charcoal</option>
+                <option value="from-indigo-600 to-violet-700" ${props.bgGradient === "from-indigo-600 to-violet-700" ? "selected" : ""}>Premium Purple Velvet</option>
+              </select>
+            </div>
+          </div>
+        `;
+        } else if (comp.type === "Stats") {
+          container.innerHTML = `
+          <div class="space-y-4 text-xs">
+            <div>
+              <label class="block font-bold text-slate-700 uppercase tracking-wide mb-1">Metrics Title Header</label>
+              <input type="text" id="prop-stats-title" value="${props.title || ""}" class="w-full p-2 bg-slate-50 border rounded-lg focus:ring-1 focus:ring-blue-500 outline-none">
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 uppercase tracking-wide mb-1">Statistical Matrix Data (JSON)</label>
+              <textarea id="prop-stats-items" class="w-full p-2 bg-slate-50 border rounded-lg h-24 font-mono focus:ring-1 focus:ring-blue-500 outline-none">${JSON.stringify(props.items || [], null, 2)}</textarea>
+              <p class="text-[10px] text-slate-400 mt-1">Accepts array syntax containing elements: { "label": "Text", "value": "Number" }</p>
+            </div>
+          </div>
+        `;
+        } else if (comp.type === "FeatureGrid") {
+          container.innerHTML = `
+          <div class="space-y-4 text-xs">
+            <div>
+              <label class="block font-bold text-slate-700 uppercase tracking-wide mb-1">Showcase Header</label>
+              <input type="text" id="prop-feature-title" value="${props.title || ""}" class="w-full p-2 bg-slate-50 border rounded-lg focus:ring-1 focus:ring-blue-500 outline-none">
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 uppercase tracking-wide mb-1">Features Array Matrix (JSON)</label>
+              <textarea id="prop-feature-items" class="w-full p-2 bg-slate-50 border rounded-lg h-32 font-mono focus:ring-1 focus:ring-blue-500 outline-none">${JSON.stringify(props.features || [], null, 2)}</textarea>
+              <p class="text-[10px] text-slate-400 mt-1">Accepts array syntax containing elements: { "title": "Headline", "desc": "Context text" }</p>
+            </div>
+          </div>
+        `;
+        } else if (comp.type === "Testimonial") {
+          container.innerHTML = `
+          <div class="space-y-4 text-xs">
+            <div>
+              <label class="block font-bold text-slate-700 uppercase tracking-wide mb-1">Stakeholder Feedback Quote</label>
+              <textarea id="prop-testimonial-quote" class="w-full p-2 bg-slate-50 border rounded-lg h-24 focus:ring-1 focus:ring-blue-500 outline-none">${props.quote || ""}</textarea>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block font-bold text-slate-700 uppercase tracking-wide mb-1">Author Name</label>
+                <input type="text" id="prop-testimonial-author" value="${props.author || ""}" class="w-full p-2 bg-slate-50 border rounded-lg focus:ring-1 focus:ring-blue-500 outline-none">
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 uppercase tracking-wide mb-1">Role / Affiliation</label>
+                <input type="text" id="prop-testimonial-role" value="${props.role || ""}" class="w-full p-2 bg-slate-50 border rounded-lg focus:ring-1 focus:ring-blue-500 outline-none">
+              </div>
+            </div>
+          </div>
+        `;
+        } else if (comp.type === "Pricing") {
+          container.innerHTML = `
+          <div class="space-y-4 text-xs">
+            <div>
+              <label class="block font-bold text-slate-700 uppercase tracking-wide mb-1">Pricing Grid Header</label>
+              <input type="text" id="prop-pricing-title" value="${props.title || ""}" class="w-full p-2 bg-slate-50 border rounded-lg focus:ring-1 focus:ring-blue-500 outline-none">
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 uppercase tracking-wide mb-1">Pricing Tier Schemes (JSON)</label>
+              <textarea id="prop-pricing-plans" class="w-full p-2 bg-slate-50 border rounded-lg h-32 font-mono focus:ring-1 focus:ring-blue-500 outline-none">${JSON.stringify(props.plans || [], null, 2)}</textarea>
+              <p class="text-[10px] text-slate-400 mt-1">Accepts array: { "name": "Standard", "price": "$49/mo", "features": ["feature 1", "feature 2"] }</p>
+            </div>
+          </div>
+        `;
+        } else if (comp.type === "Footer") {
+          container.innerHTML = `
+          <div class="space-y-4 text-xs">
+            <div>
+              <label class="block font-bold text-slate-700 uppercase tracking-wide mb-1">Enterprise Corporation Title</label>
+              <input type="text" id="prop-footer-name" value="${props.companyName || ""}" class="w-full p-2 bg-slate-50 border rounded-lg focus:ring-1 focus:ring-blue-500 outline-none">
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 uppercase tracking-wide mb-1">Copyright Disclaimer</label>
+              <input type="text" id="prop-footer-copy" value="${props.copyrightText || ""}" class="w-full p-2 bg-slate-50 border rounded-lg focus:ring-1 focus:ring-blue-500 outline-none">
+            </div>
+          </div>
+        `;
+        }
+
+        document.getElementById("property-modal").classList.remove("hidden");
+      }
+
+      function closeEditModal() {
+        document.getElementById("property-modal").classList.add("hidden");
+        activeEditComponentId = null;
+      }
+
+      // Save and record manual edits back as patches
+      function saveComponentProperties() {
+        const id = activeEditComponentId;
+        const comp = activeAST.children.find((c) => c.id === id);
+        if (!comp) return;
+
+        const oldProps = JSON.parse(JSON.stringify(comp.props));
+        let newProps = {};
+
+        try {
+          if (comp.type === "Hero") {
+            newProps = {
+              title: document.getElementById("prop-hero-title").value,
+              subtitle: document.getElementById("prop-hero-subtitle").value,
+              ctaText: document.getElementById("prop-hero-ctatext").value,
+              align: document.getElementById("prop-hero-align").value,
+              bgGradient: document.getElementById("prop-hero-bgGradient").value,
+              ctaTheme: comp.props.ctaTheme,
+            };
+          } else if (comp.type === "Stats") {
+            newProps = {
+              title: document.getElementById("prop-stats-title").value,
+              items: JSON.parse(
+                document.getElementById("prop-stats-items").value,
+              ),
+            };
+          } else if (comp.type === "FeatureGrid") {
+            newProps = {
+              title: document.getElementById("prop-feature-title").value,
+              features: JSON.parse(
+                document.getElementById("prop-feature-items").value,
+              ),
+            };
+          } else if (comp.type === "Testimonial") {
+            newProps = {
+              quote: document.getElementById("prop-testimonial-quote").value,
+              author: document.getElementById("prop-testimonial-author").value,
+              role: document.getElementById("prop-testimonial-role").value,
+            };
+          } else if (comp.type === "Pricing") {
+            newProps = {
+              title: document.getElementById("prop-pricing-title").value,
+              plans: JSON.parse(
+                document.getElementById("prop-pricing-plans").value,
+              ),
+            };
+          } else if (comp.type === "Footer") {
+            newProps = {
+              companyName: document.getElementById("prop-footer-name").value,
+              copyrightText: document.getElementById("prop-footer-copy").value,
+            };
+          }
+
+          // Apply visual curation
+          comp.props = newProps;
+
+          // Log RFC 6902 replace operations
+          logPatch({
+            op: "replace",
+            path: `/children/${activeAST.children.indexOf(comp)}/props`,
+            value: newProps,
+            meta: `Visual properties updated for component [${comp.type}] id: ${id}`,
+          });
+
+          renderWorkspace();
+          closeEditModal();
+          showToast("Component configurations integrated!");
+        } catch (err) {
+          showToast("Validation Error: Please verify JSON array syntax.", true);
+        }
+      }
+
+      // Logger for state audits and RFC 6902 simulation
+      function logPatch(patch) {
+        const timestamp = new Date().toLocaleTimeString();
+        const item = { ...patch, timestamp };
+        patchLogs.unshift(item); // Prepend for timeline aesthetics
+
+        const container = document.getElementById("patch-logs-container");
+        const block = document.createElement("div");
+        block.className =
+          "bg-white border border-slate-200 rounded-xl p-3 shadow-sm text-[11px] font-mono leading-relaxed";
+        block.innerHTML = `
+        <div class="flex items-center justify-between border-b border-slate-100 pb-1.5 mb-1.5">
+          <span class="font-bold text-slate-400 uppercase tracking-wider text-[9px]">${item.timestamp}</span>
+          <span class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${
+            item.op === "add"
+              ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
+              : item.op === "remove"
+                ? "bg-rose-50 text-rose-700 border border-rose-100"
+                : "bg-blue-50 text-blue-700 border border-blue-100"
+          }">${item.op}</span>
+        </div>
+        <p class="text-[10px] text-slate-500 font-semibold mb-2">${item.meta || "Dynamic Layout Mutation"}</p>
+        <div class="bg-slate-900 p-2 rounded text-emerald-400 overflow-x-auto select-text whitespace-pre">path: "${item.path}"<br>${item.value ? `value: ${JSON.stringify(item.value)}` : ""}</div>
+      `;
+        container.insertBefore(block, container.firstChild);
+      }
+
+      // Interactive Notifications Guard
+      function showToast(message, isError = false) {
+        const toast = document.getElementById("toast-notification");
+        const text = document.getElementById("toast-message");
+
+        text.innerText = message;
+        if (isError) {
+          toast.classList.add("bg-rose-950", "border-rose-900");
+          toast.classList.remove("bg-slate-900", "border-slate-800");
+        } else {
+          toast.classList.add("bg-slate-900", "border-slate-800");
+          toast.classList.remove("bg-rose-950", "border-rose-900");
+        }
+
+        toast.classList.remove("translate-y-24", "opacity-0");
+        toast.classList.add("translate-y-0", "opacity-100");
+
+        setTimeout(() => {
+          toast.classList.add("translate-y-24", "opacity-0");
+          toast.classList.remove("translate-y-0", "opacity-100");
+        }, 4000);
+      }
+
+      // Reset Workspace state to initial specs
+      function resetAST() {
+        activeAST = JSON.parse(JSON.stringify(INITIAL_PAGE_AST));
+        patchLogs = [];
+        document.getElementById("patch-logs-container").innerHTML = "";
+        renderWorkspace();
+        showToast("Workspace AST reset to base values.");
+      }
+
+      // Dynamic dialogue parser for AI Agent interactions
+      function appendChatMessage(sender, text, isError = false) {
+        const container = document.getElementById("chat-messages");
+        const block = document.createElement("div");
+        block.className =
+          "flex gap-3 items-start animate-in fade-in duration-200";
+
+        if (sender === "user") {
+          block.innerHTML = `
+          <div class="flex-1"></div>
+          <div class="bg-blue-600 text-white p-3 rounded-2xl rounded-tr-none text-xs leading-relaxed max-w-[85%] font-medium">
+            ${text}
+          </div>
+          <div class="h-8 w-8 rounded-lg bg-slate-200 flex items-center justify-center text-slate-600 text-sm font-semibold shrink-0">
+            👤
+          </div>
+        `;
+        } else {
+          block.innerHTML = `
+          <div class="h-8 w-8 rounded-lg bg-blue-100 border border-blue-200 flex items-center justify-center text-blue-600 text-sm font-semibold shrink-0">
+            🤖
+          </div>
+          <div class="${isError ? "bg-rose-50 border border-rose-100 text-rose-800" : "bg-slate-100 text-slate-700"} p-3 rounded-2xl rounded-tl-none text-xs leading-relaxed max-w-[85%]">
+            ${text}
+          </div>
+        `;
+        }
+        container.appendChild(block);
+        container.scrollTop = container.scrollHeight;
+      }
+
+      // Main API orchestrator logic
+      async function handleAgentQuery(event) {
+        event.preventDefault();
+        const input = document.getElementById("agent-input");
+        const query = input.value.trim();
+        if (!query) return;
+
+        appendChatMessage("user", query);
+        input.value = "";
+
+        // Initialize loader UI
+        const loader = document.getElementById("agent-thinking");
+        loader.classList.remove("hidden");
+
+        try {
+          const result = await requestLayoutOrchestration(query);
+          loader.classList.add("hidden");
+
+          if (result && result.ast) {
+            // Sync new state
+            const oldChildrenCount = activeAST.children.length;
+            activeAST = result.ast;
+            renderWorkspace();
+
+            // Construct descriptive patch logs automatically
+            logPatch({
+              op: "replace",
+              path: "/children",
+              value: activeAST.children,
+              meta: `AI Orchestrator integrated: "${query}"`,
+            });
+
+            appendChatMessage(
+              "agent",
+              result.explanation ||
+                "System states synchronized successfully according to design specifications.",
+            );
+            showToast("AI state sync completed successfully!");
+          } else {
+            throw new Error(
+              "Unable to parse layout decision payload structure.",
+            );
+          }
+        } catch (err) {
+          loader.classList.add("hidden");
+          appendChatMessage(
+            "agent",
+            `I generated your request using structural mapping: I added/updated elements to accommodate "${query}". [Note: API connection failed or was inactive, using fallback structural layout compiler].`,
+            false,
+          );
+
+          // Dynamic deterministic fallback compiler (guarantees system reactivity offline or without keys)
+          executeFallbackCompilation(query);
+        }
+      }
+
+      // Direct Generative AI Agent execution loop (with automatic exponential backoff)
+      async function requestLayoutOrchestration(
+        promptText,
+        retries = 5,
+        delay = 1000,
+      ) {
+        if (!apiKey) {
+          throw new Error(
+            "API credentials not present in active workspace context.",
+          );
+        }
+
+        const systemInstruction = `
+        You are an expert Frontend Systems Architect. Your job is to modify an active Server-Driven UI (SDUI) layout AST to satisfy user requests.
+        You MUST adhere strictly to the target component vocabulary schema:
+        - Hero: props { title, subtitle, ctaText, bgGradient: "from-blue-600 to-indigo-700" | "from-slate-800 to-slate-900" | "from-indigo-600 to-violet-700", align: "center" | "left" }
+        - Stats: props { title, items: [{label, value}] }
+        - FeatureGrid: props { title, features: [{title, desc}] }
+        - Testimonial: props { quote, author, role }
+        - Pricing: props { title, plans: [{name, price, features: []}] }
+        - Footer: props { companyName, copyrightText }
+
+        Analyze the current AST state, interpret user instructions, and emit the FULL modified Page AST. Keep existing sections unless the user asks to modify or delete them. Assign clean, unique ids to newly introduced components (e.g. testimonial_2).
+
+        Return your response strictly matching the structured output format.
+      `;
+
+        const payload = {
+          contents: [
+            {
+              parts: [
+                {
+                  text: `Current Layout AST state: \n${JSON.stringify(activeAST, null, 2)}\n\nUser request: "${promptText}"`,
+                },
+              ],
+            },
+          ],
+          systemInstruction: {
+            parts: [{ text: systemInstruction }],
+          },
+          generationConfig: {
+            responseMimeType: "application/json",
+            responseSchema: {
+              type: "OBJECT",
+              properties: {
+                explanation: {
+                  type: "STRING",
+                  description:
+                    "Clear explanation detailing the architectural modifications done.",
+                },
+                ast: {
+                  type: "OBJECT",
+                  description:
+                    "The complete valid Page AST layout containing all children elements.",
+                  properties: {
+                    type: { type: "STRING" },
+                    children: {
+                      type: "ARRAY",
+                      items: {
+                        type: "OBJECT",
+                        properties: {
+                          id: { type: "STRING" },
+                          type: { type: "STRING" },
+                          props: { type: "OBJECT" },
+                        },
+                        required: ["id", "type", "props"],
+                      },
+                    },
+                  },
+                  required: ["type", "children"],
+                },
+              },
+              required: ["explanation", "ast"],
+            },
+          },
+        };
+
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_ID}:generateContent?key=${apiKey}`;
+
+        for (let attempt = 1; attempt <= retries; attempt++) {
+          try {
+            const response = await fetch(url, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) {
+              throw new Error(`HTTP network fault code: ${response.status}`);
+            }
+
+            const result = await response.json();
+            const responseText =
+              result.candidates?.[0]?.content?.parts?.[0]?.text;
+            return JSON.parse(responseText);
+          } catch (err) {
+            if (attempt === retries) {
+              throw err;
+            }
+            await new Promise((res) => setTimeout(res, delay));
+            delay *= 2; // Exponential Backoff
+          }
+        }
+      }
+
+      // Static fallback parser rule engine
+      function executeFallbackCompilation(query) {
+        const q = query.toLowerCase();
+        let recognized = false;
+
+        if (q.includes("hero") || q.includes("header")) {
+          insertComponent("Hero");
+          recognized = true;
+        }
+        if (
+          q.includes("stat") ||
+          q.includes("number") ||
+          q.includes("metric")
+        ) {
+          insertComponent("Stats");
+          recognized = true;
+        }
+        if (q.includes("feature") || q.includes("grid") || q.includes("card")) {
+          insertComponent("FeatureGrid");
+          recognized = true;
+        }
+        if (
+          q.includes("testimonial") ||
+          q.includes("quote") ||
+          q.includes("customer")
+        ) {
+          insertComponent("Testimonial");
+          recognized = true;
+        }
+        if (q.includes("pricing") || q.includes("cost") || q.includes("tier")) {
+          insertComponent("Pricing");
+          recognized = true;
+        }
+        if (q.includes("footer") || q.includes("disclaimer")) {
+          insertComponent("Footer");
+          recognized = true;
+        }
+
+        if (!recognized) {
+          // Fallback fallback: introduce featuregrid
+          insertComponent("FeatureGrid");
+        }
+      }
+
+      // Initialize layout when page successfully mounts
+      window.onload = function () {
+        renderWorkspace();
+      };
+    </script>
+  </body>
+</html>

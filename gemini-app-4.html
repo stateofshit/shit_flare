@@ -1,0 +1,674 @@
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { Pencil, Type, Eraser, Play, Trash2, Code, Layout, MousePointer2, AlertCircle, Loader2, Download, Square, Circle, Minus, X } from 'lucide-react';
+
+// --- API Configuration ---
+const apiKey = ""; // API key is injected by the environment
+
+// --- Component Registry ---
+// To add more components later, just add a new entry to this object!
+const COMPONENT_REGISTRY = {
+  button: {
+    label: 'Button',
+    draw: (x, y, text, strokeWidth) => [
+      { type: 'shape', shapeType: 'rect', color: '#000000', width: strokeWidth, start: {x, y}, end: {x: x+140, y: y+48} },
+      { type: 'text', x: x+16, y: y+32, text: text || 'Button', color: '#000000', fontSize: 20 }
+    ]
+  },
+  input: {
+    label: 'Text Input',
+    draw: (x, y, text, strokeWidth) => [
+      { type: 'shape', shapeType: 'rect', color: '#000000', width: strokeWidth, start: {x, y}, end: {x: x+240, y: y+48} },
+      { type: 'text', x: x+16, y: y+32, text: text || 'Enter text...', color: '#9ca3af', fontSize: 18 }
+    ]
+  },
+  image: {
+    label: 'Image Placeholder',
+    draw: (x, y, text, strokeWidth) => {
+      const els = [
+        { type: 'shape', shapeType: 'rect', color: '#000000', width: strokeWidth, start: {x, y}, end: {x: x+160, y: y+120} },
+        { type: 'shape', shapeType: 'line', color: '#000000', width: strokeWidth, start: {x, y}, end: {x: x+160, y: y+120} },
+        { type: 'shape', shapeType: 'line', color: '#000000', width: strokeWidth, start: {x: x+160, y}, end: {x, y: y+120} }
+      ];
+      if (text) els.push({ type: 'text', x: x, y: y+145, text: text, color: '#000000', fontSize: 16 });
+      return els;
+    }
+  },
+  video: {
+    label: 'Video Player',
+    draw: (x, y, text, strokeWidth) => {
+      const els = [
+        { type: 'shape', shapeType: 'rect', color: '#000000', width: strokeWidth, start: {x, y}, end: {x: x+320, y: y+180} },
+        { type: 'text', x: x+145, y: y+105, text: '▶', color: '#000000', fontSize: 40 }
+      ];
+      if (text) els.push({ type: 'text', x: x+8, y: y+172, text: text, color: '#000000', fontSize: 14 });
+      return els;
+    }
+  },
+  heading: {
+    label: 'Large Heading',
+    draw: (x, y, text) => [
+      { type: 'text', x: x, y: y+40, text: text || 'Heading', color: '#000000', fontSize: 40 }
+    ]
+  },
+  card: {
+    label: 'Empty Card',
+    draw: (x, y, text, strokeWidth) => [
+      { type: 'shape', shapeType: 'rect', color: '#000000', width: strokeWidth, start: {x, y}, end: {x: x+240, y: y+280} },
+      { type: 'text', x: x+16, y: y+40, text: text || 'Card Title', color: '#000000', fontSize: 24 }
+    ]
+  },
+  dropdown: {
+    label: 'Dropdown Menu',
+    draw: (x, y, text, strokeWidth) => [
+      { type: 'shape', shapeType: 'rect', color: '#000000', width: strokeWidth, start: {x, y}, end: {x: x+200, y: y+48} },
+      { type: 'text', x: x+16, y: y+32, text: text || 'Select option...', color: '#000000', fontSize: 18 },
+      { type: 'text', x: x+170, y: y+32, text: '▼', color: '#000000', fontSize: 18 }
+    ]
+  },
+  checkbox: {
+    label: 'Checkbox',
+    draw: (x, y, text, strokeWidth) => [
+      { type: 'shape', shapeType: 'rect', color: '#000000', width: strokeWidth, start: {x, y}, end: {x: x+24, y: y+24} },
+      { type: 'text', x: x+36, y: y+20, text: text || 'Checkbox Option', color: '#000000', fontSize: 18 }
+    ]
+  },
+  avatar: {
+    label: 'User Avatar',
+    draw: (x, y, text, strokeWidth) => {
+      const els = [
+        { type: 'shape', shapeType: 'circle', color: '#000000', width: strokeWidth, start: {x: x+30, y: y+30}, end: {x: x+60, y: y+30} }
+      ];
+      if (text) els.push({ type: 'text', x: x+70, y: y+38, text: text, color: '#000000', fontSize: 18 });
+      return els;
+    }
+  },
+  // Example of adding a new one:
+  // progressbar: {
+  //   label: 'Progress Bar',
+  //   draw: (x, y, text, strokeWidth) => [
+  //     { type: 'shape', shapeType: 'rect', color: '#000000', width: 1, start: {x, y}, end: {x: x+200, y: y+20} },
+  //     { type: 'shape', shapeType: 'rect', color: '#000000', width: strokeWidth, start: {x, y}, end: {x: x+100, y: y+20} }
+  //   ]
+  // }
+};
+
+// --- Retry Logic for API Calls ---
+const fetchWithRetry = async (url, options, maxRetries = 5) => {
+  const delays = [1000, 2000, 4000, 8000, 16000];
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      const response = await fetch(url, options);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      if (i === maxRetries - 1) throw error;
+      await new Promise(res => setTimeout(res, delays[i]));
+    }
+  }
+};
+
+export default function App() {
+  // --- State ---
+  const containerRef = useRef(null);
+  const canvasRef = useRef(null);
+  const [elements, setElements] = useState([]);
+  const [currentPath, setCurrentPath] = useState(null);
+  const [currentShape, setCurrentShape] = useState(null);
+  const [tool, setTool] = useState('pen'); // 'pen', 'text', 'eraser', 'pointer', 'line', 'rect', 'circle'
+  const [color, setColor] = useState('#000000'); // Default Black (UI), alternative Red (Annotations)
+  const [strokeWidth, setStrokeWidth] = useState(3);
+  
+  // Text Tool State
+  const [textInput, setTextInput] = useState(null);
+
+  // Component Insertion State
+  const [insertMenu, setInsertMenu] = useState(null);
+  const [insertConfig, setInsertConfig] = useState({ type: 'button', label: 'Button', aiNotes: '' });
+
+  // App Modes and Generation State
+  const [viewMode, setViewMode] = useState('split'); // 'split', 'canvas', 'preview'
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedCode, setGeneratedCode] = useState('');
+  const [error, setError] = useState('');
+
+  // --- Canvas Rendering Loop ---
+  const drawElements = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    
+    // Clear and set background
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw all saved elements
+    const allElements = [...elements];
+    if (currentPath) allElements.push(currentPath);
+    if (currentShape) allElements.push(currentShape);
+    
+    allElements.forEach(el => {
+      if (el.type === 'path') {
+        ctx.beginPath();
+        ctx.strokeStyle = el.color;
+        ctx.lineWidth = el.width;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        
+        el.points.forEach((point, index) => {
+          if (index === 0) {
+            ctx.moveTo(point.x, point.y);
+          } else {
+            ctx.lineTo(point.x, point.y);
+          }
+        });
+        ctx.stroke();
+      } else if (el.type === 'text') {
+        ctx.font = `${el.fontSize}px sans-serif`;
+        ctx.fillStyle = el.color;
+        ctx.fillText(el.text, el.x, el.y);
+      } else if (el.type === 'shape') {
+        ctx.beginPath();
+        ctx.strokeStyle = el.color;
+        ctx.lineWidth = el.width;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        
+        if (el.shapeType === 'line') {
+          ctx.moveTo(el.start.x, el.start.y);
+          ctx.lineTo(el.end.x, el.end.y);
+        } else if (el.shapeType === 'rect') {
+          ctx.rect(el.start.x, el.start.y, el.end.x - el.start.x, el.end.y - el.start.y);
+        } else if (el.shapeType === 'circle') {
+          const radius = Math.sqrt(Math.pow(el.end.x - el.start.x, 2) + Math.pow(el.end.y - el.start.y, 2));
+          ctx.arc(el.start.x, el.start.y, radius, 0, 2 * Math.PI);
+        }
+        ctx.stroke();
+      }
+    });
+  }, [elements, currentPath, currentShape]);
+
+  // Handle Resizing
+  useEffect(() => {
+    const handleResize = () => {
+      const canvas = canvasRef.current;
+      const container = containerRef.current;
+      if (canvas && container) {
+        // Match internal canvas resolution to CSS size for crisp drawing
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
+        drawElements();
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize(); // Initial size
+    
+    return () => window.removeEventListener('resize', handleResize);
+  }, [drawElements, viewMode]);
+
+  // Re-draw when elements change
+  useEffect(() => {
+    drawElements();
+  }, [elements, currentPath, currentShape, drawElements]);
+
+  // --- Canvas Interaction Handlers ---
+  const getCoordinates = (e) => {
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return {
+      x: clientX - rect.left,
+      y: clientY - rect.top
+    };
+  };
+
+  const handlePointerDown = (e) => {
+    if (tool === 'insert') {
+      const coords = getCoordinates(e);
+      setInsertMenu({ x: coords.x, y: coords.y });
+      setInsertConfig({ type: 'button', label: 'Button', aiNotes: '' }); // Reset config
+      return;
+    }
+
+    if (tool === 'text') {
+      const coords = getCoordinates(e);
+      setTextInput({ x: coords.x, y: coords.y, value: '' });
+      return;
+    }
+
+    if (['line', 'rect', 'circle'].includes(tool)) {
+      const coords = getCoordinates(e);
+      setCurrentShape({
+        type: 'shape',
+        shapeType: tool,
+        color: color,
+        width: strokeWidth,
+        start: coords,
+        end: coords
+      });
+      return;
+    }
+
+    if (tool === 'pen' || tool === 'eraser') {
+      const coords = getCoordinates(e);
+      setCurrentPath({
+        type: 'path',
+        color: tool === 'eraser' ? '#ffffff' : color, // Eraser draws white
+        width: tool === 'eraser' ? 20 : strokeWidth,
+        points: [coords]
+      });
+    }
+  };
+
+  const handlePointerMove = (e) => {
+    // Prevent scrolling while drawing on touch devices
+    if (e.cancelable) {
+       // e.preventDefault(); 
+    }
+
+    if (currentShape && ['line', 'rect', 'circle'].includes(tool)) {
+      const coords = getCoordinates(e);
+      setCurrentShape(prev => ({
+        ...prev,
+        end: coords
+      }));
+      return;
+    }
+
+    if (!currentPath || (tool !== 'pen' && tool !== 'eraser')) return;
+
+    const coords = getCoordinates(e);
+    setCurrentPath(prev => ({
+      ...prev,
+      points: [...prev.points, coords]
+    }));
+  };
+
+  const handlePointerUp = () => {
+    if (currentPath) {
+      setElements(prev => [...prev, currentPath]);
+      setCurrentPath(null);
+    }
+    if (currentShape) {
+      setElements(prev => [...prev, currentShape]);
+      setCurrentShape(null);
+    }
+  };
+
+  const handleTextSubmit = () => {
+    if (textInput && textInput.value.trim() !== '') {
+      setElements(prev => [...prev, {
+        type: 'text',
+        x: textInput.x,
+        y: textInput.y + 24, // adjust for baseline
+        text: textInput.value,
+        color: color,
+        fontSize: 24
+      }]);
+    }
+    setTextInput(null);
+  };
+
+  const handleInsertComponent = () => {
+    if (!insertMenu) return;
+    const { x, y } = insertMenu;
+    const { type, label, aiNotes } = insertConfig;
+    let newElements = [];
+
+    // Add Red Annotation if provided
+    if (aiNotes) {
+      newElements.push({
+        type: 'text',
+        x: x,
+        y: y - 15,
+        text: aiNotes,
+        color: '#ef4444', // Red
+        fontSize: 16
+      });
+    }
+
+    // Lookup the component drawing instructions from our registry
+    const componentDef = COMPONENT_REGISTRY[type];
+    if (componentDef) {
+        newElements = [...newElements, ...componentDef.draw(x, y, label, strokeWidth)];
+    }
+
+    setElements(prev => [...prev, ...newElements]);
+    setInsertMenu(null);
+  };
+
+  // --- AI Generation Logic ---
+  const generateCode = async () => {
+    if (!apiKey) {
+      setError("API key is not configured.");
+      return;
+    }
+
+    setIsGenerating(true);
+    setError('');
+    
+    try {
+      // 1. Extract Visual Data
+      const canvas = canvasRef.current;
+      const dataUrl = canvas.toDataURL('image/png');
+      const base64Data = dataUrl.split(',')[1];
+
+      // 2. System Instruction (The core heuristic engine)
+      const systemInstruction = `You are an expert web developer specializing in building working website prototypes from low-fidelity wireframes. Your task is to accept the provided visual sketch and convert it into an interactive, responsive HTML prototype.
+
+CRITICAL ARCHITECTURAL HEURISTICS:
+1. DESIGN ELEMENTS (Black/Default): Treat any shapes, lines, or text drawn in black as the actual user interface layout (buttons, headers, inputs, containers).
+2. ANNOTATIONS (Red): Treat anything drawn or written in RED as a developer annotation, intent, or instruction. DO NOT render the red elements visually in the final HTML. Instead, apply the logic or styling requested by the red annotation to the corresponding UI elements.
+3. CREATIVE EXTRAPOLATION: The user lacks technical vocabulary. If they draw a rectangle with horizontal lines inside, build a responsive hamburger menu. If they draw a box with an 'X', build a close button. Flesh out the design applying modern UX/UI best practices to "fill in the blanks".
+4. TECHNICAL CONSTRAINTS:
+- Use Tailwind CSS via CDN (<script src="https://cdn.tailwindcss.com"></script>) for ALL styling.
+- All JavaScript MUST be contained within a <script> tag at the end of the body.
+- Output MUST be a single, complete HTML file starting with <!DOCTYPE html>.
+- Do NOT wrap your response in markdown formatting (\`\`\`html). Return ONLY the raw code string.`;
+
+      const promptText = "Translate this wireframe into a functional web application. Remember to apply the red annotations as functionality/styling rules, but do not draw the red ink in the final design.";
+
+      // 3. API Payload
+      const payload = {
+        contents: [
+          {
+            role: "user",
+            parts: [
+              { text: promptText },
+              { inlineData: { mimeType: "image/png", data: base64Data } }
+            ]
+          }
+        ],
+        systemInstruction: {
+          parts: [{ text: systemInstruction }]
+        },
+        generationConfig: {
+            temperature: 0.2, // Low temperature for code consistency
+        }
+      };
+
+      // 4. API Execution
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+      const result = await fetchWithRetry(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      // 5. Parse and Sanitize Output
+      let code = result.candidates?.[0]?.content?.parts?.[0]?.text;
+      
+      if (!code) {
+        throw new Error("The AI did not return valid code. Please try again.");
+      }
+
+      // Strip markdown code fences if the model included them despite instructions
+      code = code.replace(/^```(html|xml|javascript|css)?\s*/gi, '');
+      code = code.replace(/```\s*$/g, '');
+
+      setGeneratedCode(code);
+      setViewMode('split'); // Open preview automatically upon success
+
+    } catch (err) {
+      console.error(err);
+      setError(err.message || "An error occurred during generation.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  // --- UI Components ---
+  return (
+    <div className="flex h-screen bg-neutral-100 font-sans overflow-hidden">
+      
+      {/* Sidebar Tool Palette */}
+      <div className="w-20 bg-white border-r border-neutral-200 flex flex-col items-center py-6 space-y-6 z-10 shadow-sm">
+        
+        {/* Core Tools */}
+        <div className="space-y-3">
+          <ToolButton icon={<Pencil size={20} />} active={tool === 'pen'} onClick={() => setTool('pen')} tooltip="Draw (P)" />
+          <ToolButton icon={<Type size={20} />} active={tool === 'text'} onClick={() => setTool('text')} tooltip="Add Text (T)" />
+          <ToolButton icon={<Minus size={20} style={{transform: 'rotate(-45deg)'}} />} active={tool === 'line'} onClick={() => setTool('line')} tooltip="Straight Line" />
+          <ToolButton icon={<Square size={20} />} active={tool === 'rect'} onClick={() => setTool('rect')} tooltip="Rectangle" />
+          <ToolButton icon={<Circle size={20} />} active={tool === 'circle'} onClick={() => setTool('circle')} tooltip="Circle" />
+          <ToolButton icon={<Eraser size={20} />} active={tool === 'eraser'} onClick={() => setTool('eraser')} tooltip="Eraser (E)" />
+          <div className="w-10 h-[1px] bg-neutral-200 my-2" />
+          <ToolButton icon={<Layout size={20} />} active={tool === 'insert'} onClick={() => setTool('insert')} tooltip="Insert Component" />
+        </div>
+
+        <div className="w-10 h-[1px] bg-neutral-200" />
+
+        {/* Heuristic Color Selectors */}
+        <div className="space-y-4 flex flex-col items-center">
+            <button 
+                onClick={() => {setColor('#000000'); setTool('pen');}}
+                className={`w-8 h-8 rounded-full bg-black ring-offset-2 transition-all ${color === '#000000' && tool !== 'eraser' ? 'ring-2 ring-black scale-110' : 'hover:scale-105'}`}
+                title="UI Elements (Black)"
+            />
+            <button 
+                onClick={() => {setColor('#ef4444'); setTool('pen');}}
+                className={`w-8 h-8 rounded-full bg-red-500 ring-offset-2 transition-all ${color === '#ef4444' && tool !== 'eraser' ? 'ring-2 ring-red-500 scale-110' : 'hover:scale-105'}`}
+                title="Developer Annotations (Red)"
+            />
+        </div>
+
+        <div className="flex-1" />
+
+        {/* Danger Actions */}
+        <button 
+            onClick={() => setElements([])}
+            className="p-3 text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+            title="Clear Canvas"
+        >
+          <Trash2 size={20} />
+        </button>
+      </div>
+
+      {/* Main Workspace */}
+      <div className="flex-1 flex flex-col h-full relative">
+        
+        {/* Top Navbar */}
+        <div className="h-16 bg-white border-b border-neutral-200 flex items-center justify-between px-6 shadow-sm z-10">
+            <div className="flex items-center space-x-3">
+                <div className="bg-indigo-600 p-2 rounded-lg">
+                    <Code className="text-white w-5 h-5" />
+                </div>
+                <h1 className="font-semibold text-neutral-800">Make Real Workspace</h1>
+            </div>
+
+            {/* View Toggles */}
+            <div className="flex bg-neutral-100 p-1 rounded-lg border border-neutral-200">
+                <ViewToggle active={viewMode === 'canvas'} onClick={() => setViewMode('canvas')} label="Canvas" />
+                <ViewToggle active={viewMode === 'split'} onClick={() => setViewMode('split')} label="Split View" disabled={!generatedCode} />
+                <ViewToggle active={viewMode === 'preview'} onClick={() => setViewMode('preview')} label="Preview Only" disabled={!generatedCode} />
+            </div>
+
+            {/* Action Area */}
+            <div className="flex items-center space-x-4">
+                {error && <span className="text-sm text-red-500 flex items-center"><AlertCircle className="w-4 h-4 mr-1" /> API Error</span>}
+                
+                <button
+                    onClick={generateCode}
+                    disabled={isGenerating || elements.length === 0}
+                    className="flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-neutral-300 disabled:cursor-not-allowed text-white px-5 py-2.5 rounded-lg font-medium transition-colors shadow-sm"
+                >
+                    {isGenerating ? (
+                        <><Loader2 className="w-5 h-5 animate-spin" /><span>Generating UI...</span></>
+                    ) : (
+                        <><Play className="w-5 h-5 fill-current" /><span>Make Real</span></>
+                    )}
+                </button>
+            </div>
+        </div>
+
+        {/* Content Area (Split Pane) */}
+        <div className="flex-1 flex overflow-hidden bg-neutral-100">
+            
+            {/* Canvas Pane */}
+            {(viewMode === 'canvas' || viewMode === 'split') && (
+                <div className="flex-1 relative m-4 mr-2 bg-white rounded-xl shadow-sm border border-neutral-200 overflow-hidden" ref={containerRef}>
+                    <canvas
+                        ref={canvasRef}
+                        onPointerDown={handlePointerDown}
+                        onPointerMove={handlePointerMove}
+                        onPointerUp={handlePointerUp}
+                        onPointerLeave={handlePointerUp}
+                        className={`absolute top-0 left-0 w-full h-full touch-none ${['pen', 'eraser', 'line', 'rect', 'circle'].includes(tool) ? 'cursor-crosshair' : 'cursor-text'}`}
+                    />
+                    
+                    {/* Floating Text Input overlay */}
+                    {textInput && (
+                        <input
+                            autoFocus
+                            type="text"
+                            style={{
+                                position: 'absolute',
+                                left: `${textInput.x}px`,
+                                top: `${textInput.y}px`,
+                                color: color,
+                                fontSize: '24px',
+                            }}
+                            className="bg-transparent outline-none border-b-2 border-indigo-400 p-0 m-0 z-20 font-sans"
+                            value={textInput.value}
+                            onChange={(e) => setTextInput({...textInput, value: e.target.value})}
+                            onBlur={handleTextSubmit}
+                            onKeyDown={(e) => e.key === 'Enter' && handleTextSubmit()}
+                            placeholder="Type..."
+                        />
+                    )}
+                    
+                    {/* Component Insertion Menu */}
+                    {insertMenu && (
+                        <div 
+                            style={{ position: 'absolute', left: `${insertMenu.x}px`, top: `${insertMenu.y}px` }} 
+                            className="bg-white rounded-xl shadow-xl border border-neutral-200 z-30 w-72 p-4 flex flex-col space-y-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)]"
+                        >
+                            <div className="flex justify-between items-center">
+                                <h3 className="text-sm font-semibold text-neutral-800">Insert Component</h3>
+                                <button onClick={() => setInsertMenu(null)} className="text-neutral-400 hover:text-neutral-600">
+                                    <X size={16} />
+                                </button>
+                            </div>
+                            
+                            <div className="space-y-3">
+                                <div>
+                                    <label className="text-xs font-medium text-neutral-500 mb-1 block">Component Type</label>
+                                    <select 
+                                        value={insertConfig.type} 
+                                        onChange={(e) => setInsertConfig({...insertConfig, type: e.target.value})}
+                                        className="w-full bg-neutral-50 border border-neutral-200 rounded-lg text-sm p-2 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                                    >
+                                        {/* Dynamically generate options from the registry */}
+                                        {Object.entries(COMPONENT_REGISTRY).map(([key, config]) => (
+                                            <option key={key} value={key}>{config.label}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label className="text-xs font-medium text-neutral-500 mb-1 block">Label / Text</label>
+                                    <input 
+                                        type="text" 
+                                        value={insertConfig.label} 
+                                        onChange={(e) => setInsertConfig({...insertConfig, label: e.target.value})}
+                                        className="w-full bg-neutral-50 border border-neutral-200 rounded-lg text-sm p-2 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                                        placeholder="e.g. Submit"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="text-xs font-medium text-red-500 mb-1 block flex items-center">
+                                        AI Instructions (Red Notes)
+                                    </label>
+                                    <input 
+                                        type="text" 
+                                        value={insertConfig.aiNotes} 
+                                        onChange={(e) => setInsertConfig({...insertConfig, aiNotes: e.target.value})}
+                                        className="w-full bg-red-50 border border-red-200 rounded-lg text-sm p-2 outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all text-red-700 placeholder:text-red-300"
+                                        placeholder="e.g. Make it a gradient..."
+                                        onKeyDown={(e) => e.key === 'Enter' && handleInsertComponent()}
+                                    />
+                                </div>
+                            </div>
+
+                            <button 
+                                onClick={handleInsertComponent}
+                                className="w-full bg-neutral-900 text-white rounded-lg py-2 text-sm font-medium hover:bg-neutral-800 transition-colors mt-2"
+                            >
+                                Place Component
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Canvas Hint */}
+                    {elements.length === 0 && (
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40 flex-col">
+                            <Pencil className="w-12 h-12 mb-4 text-neutral-400" />
+                            <p className="text-xl font-medium text-neutral-500">Draw your wireframe here</p>
+                            <p className="text-sm mt-2 text-neutral-400 max-w-sm text-center">Use the <strong className="text-red-500">Red Pen</strong> to add annotations or instructions for the AI.</p>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Generated Code Preview Pane */}
+            {(viewMode === 'preview' || (viewMode === 'split' && generatedCode)) && (
+                <div className="flex-1 relative m-4 ml-2 bg-white rounded-xl shadow-sm border border-neutral-200 overflow-hidden flex flex-col">
+                    
+                    {/* Iframe Toolbar */}
+                    <div className="h-10 border-b border-neutral-100 flex items-center justify-between px-3 bg-neutral-50/80">
+                        <span className="text-xs font-semibold tracking-wider text-neutral-400 uppercase">Interactive Result</span>
+                        <div className="flex space-x-2">
+                            <div className="w-3 h-3 rounded-full bg-red-400"></div>
+                            <div className="w-3 h-3 rounded-full bg-amber-400"></div>
+                            <div className="w-3 h-3 rounded-full bg-green-400"></div>
+                        </div>
+                    </div>
+
+                    {/* Sandboxed Execution Environment */}
+                    <iframe
+                        srcDoc={generatedCode}
+                        title="AI Generated Prototype"
+                        sandbox="allow-scripts allow-forms allow-modals allow-popups"
+                        className="w-full h-full border-none"
+                    />
+                </div>
+            )}
+
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- Minor UI Helper Components ---
+const ToolButton = ({ icon, active, onClick, tooltip }) => (
+    <button
+      onClick={onClick}
+      title={tooltip}
+      className={`p-3 rounded-xl transition-all ${
+        active 
+          ? 'bg-indigo-100 text-indigo-700 shadow-inner' 
+          : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800'
+      }`}
+    >
+      {icon}
+    </button>
+  );
+
+const ViewToggle = ({ active, onClick, label, disabled }) => (
+    <button
+        onClick={onClick}
+        disabled={disabled}
+        className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
+            disabled ? 'opacity-40 cursor-not-allowed text-neutral-400' :
+            active ? 'bg-white text-neutral-800 shadow-sm' : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-200/50'
+        }`}
+    >
+        {label}
+    </button>
+);

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GEODE | Vanguard Design System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,400;1,700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Geode UI (Monolith Black & Crystalline Core) -->
+    <!-- Application Structure Plan: 
+        The SPA is designed as an 'Interactive Artifact'. 
+        1. THE MONOLITH (Hero): A stark, brutalist entry point using Space Mono to establish the 'Shell'.
+        2. THE EXCAVATION (Data): A dynamic dashboard using Chart.js to visualize the system's internal metrics (Contrast, Saturation, Typographic Weight).
+        3. THE CORE (Gallery): Interactive 'Geode Cards' that use CSS clip-path transitions to physically reveal the 'Core' layer (Playfair Display + Crimson Gradients) when hovered.
+        4. THE ARCHIVE (Details): A filterable section explaining the design logic.
+        This structure is chosen to force the user to 'weather' the interface, moving from a cold, utilitarian surface to a warm, luxurious interior, mirroring the Geode philosophy.
+    -->
+    <!-- Visualization & Content Choices:
+        - Chart.js (Canvas): Used to visualize 'Visual Intensity' metrics. Interaction allows users to toggle between Shell and Core data distributions.
+        - CSS Grid/Flexbox: Used for the brutalist layout to ensure rigid, blueprint-like alignment.
+        - Clip-Path (JS-Triggered): The 'shatter' effect is achieved by transitioning polygon coordinates, simulating a physical break in the UI.
+        - Font-Switching: Contextual switches from Monospaced (Shell) to Serif Italic (Core) to emphasize the shift in tone.
+        - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used.
+    -->
+    <style>
+        :root {
+            --shell-bg: #0A0A0A;
+            --shell-text: #F4F4F0;
+            --shell-accent: #555555;
+            --core-gradient: linear-gradient(135deg, #FF204E, #A0153E, #5D0E41, #00224D);
+        }
+
+        body {
+            background-color: #F4F4F0; /* Warm neutral background for the 'room' the geode sits in */
+            color: var(--shell-bg);
+            font-family: 'Space Mono', monospace;
+            overflow-x: hidden;
+            transition: background-color 0.5s ease;
+        }
+
+        .monolith-layer {
+            background-color: var(--shell-bg);
+            color: var(--shell-text);
+            border: 1px solid var(--shell-text);
+        }
+
+        .font-core {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+        }
+
+        .geode-card {
+            position: relative;
+            overflow: hidden;
+            background-color: var(--shell-bg);
+            border: 1px solid var(--shell-text);
+            height: 400px;
+            cursor: crosshair;
+        }
+
+        .geode-shell {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            background-color: var(--shell-bg);
+            transition: clip-path 0.8s cubic-bezier(0.77, 0, 0.175, 1);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
+        }
+
+        .geode-card:hover .geode-shell {
+            clip-path: polygon(0 0, 0 0, 100% 100%, 0% 100%);
+        }
+
+        .geode-core {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: var(--core-gradient);
+            color: white;
+            text-align: center;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            height: 350px;
+            max-height: 400px;
+        }
+
+        .btn-brutalist {
+            border: 1px solid var(--shell-text);
+            padding: 0.5rem 1rem;
+            text-transform: uppercase;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-brutalist:hover {
+            background-color: var(--shell-text);
+            color: var(--shell-bg);
+        }
+
+        .grid-line {
+            background-image: linear-gradient(to right, #ccc 1px, transparent 1px), linear-gradient(to bottom, #ccc 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+    </style>
+</head>
+<body class="grid-line min-h-screen">
+
+    <nav class="sticky top-0 z-50 bg-black text-white border-b border-white p-4 flex justify-between items-center">
+        <div class="font-bold text-xl tracking-tighter">GEODE.SYS</div>
+        <div class="flex gap-8 text-sm">
+            <a href="#excavation" class="hover:underline">EXCAVATION</a>
+            <a href="#core" class="hover:underline">CORE_SAMPLES</a>
+            <a href="#about" class="hover:underline">LOGIC</a>
+        </div>
+    </nav>
+
+    <header class="monolith-layer min-h-screen flex flex-col items-center justify-center text-center p-6">
+        <h1 class="text-6xl md:text-9xl font-bold tracking-tighter mb-4">THE MONOLITH</h1>
+        <p class="max-w-2xl text-lg opacity-80 mb-8 uppercase">A design system derived from the destruction of accessibility norms. Hover to fracture the surface. Move to reveal the elegance within.</p>
+        <div class="flex gap-4">
+            <button onclick="document.getElementById('excavation').scrollIntoView({behavior: 'smooth'})" class="btn-brutalist">Begin Extraction</button>
+        </div>
+    </header>
+
+    <section id="excavation" class="py-20 px-6 bg-white border-b border-black">
+        <div class="max-w-6xl mx-auto">
+            <div class="mb-12">
+                <h2 class="text-4xl font-bold mb-4">PHASE 02: EXCAVATION</h2>
+                <p class="max-w-xl">This section visualizes the typographic and visual tension of the Geode system. Use the controls to toggle between Shell (Utility) and Core (Expression) data distributions. We measure visual impact across two distinct axes.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
+                <div class="lg:col-span-2">
+                    <div class="chart-container">
+                        <canvas id="impactChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-black text-white p-8">
+                    <h3 class="text-xl font-bold mb-4">SYSTEM STATS</h3>
+                    <div class="space-y-4 text-sm">
+                        <div class="flex justify-between border-b border-gray-700 pb-2">
+                            <span>SHELL RIGIDITY</span>
+                            <span class="text-red-500">98%</span>
+                        </div>
+                        <div class="flex justify-between border-b border-gray-700 pb-2">
+                            <span>CORE FLUIDITY</span>
+                            <span class="text-purple-400">84%</span>
+                        </div>
+                        <div class="flex justify-between border-b border-gray-700 pb-2">
+                            <span>REVEAL LATENCY</span>
+                            <span>0.8s</span>
+                        </div>
+                        <p class="mt-6 opacity-60 italic">"The Geode UI is not a static state; it is a transition between monolithic order and crystalline chaos."</p>
+                        <button onclick="updateChart()" class="w-full mt-4 bg-white text-black py-2 font-bold hover:bg-gray-200">INVERT DATASET</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="core" class="py-20 px-6 bg-black">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-4xl font-bold text-white mb-12">CORE SAMPLES</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                <!-- Geode Card 1 -->
+                <div class="geode-card">
+                    <div class="geode-core">
+                        <h3 class="font-core text-4xl mb-4">Pure Crimson</h3>
+                        <p class="text-sm">The primary energy of the core. High saturation, high impact.</p>
+                    </div>
+                    <div class="geode-shell">
+                        <span class="text-xs mb-2 opacity-50">SAMPLE_001</span>
+                        <h3 class="text-2xl font-bold">BRUTAL_BLOCK_A</h3>
+                        <p class="text-xs mt-4">STIFF. GREY. FUNCTIONAL. [HOVER_TO_BREAK]</p>
+                    </div>
+                </div>
+
+                <!-- Geode Card 2 -->
+                <div class="geode-card">
+                    <div class="geode-core">
+                        <h3 class="font-core text-4xl mb-4">Abyssal Flow</h3>
+                        <p class="text-sm">Deep blues and purples found in the deepest layers.</p>
+                    </div>
+                    <div class="geode-shell">
+                        <span class="text-xs mb-2 opacity-50">SAMPLE_002</span>
+                        <h3 class="text-2xl font-bold">BRUTAL_BLOCK_B</h3>
+                        <p class="text-xs mt-4">STIFF. GREY. FUNCTIONAL. [HOVER_TO_BREAK]</p>
+                    </div>
+                </div>
+
+                <!-- Geode Card 3 -->
+                <div class="geode-card">
+                    <div class="geode-core">
+                        <h3 class="font-core text-4xl mb-4">Crystalline Typography</h3>
+                        <p class="text-sm">Playfair Display: The serif of the excavation.</p>
+                    </div>
+                    <div class="geode-shell">
+                        <span class="text-xs mb-2 opacity-50">SAMPLE_003</span>
+                        <h3 class="text-2xl font-bold">BRUTAL_BLOCK_C</h3>
+                        <p class="text-xs mt-4">STIFF. GREY. FUNCTIONAL. [HOVER_TO_BREAK]</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-[#F4F4F0] border-t border-black p-12 text-center">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-8xl mb-8">◈</div>
+            <p class="font-bold text-2xl uppercase tracking-widest mb-4">Vanguard Protocol Complete</p>
+            <p class="opacity-60 max-w-lg mx-auto">This design system is a live experiment in radical openness. Created to challenge the assumption that a UI must be permanent. Explore at your own risk.</p>
+            <div class="mt-12 text-xs flex justify-center gap-8 opacity-40">
+                <span>SYSTEM: GEODE_UI_v1.0</span>
+                <span>STATUS: OPERATIONAL</span>
+                <span>LAYER: DEEP_EXCAVATION</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        let myChart;
+        const ctx = document.getElementById('impactChart').getContext('2d');
+
+        const shellData = {
+            labels: ['Rigidity', 'Legibility', 'Utility', 'Coldness', 'Neutrality', 'Structure'],
+            datasets: [{
+                label: 'SHELL CHARACTERISTICS',
+                data: [95, 90, 85, 95, 100, 95],
+                backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                borderColor: '#000000',
+                borderWidth: 2,
+                pointBackgroundColor: '#000000'
+            }]
+        };
+
+        const coreData = {
+            labels: ['Rigidity', 'Legibility', 'Utility', 'Coldness', 'Neutrality', 'Structure'],
+            datasets: [{
+                label: 'CORE CHARACTERISTICS',
+                data: [20, 60, 40, 5, 10, 30],
+                backgroundColor: 'rgba(255, 32, 78, 0.2)',
+                borderColor: '#FF204E',
+                borderWidth: 2,
+                pointBackgroundColor: '#FF204E'
+            }]
+        };
+
+        let currentView = 'shell';
+
+        function initChart() {
+            myChart = new Chart(ctx, {
+                type: 'radar',
+                data: shellData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: '#ddd' },
+                            grid: { color: '#ddd' },
+                            pointLabels: {
+                                font: { size: 10, family: 'Space Mono' },
+                                color: '#000'
+                            },
+                            ticks: { display: false },
+                            suggestedMin: 0,
+                            suggestedMax: 100
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: { font: { family: 'Space Mono' } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateChart() {
+            if (currentView === 'shell') {
+                myChart.data = coreData;
+                currentView = 'core';
+            } else {
+                myChart.data = shellData;
+                currentView = 'shell';
+            }
+            myChart.update();
+        }
+
+        document.addEventListener('DOMContentLoaded', initChart);
+
+        // Interactive "Glitch" effect for the header on mouse move
+        const header = document.querySelector('header h1');
+        document.querySelector('header').addEventListener('mousemove', (e) => {
+            const x = (e.clientX / window.innerWidth - 0.5) * 20;
+            const y = (e.clientY / window.innerHeight - 0.5) * 20;
+            header.style.transform = `translate(${x}px, ${y}px)`;
+            header.style.textShadow = `${-x/2}px ${-y/2}px 0px #FF204E`;
+        });
+    </script>
+</body>
+</html>

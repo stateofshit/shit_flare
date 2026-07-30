@@ -1,0 +1,174 @@
+
+<style>
+.calc-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 12px; }
+.metric-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+.metric { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 1rem; }
+.metric-label { font-size: 12px; color: var(--color-text-secondary); margin: 0 0 4px; }
+.metric-value { font-size: 22px; font-weight: 500; margin: 0; }
+.metric-value.highlight { color: #185FA5; }
+.row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.row label { font-size: 13px; color: var(--color-text-secondary); min-width: 170px; }
+.row input[type=range] { flex: 1; }
+.row .val { font-size: 13px; font-weight: 500; min-width: 80px; text-align: right; }
+.section-title { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); margin: 0 0 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+.divider { border: none; border-top: 0.5px solid var(--color-border-tertiary); margin: 14px 0; }
+.note { font-size: 12px; color: var(--color-text-tertiary); margin-top: 8px; }
+.range-row { margin-bottom: 10px; }
+</style>
+
+<h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Front pay calculator based on Ian Powell's W-2 data</h2>
+
+<div class="metric-grid">
+  <div class="metric">
+    <p class="metric-label">Annual loss</p>
+    <p class="metric-value" id="m-annual">$39,382</p>
+  </div>
+  <div class="metric">
+    <p class="metric-label">Undiscounted total</p>
+    <p class="metric-value" id="m-gross">$866,396</p>
+  </div>
+  <div class="metric">
+    <p class="metric-label">Present value (front pay)</p>
+    <p class="metric-value highlight" id="m-pv">$627,175</p>
+  </div>
+</div>
+
+<div class="calc-card">
+  <p class="section-title">Loss components — from your W-2s</p>
+  <div class="row">
+    <label>Amazon wages (2025 gross)</label>
+    <input type="range" id="wages" min="10000" max="60000" step="100" value="28053">
+    <span class="val" id="wages-out">$28,053</span>
+  </div>
+  <div class="row">
+    <label>Health insurance (box DD)</label>
+    <input type="range" id="health" min="0" max="20000" step="100" value="9612">
+    <span class="val" id="health-out">$9,612</span>
+  </div>
+  <div class="row">
+    <label>401k contributions</label>
+    <input type="range" id="retirement" min="0" max="10000" step="100" value="1717">
+    <span class="val" id="retirement-out">$1,717</span>
+  </div>
+  <hr class="divider">
+  <div class="row">
+    <label>Mitigation income (current)</label>
+    <input type="range" id="mitigation" min="0" max="50000" step="100" value="0">
+    <span class="val" id="mitigation-out">$0</span>
+  </div>
+</div>
+
+<div class="calc-card">
+  <p class="section-title">Projection assumptions</p>
+  <div class="row">
+    <label>Years to retirement (age 43 → 65)</label>
+    <input type="range" id="years" min="5" max="30" step="1" value="22">
+    <span class="val" id="years-out">22 yrs</span>
+  </div>
+  <div class="row">
+    <label>Discount rate</label>
+    <input type="range" id="rate" min="1" max="8" step="0.5" value="3">
+    <span class="val" id="rate-out">3.0%</span>
+  </div>
+  <div class="row">
+    <label>Annual wage growth</label>
+    <input type="range" id="growth" min="0" max="6" step="0.5" value="2">
+    <span class="val" id="growth-out">2.0%</span>
+  </div>
+  <p class="note">Wage growth reflects Amazon's raise pattern from your W-2 history (2023→2025 ≈ +$7,900/yr). Discount rate converts future dollars to today's value.</p>
+</div>
+
+<div style="position:relative; width:100%; height:220px; margin-top:4px;">
+  <canvas id="chart" role="img" aria-label="Bar chart showing cumulative front pay loss by year, ranging from roughly $39k in year 1 to over $600k discounted total by year 22.">Cumulative front pay loss over 22 years.</canvas>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const ids = ['wages','health','retirement','mitigation','years','rate','growth'];
+const fmt = (n) => '$' + Math.round(n).toLocaleString();
+let chartInst;
+
+function calc() {
+  const wages = +document.getElementById('wages').value;
+  const health = +document.getElementById('health').value;
+  const ret = +document.getElementById('retirement').value;
+  const mit = +document.getElementById('mitigation').value;
+  const n = +document.getElementById('years').value;
+  const r = +document.getElementById('rate').value / 100;
+  const g = +document.getElementById('growth').value / 100;
+
+  document.getElementById('wages-out').textContent = fmt(wages);
+  document.getElementById('health-out').textContent = fmt(health);
+  document.getElementById('retirement-out').textContent = fmt(ret);
+  document.getElementById('mitigation-out').textContent = fmt(mit);
+  document.getElementById('years-out').textContent = n + ' yrs';
+  document.getElementById('rate-out').textContent = (+document.getElementById('rate').value).toFixed(1) + '%';
+  document.getElementById('growth-out').textContent = (+document.getElementById('growth').value).toFixed(1) + '%';
+
+  const baseAnnual = wages + health + ret - mit;
+  document.getElementById('m-annual').textContent = fmt(baseAnnual);
+
+  let undiscounted = 0;
+  let pv = 0;
+  const labels = [];
+  const pvData = [];
+  let cumPV = 0;
+
+  for (let i = 1; i <= n; i++) {
+    const yearLoss = baseAnnual * Math.pow(1 + g, i - 1);
+    undiscounted += yearLoss;
+    const discounted = yearLoss / Math.pow(1 + r, i);
+    pv += discounted;
+    cumPV += discounted;
+    labels.push('Yr ' + i);
+    pvData.push(Math.round(cumPV));
+  }
+
+  document.getElementById('m-gross').textContent = fmt(undiscounted);
+  document.getElementById('m-pv').textContent = fmt(pv);
+
+  if (chartInst) {
+    chartInst.data.labels = labels;
+    chartInst.data.datasets[0].data = pvData;
+    chartInst.update();
+  } else {
+    chartInst = new Chart(document.getElementById('chart'), {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Cumulative PV ($)',
+          data: pvData,
+          backgroundColor: '#B5D4F4',
+          borderColor: '#185FA5',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ' $' + ctx.parsed.y.toLocaleString()
+            }
+          }
+        },
+        scales: {
+          x: { ticks: { autoSkip: true, maxTicksLimit: 11, font: { size: 11 } }, grid: { display: false } },
+          y: {
+            ticks: {
+              font: { size: 11 },
+              callback: v => '$' + (v >= 1000 ? Math.round(v/1000) + 'k' : v)
+            }
+          }
+        }
+      }
+    });
+  }
+}
+
+ids.forEach(id => document.getElementById(id).addEventListener('input', calc));
+calc();
+</script>

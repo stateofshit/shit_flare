@@ -1,0 +1,734 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Markdown Cheat Sheet — Commands + Examples</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --panel: #111827;
+      --panel2: #0f172a;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --line: rgba(255,255,255,.10);
+      --accent: #60a5fa;
+      --accent2: #34d399;
+      --warn: #fbbf24;
+      --danger: #fb7185;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      background: radial-gradient(1200px 800px at 20% 10%, rgba(96,165,250,.14), transparent 55%),
+                  radial-gradient(900px 600px at 80% 20%, rgba(52,211,153,.10), transparent 50%),
+                  var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(10px);
+      background: rgba(11,15,25,.70);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 18px 18px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.6fr 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; }
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 26px;
+      letter-spacing: .2px;
+    }
+
+    p { margin: 0; color: var(--muted); line-height: 1.45; }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      align-items: center;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    input[type="search"] {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: rgba(17,24,39,.72);
+      color: var(--text);
+      outline: none;
+    }
+
+    .btn {
+      padding: 9px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: rgba(15,23,42,.72);
+      color: var(--text);
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .btn:hover { border-color: rgba(255,255,255,.18); }
+
+    main { padding: 18px 0 40px; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(17,24,39,.80), rgba(15,23,42,.72));
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 14px 30px rgba(0,0,0,.25);
+    }
+
+    .card .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      padding: 14px 14px 10px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .tag {
+      font-size: 12px;
+      color: rgba(255,255,255,.85);
+      background: rgba(96,165,250,.16);
+      border: 1px solid rgba(96,165,250,.25);
+      padding: 4px 8px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .tag.gfm { background: rgba(52,211,153,.14); border-color: rgba(52,211,153,.25); }
+    .tag.limited { background: rgba(251,191,36,.14); border-color: rgba(251,191,36,.25); }
+    .tag.caution { background: rgba(251,113,133,.12); border-color: rgba(251,113,133,.22); }
+
+    .title {
+      font-weight: 800;
+      letter-spacing: .2px;
+      font-size: 14px;
+      margin: 0;
+    }
+
+    .desc {
+      padding: 0 14px 12px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 0 14px 14px;
+    }
+
+    @media (max-width: 560px) {
+      .cols { grid-template-columns: 1fr; }
+    }
+
+    .box {
+      border: 1px solid var(--line);
+      background: rgba(17,24,39,.55);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .box h3 {
+      margin: 0;
+      font-size: 12px;
+      letter-spacing: .25px;
+      text-transform: uppercase;
+      padding: 10px 10px;
+      border-bottom: 1px solid var(--line);
+      color: rgba(255,255,255,.85);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    pre {
+      margin: 0;
+      padding: 10px 10px;
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.45;
+      overflow: auto;
+      white-space: pre;
+    }
+
+    .example {
+      padding: 10px 10px;
+      font-size: 13px;
+      line-height: 1.45;
+      color: rgba(255,255,255,.92);
+    }
+
+    .example code { font-family: var(--mono); font-size: 12px; }
+
+    .kbd {
+      font-family: var(--mono);
+      font-size: 12px;
+      padding: 2px 6px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.06);
+    }
+
+    .small {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .footer {
+      margin-top: 18px;
+      padding: 14px 14px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(17,24,39,.55);
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    details {
+      border-top: 1px solid var(--line);
+      margin-top: 12px;
+      padding-top: 10px;
+    }
+
+    summary {
+      cursor: pointer;
+      color: rgba(255,255,255,.90);
+      font-weight: 700;
+      user-select: none;
+    }
+
+    .hidden { display: none !important; }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .pillrow { display:flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .pill { font-size: 12px; padding: 4px 8px; border-radius: 999px; border: 1px solid var(--line); background: rgba(255,255,255,.05); color: rgba(255,255,255,.85); cursor: pointer; }
+    .pill.active { border-color: rgba(96,165,250,.35); background: rgba(96,165,250,.10); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <div class="hero">
+        <div>
+          <h1>Markdown Cheat Sheet — Commands + Examples</h1>
+          <p>Each card shows: <span class="kbd">Syntax</span> (what you type) and <span class="kbd">Rendered</span> (what it looks like). Filter by search or tags.</p>
+          <div class="pillrow" id="tagRow" aria-label="Tag filters"></div>
+        </div>
+        <div class="toolbar">
+          <input id="q" type="search" placeholder="Search: headings, tables, task list, footnotes…" aria-label="Search" />
+          <button class="btn" id="expandAll" type="button">Expand all</button>
+          <button class="btn" id="collapseAll" type="button">Collapse all</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+      <div class="grid" id="cards"></div>
+
+      <div class="footer">
+        <div><strong>Notes</strong></div>
+        <ul>
+          <li><span class="kbd">GFM</span> = GitHub Flavored Markdown (GitHub/README). Some features vary by platform.</li>
+          <li>Markdown is for structure. If you need layout control, use HTML/CSS.</li>
+        </ul>
+        <details>
+          <summary>Quick platform realities</summary>
+          <div class="small">
+            GitHub supports tables, task lists, footnotes, details blocks, and syntax highlighting. Some platforms (Reddit, older wiki engines) support less.
+          </div>
+        </details>
+      </div>
+    </div>
+  </main>
+
+  <template id="cardTpl">
+    <section class="card" data-tags="" data-title="" data-text="">
+      <div class="top">
+        <h2 class="title"></h2>
+        <span class="tag"></span>
+      </div>
+      <div class="desc"></div>
+      <div class="cols">
+        <div class="box">
+          <h3>
+            <span>Syntax</span>
+            <button class="btn copy" type="button" style="padding:6px 9px; border-radius: 10px;">Copy</button>
+          </h3>
+          <pre class="syntax"></pre>
+        </div>
+        <div class="box">
+          <h3>Rendered</h3>
+          <div class="example"></div>
+        </div>
+      </div>
+    </section>
+  </template>
+
+  <script>
+    // Data-driven cards: add/edit entries here.
+    const ITEMS = [
+      {
+        title: "Headings",
+        tag: "Core",
+        desc: "Section titles. Use descending levels logically.",
+        md: "# H1\n## H2\n### H3\n#### H4\n##### H5\n###### H6",
+        render: () => {
+          const div = document.createElement('div');
+          div.innerHTML = `
+            <div style="font-weight:800; font-size:20px; margin:0 0 6px">H1</div>
+            <div style="font-weight:800; font-size:18px; margin:0 0 6px">H2</div>
+            <div style="font-weight:800; font-size:16px; margin:0 0 6px">H3</div>
+            <div style="font-weight:800; font-size:14px; margin:0 0 6px">H4</div>
+            <div style="font-weight:800; font-size:13px; margin:0 0 6px">H5</div>
+            <div style="font-weight:800; font-size:12px; margin:0">H6</div>
+          `;
+          return div;
+        }
+      },
+      {
+        title: "Bold / Italic / Strikethrough",
+        tag: "Core",
+        desc: "Emphasis for words and phrases.",
+        md: "*italic*\n**bold**\n***bold italic***\n~~strikethrough~~",
+        render: () => {
+          const div = document.createElement('div');
+          div.innerHTML = `
+            <div><em>italic</em></div>
+            <div><strong>bold</strong></div>
+            <div><strong><em>bold italic</em></strong></div>
+            <div><del>strikethrough</del></div>
+          `;
+          return div;
+        }
+      },
+      {
+        title: "Inline code",
+        tag: "Core",
+        desc: "Short code fragments inside text.",
+        md: "Use `npm run build` to compile.",
+        render: () => {
+          const div = document.createElement('div');
+          div.innerHTML = `Use <code>npm run build</code> to compile.`;
+          return div;
+        }
+      },
+      {
+        title: "Paragraphs & line breaks",
+        tag: "Core",
+        desc: "Blank line = new paragraph. Two trailing spaces = hard line break.",
+        md: "Paragraph one.\n\nParagraph two.\n\nLine one␠␠\nLine two",
+        render: () => {
+          const div = document.createElement('div');
+          div.innerHTML = `
+            <p style="margin:0 0 10px">Paragraph one.</p>
+            <p style="margin:0 0 10px">Paragraph two.</p>
+            <div>Line one<br>Line two</div>
+          `;
+          return div;
+        }
+      },
+      {
+        title: "Unordered list",
+        tag: "Core",
+        desc: "Bullets. Nest by indenting two spaces (or 4).",
+        md: "- Item\n- Item\n  - Nested\n  - Nested",
+        render: () => {
+          const ul = document.createElement('ul');
+          ul.style.margin = '0';
+          ul.innerHTML = `
+            <li>Item</li>
+            <li>Item
+              <ul>
+                <li>Nested</li>
+                <li>Nested</li>
+              </ul>
+            </li>
+          `;
+          return ul;
+        }
+      },
+      {
+        title: "Ordered list",
+        tag: "Core",
+        desc: "Numbered steps.",
+        md: "1. First\n2. Second\n   1. Nested\n   2. Nested",
+        render: () => {
+          const ol = document.createElement('ol');
+          ol.style.margin = '0';
+          ol.innerHTML = `
+            <li>First</li>
+            <li>Second
+              <ol>
+                <li>Nested</li>
+                <li>Nested</li>
+              </ol>
+            </li>
+          `;
+          return ol;
+        }
+      },
+      {
+        title: "Task list (checkboxes)",
+        tag: "GFM",
+        desc: "GitHub task lists (issues/PRs/README).",
+        md: "- [x] Done\n- [ ] Not done",
+        render: () => {
+          const div = document.createElement('div');
+          div.innerHTML = `
+            <div><input type="checkbox" checked disabled> Done</div>
+            <div><input type="checkbox" disabled> Not done</div>
+          `;
+          return div;
+        }
+      },
+      {
+        title: "Links",
+        tag: "Core",
+        desc: "Clickable hyperlinks.",
+        md: "[Link text](https://example.com)\n\n[With title](https://example.com \"Tooltip\")\n\nReference style: [Text][ref]\n\n[ref]: https://example.com",
+        render: () => {
+          const div = document.createElement('div');
+          div.innerHTML = `
+            <div><a href="https://example.com" target="_blank" rel="noreferrer">Link text</a></div>
+            <div class="small">(Hover titles are platform dependent)</div>
+            <div style="margin-top:8px"><a href="https://example.com" target="_blank" rel="noreferrer">Text (ref)</a></div>
+          `;
+          return div;
+        }
+      },
+      {
+        title: "Images",
+        tag: "Core",
+        desc: "Images (platform must allow them).",
+        md: "![Alt text](image.png)\n\nClickable image:\n[![Alt](image.png)](https://example.com)",
+        render: () => {
+          const div = document.createElement('div');
+          div.innerHTML = `
+            <div class="small">Images require a valid URL/path on your platform.</div>
+            <div style="margin-top:10px; padding:10px; border:1px dashed rgba(255,255,255,.2); border-radius:12px;">[Image placeholder]</div>
+          `;
+          return div;
+        }
+      },
+      {
+        title: "Code blocks (fenced)",
+        tag: "Core",
+        desc: "Multi-line code. Use a language for highlighting.",
+        md: "```python\nprint('Hello')\n```\n\n```bash\necho \"hi\"\n```",
+        render: () => {
+          const div = document.createElement('div');
+          div.innerHTML = `
+            <pre style="margin:0; padding:10px; border:1px solid rgba(255,255,255,.12); border-radius:12px; background: rgba(0,0,0,.25); overflow:auto;"><code>print('Hello')\n\necho \"hi\"</code></pre>
+          `;
+          return div;
+        }
+      },
+      {
+        title: "Blockquotes",
+        tag: "Core",
+        desc: "Quoted text, callouts.",
+        md: "> Quote\n>> Nested quote",
+        render: () => {
+          const div = document.createElement('div');
+          div.innerHTML = `
+            <blockquote style="margin:0; padding:10px 12px; border-left:4px solid rgba(96,165,250,.6); background: rgba(96,165,250,.08); border-radius: 10px;">
+              <div>Quote</div>
+              <blockquote style="margin:10px 0 0; padding:8px 10px; border-left:4px solid rgba(52,211,153,.6); background: rgba(52,211,153,.08); border-radius: 10px;">Nested quote</blockquote>
+            </blockquote>
+          `;
+          return div;
+        }
+      },
+      {
+        title: "Horizontal rule",
+        tag: "Core",
+        desc: "Section break.",
+        md: "---\n***\n___",
+        render: () => {
+          const div = document.createElement('div');
+          div.innerHTML = `<div class=\"small\">(All three usually render the same)</div><hr style=\"border:0; border-top:1px solid rgba(255,255,255,.18); margin:10px 0\">`;
+          return div;
+        }
+      },
+      {
+        title: "Tables",
+        tag: "GFM",
+        desc: "GitHub-style tables with alignment.",
+        md: "| Left | Center | Right |\n|:-----|:------:|------:|\n| a    | b      | c     |",
+        render: () => {
+          const table = document.createElement('table');
+          table.style.width = '100%';
+          table.style.borderCollapse = 'collapse';
+          table.innerHTML = `
+            <thead>
+              <tr>
+                <th style=\"text-align:left; border-bottom:1px solid rgba(255,255,255,.15); padding:6px\">Left</th>
+                <th style=\"text-align:center; border-bottom:1px solid rgba(255,255,255,.15); padding:6px\">Center</th>
+                <th style=\"text-align:right; border-bottom:1px solid rgba(255,255,255,.15); padding:6px\">Right</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style=\"text-align:left; border-bottom:1px solid rgba(255,255,255,.08); padding:6px\">a</td>
+                <td style=\"text-align:center; border-bottom:1px solid rgba(255,255,255,.08); padding:6px\">b</td>
+                <td style=\"text-align:right; border-bottom:1px solid rgba(255,255,255,.08); padding:6px\">c</td>
+              </tr>
+            </tbody>
+          `;
+          return table;
+        }
+      },
+      {
+        title: "Escaping characters",
+        tag: "Core",
+        desc: "Force Markdown to treat symbols as literal.",
+        md: "\\\\*not italic\\\\*\n\\\\# not a heading\n\\\\[not a link]",
+        render: () => {
+          const div = document.createElement('div');
+          div.textContent = "*not italic*\n# not a heading\n[not a link]";
+          div.style.whiteSpace = 'pre-wrap';
+          return div;
+        }
+      },
+      {
+        title: "HTML inside Markdown",
+        tag: "Platform",
+        desc: "Inline HTML works on many platforms (not all).",
+        md: "<b>Bold</b><br>\n<details>\n<summary>Click</summary>\nHidden text\n</details>",
+        render: () => {
+          const div = document.createElement('div');
+          div.innerHTML = `
+            <b>Bold</b><br>
+            <details style=\"margin-top:10px\">
+              <summary>Click</summary>
+              <div style=\"margin-top:8px\" class=\"small\">Hidden text</div>
+            </details>
+          `;
+          return div;
+        }
+      },
+      {
+        title: "Footnotes",
+        tag: "GFM",
+        desc: "GitHub supports footnotes in many views.",
+        md: "Text with footnote[^1]\n\n[^1]: Footnote text",
+        render: () => {
+          const div = document.createElement('div');
+          div.innerHTML = `Text with footnote<sup>[1]</sup><div class=\"small\" style=\"margin-top:8px\"><sup>[1]</sup> Footnote text</div>`;
+          return div;
+        }
+      },
+      {
+        title: "Mentions / issues (GitHub)",
+        tag: "GFM",
+        desc: "GitHub autolinks for users and issues.",
+        md: "@user\n#123\nowner/repo#123",
+        render: () => {
+          const div = document.createElement('div');
+          div.innerHTML = `
+            <div><span class=\"kbd\">@user</span> (links on GitHub)</div>
+            <div><span class=\"kbd\">#123</span> (issue/PR link on GitHub)</div>
+            <div><span class=\"kbd\">owner/repo#123</span> (cross-repo link)</div>
+          `;
+          return div;
+        }
+      },
+      {
+        title: "Autolinks",
+        tag: "Core",
+        desc: "Many platforms auto-link URLs and emails.",
+        md: "https://example.com\n<user@example.com>",
+        render: () => {
+          const div = document.createElement('div');
+          div.innerHTML = `
+            <div><a href=\"https://example.com\" target=\"_blank\" rel=\"noreferrer\">https://example.com</a></div>
+            <div><a href=\"mailto:user@example.com\">user@example.com</a></div>
+          `;
+          return div;
+        }
+      },
+      {
+        title: "Keyboard keys",
+        tag: "Platform",
+        desc: "Use <kbd> for keycaps (HTML).",
+        md: "Press <kbd>Ctrl</kbd> + <kbd>C</kbd>",
+        render: () => {
+          const div = document.createElement('div');
+          div.innerHTML = `Press <span class=\"kbd\">Ctrl</span> + <span class=\"kbd\">C</span>`;
+          return div;
+        }
+      },
+      {
+        title: "Comments (invisible)",
+        tag: "Core",
+        desc: "HTML comments are not rendered.",
+        md: "Visible text\n\n<!-- hidden comment -->",
+        render: () => {
+          const div = document.createElement('div');
+          div.innerHTML = `Visible text <span class=\"small\">(comment not shown)</span>`;
+          return div;
+        }
+      },
+      {
+        title: "Common pitfalls",
+        tag: "Caution",
+        desc: "Why Markdown fails unexpectedly.",
+        md: "- Indentation matters in nested lists\n- Blank lines around blocks\n- Tables need consistent pipes\n- HTML support varies by platform",
+        render: () => {
+          const ul = document.createElement('ul');
+          ul.style.margin = '0';
+          ul.innerHTML = `
+            <li>Indentation matters in nested lists</li>
+            <li>Blank lines around blocks</li>
+            <li>Tables need consistent pipes</li>
+            <li>HTML support varies by platform</li>
+          `;
+          return ul;
+        }
+      }
+    ];
+
+    const cardsEl = document.getElementById('cards');
+    const tpl = document.getElementById('cardTpl');
+    const qEl = document.getElementById('q');
+    const expandAllBtn = document.getElementById('expandAll');
+    const collapseAllBtn = document.getElementById('collapseAll');
+    const tagRow = document.getElementById('tagRow');
+
+    let activeTag = 'All';
+
+    function normalizedText(s) {
+      return (s || '').toLowerCase();
+    }
+
+    function tagClass(tag) {
+      if (tag === 'GFM') return 'tag gfm';
+      if (tag === 'Caution') return 'tag caution';
+      if (tag === 'Limited') return 'tag limited';
+      return 'tag';
+    }
+
+    function buildTagButtons() {
+      const found = new Set(ITEMS.map(i => i.tag));
+      const tags = ['All', ...Array.from(found).sort((a,b) => a.localeCompare(b))];
+      tagRow.innerHTML = '';
+      for (const t of tags) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'pill' + (t === activeTag ? ' active' : '');
+        btn.textContent = t;
+        btn.addEventListener('click', () => {
+          activeTag = t;
+          for (const n of tagRow.querySelectorAll('.pill')) n.classList.remove('active');
+          btn.classList.add('active');
+          applyFilters();
+        });
+        tagRow.appendChild(btn);
+      }
+    }
+
+    function addCard(item) {
+      const node = tpl.content.firstElementChild.cloneNode(true);
+      const title = node.querySelector('.title');
+      const tag = node.querySelector('.tag');
+      const desc = node.querySelector('.desc');
+      const syntax = node.querySelector('.syntax');
+      const example = node.querySelector('.example');
+      const copyBtn = node.querySelector('.copy');
+
+      title.textContent = item.title;
+      tag.textContent = item.tag;
+      tag.className = tagClass(item.tag);
+      desc.textContent = item.desc;
+      syntax.textContent = item.md;
+      example.appendChild(item.render());
+
+      const haystack = normalizedText([item.title, item.tag, item.desc, item.md].join(' '));
+      node.dataset.title = item.title;
+      node.dataset.tags = item.tag;
+      node.dataset.text = haystack;
+
+      copyBtn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(item.md);
+          copyBtn.textContent = 'Copied';
+          setTimeout(() => (copyBtn.textContent = 'Copy'), 900);
+        } catch {
+          copyBtn.textContent = 'Copy failed';
+          setTimeout(() => (copyBtn.textContent = 'Copy'), 900);
+        }
+      });
+
+      cardsEl.appendChild(node);
+    }
+
+    function applyFilters() {
+      const q = normalizedText(qEl.value.trim());
+      for (const card of cardsEl.children) {
+        const matchesQ = !q || card.dataset.text.includes(q);
+        const matchesTag = activeTag === 'All' || card.dataset.tags === activeTag;
+        card.classList.toggle('hidden', !(matchesQ && matchesTag));
+      }
+    }
+
+    function setDetails(open) {
+      document.querySelectorAll('details').forEach(d => d.open = open);
+    }
+
+    for (const item of ITEMS) addCard(item);
+    buildTagButtons();
+
+    qEl.addEventListener('input', applyFilters);
+    expandAllBtn.addEventListener('click', () => setDetails(true));
+    collapseAllBtn.addEventListener('click', () => setDetails(false));
+  </script>
+</body>
+</html>

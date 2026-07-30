@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEONDRIVE — Synthwave Focus Player</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --pink: #ff2e88;
+    --cyan: #00f0ff;
+    --purple: #b026ff;
+    --bg: #0a0015;
+  }
+  html, body { height: 100%; overflow: hidden; background: var(--bg); }
+  body {
+    font-family: 'Courier New', monospace; color: #fff;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+
+  /* UI overlay */
+  .ui {
+    position: relative; z-index: 10; text-align: center;
+    padding: 30px 40px; border-radius: 20px;
+    background: rgba(10,0,21,0.55); backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,46,136,0.3);
+    box-shadow: 0 0 60px rgba(176,38,255,0.3), inset 0 0 30px rgba(0,240,255,0.05);
+    max-width: 520px; width: 90%;
+  }
+  h1 {
+    font-size: 38px; font-weight: 900; letter-spacing: 0.15em;
+    background: linear-gradient(90deg, var(--pink), var(--cyan));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 40px rgba(255,46,136,0.5);
+    margin-bottom: 4px;
+  }
+  .subtitle { font-size: 11px; letter-spacing: 0.3em; color: var(--cyan); opacity: 0.7; margin-bottom: 24px; }
+
+  /* Visualizer bars */
+  #viz { display: flex; align-items: flex-end; justify-content: center; gap: 3px; height: 80px; margin-bottom: 24px; }
+  #viz .bar {
+    width: 8px; background: linear-gradient(to top, var(--pink), var(--cyan));
+    border-radius: 4px 4px 0 0; height: 4px; transition: height 0.05s ease;
+    box-shadow: 0 0 10px rgba(255,46,136,0.6);
+  }
+
+  /* Controls */
+  .controls { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 20px; }
+  .btn {
+    background: transparent; border: 2px solid var(--cyan); color: var(--cyan);
+    width: 54px; height: 54px; border-radius: 50%; cursor: pointer;
+    font-size: 20px; display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s ease; text-shadow: 0 0 10px var(--cyan);
+  }
+  .btn:hover { background: var(--cyan); color: var(--bg); box-shadow: 0 0 25px var(--cyan); }
+  .btn.play { border-color: var(--pink); color: var(--pink); text-shadow: 0 0 10px var(--pink); width: 68px; height: 68px; font-size: 26px; }
+  .btn.play:hover { background: var(--pink); color: var(--bg); box-shadow: 0 0 30px var(--pink); }
+
+  .track-info { margin-bottom: 18px; }
+  .track-name { font-size: 16px; font-weight: bold; letter-spacing: 0.1em; color: #fff; }
+  .track-desc { font-size: 11px; color: var(--cyan); opacity: 0.6; letter-spacing: 0.15em; margin-top: 4px; }
+
+  /* Sliders */
+  .sliders { display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
+  .slider-row { display: flex; align-items: center; gap: 12px; }
+  .slider-row label { font-size: 11px; letter-spacing: 0.15em; color: var(--cyan); min-width: 50px; text-align: right; }
+  input[type=range] {
+    -webkit-appearance: none; flex: 1; height: 4px; border-radius: 2px;
+    background: linear-gradient(90deg, var(--pink), var(--purple)); outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
+    background: var(--cyan); cursor: pointer; box-shadow: 0 0 10px var(--cyan);
+  }
+  .val { font-size: 11px; color: var(--pink); min-width: 30px; font-weight: bold; }
+
+  .hint { font-size: 10px; color: rgba(255,255,255,0.4); letter-spacing: 0.1em; }
+  .hint kbd { background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); }
+</style>
+</head>
+<body>
+<canvas id="scene"></canvas>
+
+<div class="ui">
+  <h1>NEONDRIVE</h1>
+  <div class="subtitle">SYNTHWAVE FOCUS PLAYER</div>
+
+  <div id="viz"></div>
+
+  <div class="track-info">
+    <div class="track-name" id="trackName">— select a track —</div>
+    <div class="track-desc" id="trackDesc">procedurally generated · no files needed</div>
+  </div>
+
+  <div class="controls">
+    <button class="btn" id="prevBtn" title="Previous">⏮</button>
+    <button class="btn play" id="playBtn" title="Play / Pause">▶</button>
+    <button class="btn" id="nextBtn" title="Next">⏭</button>
+  </div>
+
+  <div class="sliders">
+    <div class="slider-row">
+      <label>VOL</label>
+      <input type="range" id="volSlider" min="0" max="100" value="50">
+      <span class="val" id="volVal">50</span>
+    </div>
+    <div class="slider-row">
+      <label>TEMPO</label>
+      <input type="range" id="tempoSlider" min="60" max="160" value="110">
+      <span class="val" id="tempoVal">110</span>
+    </div>
+  </div>
+
+  <div class="hint"><kbd>SPACE</kbd> play/pause · <kbd>←</kbd> <kbd>→</kbd> tracks · click to toggle</div>
+</div>
+
+<script>
+// ============================================================
+//  NEONDRIVE — Procedural synthwave generator + visualizer
+// ============================================================
+
+const canvas = document.getElementById('scene');
+const ctx = canvas.getContext('2d');
+let W, H;
+function resize() { W = canvas.width = innerWidth; H = canvas.height = innerHeight; }
+resize(); addEventListener('resize', resize);
+
+// ---------- Audio Engine ----------
+let audioCtx = null, masterGain = null, analyser = null, freqData = null;
+let isPlaying = false;
+let currentTrack = 0;
+let tempo = 110;
+let nextNoteTime = 0;
+let step = 0;
+let schedulerId = null;
+
+// Track definitions — each is a pattern of notes
+const tracks = [
+  {
+    name: 'MIDNIGHT CRUISER',
+    desc: 'dark · driving · 110 BPM',
+    bpm: 110,
+    bass:   [0, null, 0, null, 3, null, 0, null, 5, null, 5, null, 3, null, 2, null],
+    lead:   [12, null, null, 15, null, 12, null, null, 10, null, 12, null, null, 15, 17, null],
+    pad:    [0, 0, 5, 5, 3, 3, 0, 0],
+    waveBass: 'sawtooth', waveLead: 'square', wavePad: 'sine'
+  },
+  {
+    name: 'SUNSET STRIP',
+    desc: 'warm · dreamy · 96 BPM',
+    bpm: 96,
+    bass:   [0, null, null, 0, null, null, 4, null, null, 5, null, null, 3, null, null, null],
+    lead:   [null, 12, null, 16, null, 12, 19, null, null, 17, null, 12, null, 10, null, null],
+    pad:    [0, 0, 0, 0, 4, 4, 4, 4, 5, 5, 5, 5, 3, 3, 3, 3],
+    waveBass: 'triangle', waveLead: 'sawtooth', wavePad: 'sine'
+  },
+  {
+    name: 'GRID RUNNER',
+    desc: 'fast · intense · 140 BPM',
+    bpm: 140,
+    bass:   [0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 3, 3, 7, 7],
+    lead:   [12, 15, 19, 15, 12, 15, 19, 22, 17, 20, 24, 20, 17, 15, 12, 10],
+    pad:    [0, 0, 5, 5, 3, 3, 7, 7],
+    waveBass: 'square', waveLead: 'sawtooth', wavePad: 'triangle'
+  },
+  {
+    name: 'CHROME DREAMS',
+    desc: 'chill · ambient · 80 BPM',
+    bpm: 80,
+    bass:   [0, null, null, null, null, null, 3, null, null, null, 5, null, null, null, null, null],
+    lead:   [null, null, 12, null, null, null, 15, null, null, null, 17, null, null, null, 12, null],
+    pad:    [0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 3, 3, 3, 3],
+    waveBass: 'sine', waveLead: 'triangle', wavePad: 'sawtooth'
+  }
+];
+
+// Note frequencies — semitone offset from A2 (110 Hz)
+const A2 = 110;
+function noteFreq(semi) { return A2 * Math.pow(2, semi / 12); }
+
+function initAudio() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = 0.5;
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 64;
+  freqData = new Uint8Array(analyser.frequencyBinCount);
+  masterGain.connect(analyser);
+  analyser.connect(audioCtx.destination);
+}
+
+function playNote(freq, time, dur, type, gainVal) {
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = 2000;
+  filter.Q.value = 5;
+  osc.type = type;
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(0, time);
+  gain.gain.linearRampToValueAtTime(gainVal, time + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.001, time + dur);
+  osc.connect(filter); filter.connect(gain); gain.connect(masterGain);
+  osc.start(time); osc.stop(time + dur);
+}
+
+function playKick(time) {
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.frequency.setValueAtTime(150, time);
+  osc.frequency.exponentialRampToValueAtTime(40, time + 0.15);
+  gain.gain.setValueAtTime(0.6, time);
+  gain.gain.exponentialRampToValueAtTime(0.001, time + 0.2);
+  osc.connect(gain); gain.connect(masterGain);
+  osc.start(time); osc.stop(time + 0.2);
+}
+
+function playHat(time) {
+  const buf = audioCtx.createBuffer(1, 4410, 44100);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+  const src = audioCtx.createBufferSource(); src.buffer = buf;
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = 'highpass'; filter.frequency.value = 7000;
+  const gain = audioCtx.createGain();
+  gain.gain.setValueAtTime(0.15, time);
+  gain.gain.exponentialRampToValueAtTime(0.001, time + 0.05);
+  src.connect(filter); filter.connect(gain); gain.connect(masterGain);
+  src.start(time);
+}
+
+function scheduler() {
+  if (!isPlaying) return;
+  const spb = 60 / tempo / 4; // seconds per 16th note
+  while (nextNoteTime < audioCtx.currentTime + 0.1) {
+    const t = tracks[currentTrack];
+    const s = step % 16;
+
+    // Bass
+    if (t.bass[s] !== null) playNote(noteFreq(t.bass[s]), nextNoteTime, spb * 2, t.waveBass, 0.25);
+    // Lead
+    if (t.lead[s] !== null) playNote(noteFreq(t.lead[s] + 12), nextNoteTime, spb * 1.5, t.waveLead, 0.12);
+    // Pad (every 2 steps)
+    if (s % 2 === 0 && t.pad[s] !== null) playNote(noteFreq(t.pad[s] + 12), nextNoteTime, spb * 4, t.wavePad, 0.06);
+    // Drums
+    if (s % 4 === 0) playKick(nextNoteTime);
+    if (s % 2 === 1) playHat(nextNoteTime);
+
+    nextNoteTime += spb;
+    step++;
+  }
+  schedulerId = setTimeout(scheduler, 25);
+}
+
+function startPlayback() {
+  initAudio();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  isPlaying = true;
+  nextNoteTime = audioCtx.currentTime + 0.05;
+  step = 0;
+  scheduler();
+  playBtn.textContent = '⏸';
+}
+function stopPlayback() {
+  isPlaying = false;
+  if (schedulerId) clearTimeout(schedulerId);
+  playBtn.textContent = '▶';
+}
+function togglePlay() { isPlaying ? stopPlayback() : startPlayback(); }
+
+function selectTrack(idx) {
+  currentTrack = (idx + tracks.length) % tracks.length;
+  tempo = tracks[currentTrack].bpm;
+  tempoSlider.value = tempo; tempoVal.textContent = tempo;
+  trackName.textContent = tracks[currentTrack].name;
+  trackDesc.textContent = tracks[currentTrack].desc;
+  if (isPlaying) { stopPlayback(); startPlayback(); }
+}
+
+// ---------- Visualizer bars ----------
+const vizEl = document.getElementById('viz');
+const NUM_BARS = 32;
+const bars = [];
+for (let i = 0; i < NUM_BARS; i++) {
+  const b = document.createElement('div'); b.className = 'bar'; vizEl.appendChild(b);
+  bars.push(b);
+}
+
+// ---------- Background scene ----------
+let scroll = 0, stars = [], mountains = [];
+for (let i = 0; i < 150; i++) stars.push({ x: Math.random(), y: Math.random() * 0.5, z: Math.random() });
+for (let i = 0; i < 3; i++) mountains.push(generateMountain());
+
+function generateMountain() {
+  const pts = [];
+  let y = 0.3 + Math.random() * 0.15;
+  for (let x = 0; x <= 1; x += 0.02) {
+    y += (Math.random() - 0.5) * 0.04;
+    y = Math.max(0.15, Math.min(0.45, y));
+    pts.push({ x, y });
+  }
+  return pts;
+}
+
+function drawScene() {
+  // Sky gradient
+  const sky = ctx.createLinearGradient(0, 0, 0, H * 0.6);
+  sky.addColorStop(0, '#0a0015');
+  sky.addColorStop(0.4, '#1a0030');
+  sky.addColorStop(0.7, '#3d0a5e');
+  sky.addColorStop(1, '#ff2e88');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, W, H * 0.6);
+
+  // Sun
+  const sunY = H * 0.42;
+  const sunR = Math.min(W, H) * 0.15;
+  const sunGrad = ctx.createRadialGradient(W/2, sunY, 0, W/2, sunY, sunR);
+  sunGrad.addColorStop(0, '#ffe066');
+  sunGrad.addColorStop(0.5, '#ff6b35');
+  sunGrad.addColorStop(1, 'rgba(255,46,136,0)');
+  ctx.fillStyle = sunGrad;
+  ctx.beginPath(); ctx.arc(W/2, sunY, sunR, 0, Math.PI * 2); ctx.fill();
+
+  // Sun stripes
+  ctx.fillStyle = '#0a0015';
+  for (let i = 0; i < 6; i++) {
+    const sy = sunY + sunR * 0.3 + i * sunR * 0.12;
+    ctx.fillRect(W/2 - sunR, sy, sunR * 2, sunR * 0.04);
+  }
+
+  // Stars
+  ctx.fillStyle = '#fff';
+  stars.forEach(s => {
+    const tw = 0.5 + 0.5 * Math.sin(Date.now() * 0.001 + s.z * 10);
+    ctx.globalAlpha = s.z * tw;
+    ctx.fillRect(s.x * W, s.y * H * 0.6, 2, 2);
+  });
+  ctx.globalAlpha = 1;
+
+  // Mountains
+  mountains.forEach((m, mi) => {
+    ctx.beginPath();
+    ctx.moveTo(0, H * 0.6);
+    m.forEach(p => ctx.lineTo(p.x * W, p.y * H + mi * 20));
+    ctx.lineTo(W, H * 0.6);
+    ctx.closePath();
+    ctx.fillStyle = mi === 0 ? '#1a0033' : '#0d001a';
+    ctx.fill();
+    // Neon outline
+    ctx.strokeStyle = mi === 0 ? '#b026ff' : '#ff2e88';
+    ctx.lineWidth = 2; ctx.shadowBlur = 10; ctx.shadowColor = ctx.strokeStyle;
+    ctx.beginPath();
+    m.forEach((p, i) => i === 0 ? ctx.moveTo(p.x * W, p.y * H + mi * 20) : ctx.lineTo(p.x * W, p.y * H + mi * 20));
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  });
+
+  // Ground
+  ctx.fillStyle = '#05000f';
+  ctx.fillRect(0, H * 0.6, W, H * 0.4);
+
+  // Grid floor
+  const horizon = H * 0.6;
+  const gridColor = isPlaying ? 'rgba(255,46,136,0.8)' : 'rgba(0,240,255,0.4)';
+  ctx.strokeStyle = gridColor; ctx.lineWidth = 1.5;
+  ctx.shadowBlur = 8; ctx.shadowColor = gridColor;
+
+  // Horizontal lines (perspective)
+  for (let i = 0; i < 20; i++) {
+    const t = (i + (scroll % 1)) / 20;
+    const y = horizon + Math.pow(t, 2) * (H - horizon);
+    ctx.globalAlpha = 1 - t * 0.7;
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+  // Vertical lines (converging to vanishing point)
+  for (let i = -10; i <= 10; i++) {
+    ctx.globalAlpha = 0.6;
+    ctx.beginPath();
+    ctx.moveTo(W/2, horizon);
+    ctx.lineTo(W/2 + i * W * 0.15, H);
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+
+  if (isPlaying) scroll += 0.008 + (tempo / 110) * 0.004;
+}
+
+// ---------- Main loop ----------
+function loop() {
+  drawScene();
+
+  // Update visualizer from audio
+  if (analyser && isPlaying) {
+    analyser.getByteFrequencyData(freqData);
+    for (let i = 0; i < NUM_BARS; i++) {
+      const v = freqData[i] || 0;
+      bars[i].style.height = Math.max(4, (v / 255) * 80) + 'px';
+    }
+  } else {
+    // Idle animation
+    for (let i = 0; i < NUM_BARS; i++) {
+      const v = 4 + Math.sin(Date.now() * 0.003 + i * 0.3) * 6 + Math.sin(Date.now() * 0.007 + i * 0.5) * 4;
+      bars[i].style.height = Math.max(4, v) + 'px';
+    }
+  }
+  requestAnimationFrame(loop);
+}
+loop();
+
+// ---------- Controls ----------
+const playBtn = document.getElementById('playBtn');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const volSlider = document.getElementById('volSlider');
+const volVal = document.getElementById('volVal');
+const tempoSlider = document.getElementById('tempoSlider');
+const tempoVal = document.getElementById('tempoVal');
+
+playBtn.addEventListener('click', togglePlay);
+prevBtn.addEventListener('click', () => selectTrack(currentTrack - 1));
+nextBtn.addEventListener('click', () => selectTrack(currentTrack + 1));
+
+volSlider.addEventListener('input', () => {
+  volVal.textContent = volSlider.value;
+  if (masterGain) masterGain.gain.value = volSlider.value / 100;
+});
+tempoSlider.addEventListener('input', () => {
+  tempo = parseInt(tempoSlider.value);
+  tempoVal.textContent = tempo;
+});
+
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
+  if (e.code === 'ArrowLeft') selectTrack(currentTrack - 1);
+  if (e.code === 'ArrowRight') selectTrack(currentTrack + 1);
+});
+
+// Init display
+selectTrack(0);
+</script>
+</body>
+</html>

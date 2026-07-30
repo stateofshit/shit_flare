@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClickPoint Pro & Vector Visualizer</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#0b0f19',
+                        darkPanel: '#161e2e',
+                        accent: '#6366f1',
+                        accentHover: '#4f46e5'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #161e2e;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #374151;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4b5563;
+        }
+    </style>
+</head>
+<body class="bg-darkBg text-slate-100 h-full flex flex-col overflow-hidden font-sans select-none">
+
+    <!-- Header -->
+    <header class="bg-darkPanel border-b border-slate-850 h-14 flex items-center justify-between px-6 shrink-0 z-10">
+        <div class="flex items-center gap-3">
+            <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+            </svg>
+            <h1 class="text-md font-bold tracking-wider text-slate-200">ClickPoint Pro Visualizer</h1>
+            <span class="bg-indigo-950 text-[10px] text-indigo-300 font-mono px-2.5 py-0.5 rounded border border-indigo-900">1920 × 917 Viewport</span>
+        </div>
+        
+        <div class="flex items-center gap-4">
+            <!-- Background Image Upload -->
+            <label class="flex items-center gap-1.5 px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700 transition cursor-pointer">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                <span>Upload Reference Screen</span>
+                <input type="file" id="bgUploader" accept="image/*" class="hidden">
+            </label>
+            <button id="btnToggleGrid" class="px-3 py-1.5 rounded bg-indigo-600/20 hover:bg-indigo-600/30 text-xs font-medium text-indigo-300 border border-indigo-500/30 transition">
+                Grid Overlay
+            </button>
+            <button id="btnReset" class="px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300 border border-slate-700 transition">
+                Reset View
+            </button>
+        </div>
+    </header>
+
+    <!-- App Container -->
+    <div class="flex flex-1 overflow-hidden">
+        
+        <!-- Workspace Canvas -->
+        <div class="flex-1 flex flex-col relative bg-slate-950">
+            <!-- Floating Controls -->
+            <div class="absolute top-4 left-4 z-10 flex gap-2">
+                <div class="bg-slate-900/95 backdrop-blur border border-slate-800 rounded-lg p-1.5 flex gap-1 shadow-2xl">
+                    <button id="btnZoomIn" class="p-1.5 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-100 transition" title="Zoom In">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    </button>
+                    <button id="btnZoomOut" class="p-1.5 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-100 transition" title="Zoom Out">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
+                    </button>
+                    <button id="btnFit" class="p-1.5 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-100 transition" title="Fit Screen">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"/></svg>
+                    </button>
+                </div>
+                <div class="bg-slate-900/95 backdrop-blur border border-slate-800 rounded-lg px-3 py-2 flex items-center shadow-2xl text-[11px] font-mono text-slate-400">
+                    <span id="coordDisplay">X: 0, Y: 0</span>
+                </div>
+            </div>
+
+            <!-- Viewport Area -->
+            <div id="canvasViewport" class="flex-1 w-full h-full overflow-hidden relative cursor-grab active:cursor-grabbing">
+                <svg id="drawingCanvas" class="absolute origin-top-left" width="1920" height="917" viewBox="0 0 1920 917" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Dynamic Grid Pattern definitions -->
+                    <defs>
+                        <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5" stroke-opacity="0.6"/>
+                        </pattern>
+                        <pattern id="subGrid" width="200" height="200" patternUnits="userSpaceOnUse">
+                            <rect width="200" height="200" fill="url(#grid)" />
+                            <path d="M 200 0 L 0 0 0 200" fill="none" stroke="#334155" stroke-width="1.2" stroke-opacity="0.4"/>
+                        </pattern>
+                    </defs>
+
+                    <!-- User Uploaded Screen Template Layer -->
+                    <image id="bgTemplate" x="0" y="0" width="1920" height="917" preserveAspectRatio="none" opacity="0.4" class="pointer-events-none" />
+
+                    <!-- Background grids -->
+                    <rect id="gridOverlay" width="1920" height="917" fill="url(#subGrid)" class="pointer-events-none"/>
+                    <rect width="1920" height="917" fill="none" stroke="#4f46e5" stroke-width="2.5" stroke-dasharray="6,4" stroke-opacity="0.4" class="pointer-events-none"/>
+
+                    <!-- Vector Paths Render Target -->
+                    <g id="pathsGroup"></g>
+
+                    <!-- ClickPoint Pro CSS Overlays Target -->
+                    <g id="regionsGroup"></g>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Sidebar Panel Controls -->
+        <aside class="w-[480px] shrink-0 border-l border-slate-850 bg-darkPanel flex flex-col overflow-hidden h-full">
+            <div class="flex border-b border-slate-800 bg-slate-950 shrink-0">
+                <button id="tabCss" class="flex-1 py-3.5 text-center text-[11px] font-bold uppercase tracking-wider border-b-2 border-indigo-500 text-slate-100 transition focus:outline-none">
+                    CSS Regions
+                </button>
+                <button id="tabVectors" class="flex-1 py-3.5 text-center text-[11px] font-bold uppercase tracking-wider border-b-2 border-transparent text-slate-400 hover:text-slate-100 transition focus:outline-none">
+                    Vector JSON
+                </button>
+            </div>
+
+            <!-- Tab Container Contents -->
+            <div class="flex-1 flex flex-col overflow-hidden relative">
+                
+                <!-- Tab CSS Regions View -->
+                <div id="panelCss" class="absolute inset-0 flex flex-col overflow-hidden p-4 space-y-4">
+                    <div class="flex-1 flex flex-col overflow-hidden space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold text-slate-400 tracking-wide uppercase">ClickPoint Pro CSS Input</span>
+                            <span class="text-[10px] text-slate-500 font-mono">Changes auto-compile</span>
+                        </div>
+                        <textarea id="cssTextarea" class="w-full flex-1 bg-slate-950 border border-slate-850 rounded-lg p-3 font-mono text-xs text-indigo-300 focus:outline-none focus:border-indigo-500 resize-none overflow-y-auto leading-relaxed" spellcheck="false" placeholder="Paste ClickPoint CSS here..."></textarea>
+                    </div>
+
+                    <!-- Interactive Region List Tracker -->
+                    <div class="h-44 flex flex-col border-t border-slate-800 pt-3 overflow-hidden">
+                        <div class="text-xs font-semibold text-slate-400 tracking-wide uppercase mb-2 flex items-center justify-between">
+                            <span>Detected Hotspots</span>
+                            <span id="regionCount" class="text-[10px] bg-indigo-950 text-indigo-400 px-2 py-0.5 rounded font-mono">0 Loaded</span>
+                        </div>
+                        <div id="regionsList" class="flex-1 overflow-y-auto space-y-1.5 pr-1">
+                            <!-- Populated on runtime compilation -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Vectors View -->
+                <div id="panelVectors" class="absolute inset-0 flex flex-col overflow-hidden hidden p-4 space-y-4">
+                    <div class="flex-1 flex flex-col overflow-hidden space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold text-slate-400 tracking-wide uppercase">Vector Paths JSON</span>
+                            <span class="text-[10px] text-slate-500 font-mono">Paths coordinates layout</span>
+                        </div>
+                        <textarea id="jsonTextarea" class="w-full flex-1 bg-slate-950 border border-slate-850 rounded-lg p-3 font-mono text-xs text-emerald-400 focus:outline-none focus:border-emerald-500 resize-none overflow-y-auto leading-relaxed" spellcheck="false"></textarea>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="btnApplyJson" class="flex-1 py-2 rounded bg-indigo-600 hover:bg-indigo-500 text-xs font-bold tracking-wider uppercase text-white transition">
+                            Apply JSON Map
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </aside>
+
+    </div>
+
+    <script>
+        // Pre-populate with ClickPoint Pro CSS data
+        const initialCSS = `/* Generated by ClickPoint Pro */
+/* Region #57 */
+.region-57 {
+  position: absolute;
+  left: 50.26%;
+  top: 7.96%;
+  width: 1.35%;
+  height: 8.40%;
+}
+
+/* fuck */
+.region-58 {
+  position: absolute;
+  left: 51.67%;
+  top: 15.81%;
+  width: 28.59%;
+  height: 13.52%;
+}
+
+/* Region #59 */
+.region-59 {
+  position: absolute;
+  left: 53.33%;
+  top: 22.46%;
+  width: 0.52%;
+  height: 39.04%;
+}`;
+
+        // Pre-populate JSON shapes from first user message
+        const initialJSON = {
+            "viewport": { "width": 1920, "height": 917 },
+            "shapes": [
+                {
+                    "id": 46,
+                    "type": "freehand",
+                    "data": {
+                        "points": [
+                            {"x": 1140, "y": 86}, {"x": 1136, "y": 86}, {"x": 1119, "y": 88}, {"x": 1091, "y": 91}, {"x": 1070, "y": 95}, {"x": 1041, "y": 100}, {"x": 1015, "y": 109}, {"x": 1010, "y": 111}, {"x": 1006, "y": 114}, {"x": 998, "y": 123}, {"x": 994, "y": 127}, {"x": 986, "y": 138}, {"x": 973, "y": 155}, {"x": 969, "y": 161}, {"x": 963, "y": 173}, {"x": 962, "y": 196}, {"x": 962, "y": 211}, {"x": 962, "y": 223}, {"x": 966, "y": 250}, {"x": 971, "y": 266}, {"x": 979, "y": 283}, {"x": 1002, "y": 321}, {"x": 1023, "y": 345}, {"x": 1053, "y": 372}, {"x": 1095, "y": 401}, {"x": 1142, "y": 426}, {"x": 1204, "y": 454}, {"x": 1287, "y": 486}, {"x": 1380, "y": 519}, {"x": 1483, "y": 548}, {"x": 1565, "y": 563}, {"x": 1629, "y": 566}, {"x": 1690, "y": 564}, {"x": 1726, "y": 554}, {"x": 1750, "y": 541}, {"x": 1770, "y": 523}, {"x": 1779, "y": 506}, {"x": 1782, "y": 486}, {"x": 1782, "y": 462}, {"x": 1768, "y": 417}, {"x": 1745, "y": 375}, {"x": 1726, "y": 347}, {"x": 1694, "y": 310}, {"x": 1674, "y": 288}, {"x": 1656, "y": 274}, {"x": 1629, "y": 255}, {"x": 1592, "y": 236}, {"x": 155, "y": 215}, {"x": 1496, "y": 191}, {"x": 145, "y": 171}, {"x": 141, "y": 153}, {"x": 1381, "y": 143}, {"x": 1353, "y": 134}, {"x": 1329, "y": 129}, {"x": 1301, "y": 123}, {"x": 127, "y": 118}, {"x": 123, "y": 112}, {"x": 1209, "y": 106}, {"x": 1189, "y": 104}, {"x": 1165, "y": 101}, {"x": 1139, "y": 97}, {"/* Region #57 */", "x": 1112, "y": 95}, {""x": 1091, "y": 93}, {""x": 1073, "y": 92}, {""x": 1058, "y": 92}, {""x": 1051, "y": 92}, {""x": 1046, "y": 92}, {""x": 1045, "y": 92}, {""x": 1044, "y": 92}, {""x": 1044, "y": 92"}
+                        ]
+                    }
+                },
+                {
+                    "id": 48,
+                    "type": "freehand",
+                    "data": {
+                        "points": [
+                            {"x": 1279, "y": 264}, {"x": 1279, "y": 266}, {"x": 1276, "y": 274}, {"x": 1267, "y": 289}, {"x": 1241, "y": 317}, {"x": 1217, "y": 340}, {"x": 1182, "y": 373}, {"x": 1149, "y": 405}, {"x": 1103, "y": 446}, {"x": 1064, "y": 483}, {"x": 1030, "y": 519}, {"x": 980, "y": 567}, {"x": 946, "y": 600}, {"x": 913, "y": 634}, {"x": 896, "y": 653}, {"x": 884, "y": 669}, {"x": 879, "y": 679}, {"x": 878, "y": 684}, {"x": 876, "y": 690}, {"x": 874, "y": 697}, {"x": 873, "y": 707}, {"x": 924, "y": 779}, {"x": 988, "y": 792}, {"x": 1071, "y": 811}, {"x": 114, "y": 825}, {"x": 1206, "y": 837}, {"x": 1261, "y": 846}, {"x": 1305, "y": 852}, {"x": 1332, "y": 853}, {"x": 1351, "y": 853}, {"x": 136, "y": 851}, {"x": 137, "y": 849}, {"x": 1381, "y": 847}, {"x": 1384, "y": 846}, {"x": 1387, "y": 845}, {"x": 1390, "y": 843}, {"x": 1392, "y": 843}, {"x": 1392, "y": 842}, {"x": 1392, "y": 841}, {"x": 1393, "y": 841}, {"x": 1393, "y": 840}, {"x": 1395, "y": 832}, {"x": 1389, "y": 804}, {"x": 137, "y": 772}, {"x": 1341, "y": 721}, {"x": 1294, "y": 658}, {"x": 124, "y": 591}, {"x": 119, "y": 543}, {"x": 1162, "y": 497}, {"x": 1137, "y": 466}, {"x": 1119, "y": 440}, {"x": 1108, "y": 422}, {"x": 1098, "y": 406}, {"x": 1092, "y": 394}, {"x": 1085, "y": 382}, {"x": 1073, "y": 366}, {"x": 1060, "y": 347}, {"x": 1049, "y": 334}, {"x": 1042, "y": 324}, {"x": 1035, "y": 313}, {""x": 1033, "y": 308}, {""x": 1032, "y": 307}, {""x": 1031, "y": 305},""x": 1031, "y": 304},""x": 1030, "y": 303},""x": 1030, "y": 302},""x": 1030, "y": 301},""x": 1029, "y": 301},""x": 1029, "y": 299},""x": 1035, "y": 295},""x": 1054, "y": 286},""x": 1094, "y": 277},""x": 1154, "y": 267},""x": 122, "y": 260},""x": 131, "y": 259},""x": 140, "y": 257},""x": 147, "y": 257},""x": 153, "y": 257},""x": 158, "y": 258},""x": 160, "y": 262},""x": 162, "y": 265},""x": 162, "y": 268},""x": 163, "y": 270},""x": 1632, "y": 272},""x": 1635, "y": 275},""x": 1638, "y": 281},""x": 1641, "y": 289},""x": 1646, "y": 303},""x": 165, "y": 323},""x": 1653, "y": 340},"x": 1653, "y": 358},"x": 1645, "y": 383},"x": 160, "y": 422},"x": 154, "y": 459},"x": 145, "y": 493},"x": 136, "y": 518},"x": 1283, "y": 539},"x": 1205, "y": 560},"x": 116, "y": 573},"x": 113, "y": 584},"x": 112, "y": 595},"x": 1105, "y": 608},"x": 1094, "y": 618},"x": 1077, "y": 633},"x": 1063, "y": 645},"x": 1052, "y": 654},"x": 1039, "y": 666},"x": 1029, "y": 675},"x": 1015, "y": 690},"x": 1005, "y": 700},"x": 993, "y": 713},"x": 982, "y": 724},"x": 973, "y": 734},"x": 960, "y": 747},"x": 949, "y": 756},"x": 941, "y": 761},"x": 937, "y": 765},"x": 935, "y": 766},"x": 934, "y": 766},"x": 933, "y": 766},"x": 933, "y": 766"}
+                        ]
+                    }
+                },
+                {
+                    "id": 50,
+                    "type": "freehand",
+                    "data": {
+                        "points": [
+                            {"x": 147, "y": 182}, {"x": 146, "y": 182}, {"x": 136, "y": 187}, {"x": 123, "y": 192}, {"x": 93, "y": 204}, {"x": 49, "y": 228}, {"x": 15, "y": 254}, {"x": 4, "y": 372}, {"x": 30, "y": 373}, {"x": 96, "y": 373}, {"x": 164, "y": 362}, {"x": 218, "y": 350}, {"x": 258, "y": 332}, {"x": 275, "y": 315}, {"x": 285, "y": 288}, {"x": 290, "y": 260}, {"x": 291, "y": 223}, {"x": 291, "y": 199}, {"x": 289, "y": 179}, {"x": 284, "y": 164}, {"x": 271, "y": 147}, {"x": 254, "y": 137}, {"x": 248, "y": 135}, {"x": 217, "y": 132}, {"x": 197, "y": 136}, {"x": 178, "y": 149}, {"x": 165, "y": 163}, {"x": 155, "y": 180}, {"x": 145, "y": 212}, {"x": 141, "y": 235}, {"x": 139, "y": 262}, {"x": 138, "y": 291}, {"x": 138, "y": 316}, {"x": 138, "y": 344}, {"x": 142, "y": 374}, {"x": 151, "y": 402}, {"x": 162, "y": 417}, {"x": 174, "y": 425}, {"x": 197, "y": 429}, {"x": 232, "y": 429}, {"x": 285, "y": 416}, {"x": 319, "y": 398}, {"x": 338, "y": 378}, {"x": 344, "y": 361}, {"x": 346, "y": 343}, {"x": 346, "y": 328}, {"x": 338, "y": 312}, {"x": 314, "y": 298}, {"x": 284, "y": 294}, {"x": 239, "y": 296}, {"x": 183, "y": 318}, {"x": 122, "y": 353}, {"x": 77, "y": 393}, {"x": 43, "y": 443}, {"x": 18, "y": 504}, {"x": 5, "y": 565}, {"x": 2, "y": 601}, {"x": 2, "y": 637}, {"x": 3, "y": 658}, {"x": 8, "y": 682}, {"x": 16, "y": 703}, {"x": 28, "y": 720}, {"x": 45, "y": 730}, {"x": 128, "y": 738}, {"x": 164, "y": 737}, {"x": 236, "y": 718}, {"x": 316, "y": 673}, {"x": 331, "y": 654}, {"x": 345, "y": 627}, {"x": 358, "y": 573}, {"x": 359, "y": 560}, {"x": 359, "y": 527}, {"x": 341, "y": 490}, {"x": 317, "y": 473}, {""x": 310, "y50}, {"x": 276, "y": 468}, {"x": 248, "y": 478}, {"x": 231, "y": 488}, {"x": 190, "y": 528}, {"x": 173, "y": 553}, {"x": 164, "y": 577}, {"x": 153, "y": 635}, {"x": 153, "y": 665}, {""x": 158, "y": 701}, {"x": 162, "y": 720}, {"x": 170, "y": 737}, {"x": 180, "y": 750}, {"x": 196, "y": 760}, {"x": 226, "y": 763}, {"x": 275, "y": 756}, {"x": "333, "y": 728}, {"x": 372, "y": 688}, {"x": 389, "y": 643}, {"x": 401, "y": 592}, {"x": 413, "y": 526}, {"x": 415, "y": 458}, {"x": 0.407, "y": 382}, {"x": 0.387, "y": 322}, {"x": 365, "y": 282}, {"x": 345, "y": 255}, {"x": 325, "y": 238}, {"x": 314, "y": 232}, {"x": 306, "y": 229}, {"x": 298, "y": 229}, {"x": 289, "y": 235}, {"x": 276, "y": 253}, {"x": 260, "y": 293}, {"x": 256, "y": 313}, {"x": 256, "y": 320}, {"x": 256, "y": 321}, {"x": 260, "y": 318}, {"x": 270, "y": 303}, {"x": 283, "y": 264}, {""x": 292, "y": 233}, {"x": 300, "y": 193}, {"x": 303, "y": 171}, {"x": 306, "y": 146}, {"x": 307, "y": 123}, {"x": 310, "y": 102}, {""x": 312, "y": 87}, {""x": 317, "y": 74}, {"x": "324, "y": 62}, {"x": "337, "y": 48}, {""x": 357, "y": 34}, {""x": 371, "y": 29}, {""x": 378, "y": 29}, {""x": 388, "y": 36}, {""x": 396, "y": 49}, {""x": 411, "y": 79}, {""x": 427, "y": 136}, {"x": "437, "y": 199}, {"x": "y": 440}, {""y": 252}, {"x": "y": 440}, {""y": 312}, {"x": "y": 433}, {""y": 347}, {""y": 418, "y": 377}, {""y": 403, "y": 389}, {"x": "y": 396}, {""y": 389, "x": 389}, {""y": 385, "y": 386}, {""x": 376, "y": 375}, {""x": 366, "y": 359}, {"x": 359, "y": 338}, {"x": 354, "y": 312}, {"x": 353, "y": 288}, {"x": 360, "y": 260}, {"x": 379, "y": 231}, {"x": 395, "y": 215}, {"x": 411, "y": 204}, {"x": 421, "y": 201}, {"x": 426, "y": 202}, {"x": 430, "y": 210}, {"x": 435, "y": 223}, {"x": 444, "y": 253}, {"x": 451, "y": 285}, {"x": 454, "y": 322}, {"x": 454, "y": 351}, {"x": 450, "y": 376}, {"x": 444, "y": 398}, {"x": "y": 434}, {"x": "y": 416}, {""y": 425, "y": 427}, {"x": 419, "y": 431}, {"x": 417, "y": 431}, {"x": 417, "y": 431"}
+                        ]
+                    }
+                }
+            ],
+            "textLabels": [],
+            "totalShapes": 3,
+            "totalLabels": 0
+        };
+
+        // Application State
+        let state = {
+            viewport: { ...initialJSON.viewport },
+            shapes: JSON.parse(JSON.stringify(initialJSON.shapes)),
+            regions: [],
+            zoom: 1.0,
+            panX: 0,
+            panY: 0,
+            isDragging: false,
+            gridVisible: true,
+            activeTab: 'css',
+            selectedRegionId: null
+        };
+
+        // DOM elements
+        const canvasViewport = document.getElementById('canvasViewport');
+        const drawingCanvas = document.getElementById('drawingCanvas');
+        const pathsGroup = document.getElementById('pathsGroup');
+        const regionsGroup = document.getElementById('regionsGroup');
+        const gridOverlay = document.getElementById('gridOverlay');
+        const cssTextarea = document.getElementById('cssTextarea');
+        const jsonTextarea = document.getElementById('jsonTextarea');
+        const regionsList = document.getElementById('regionsList');
+        const regionCount = document.getElementById('regionCount');
+        const coordDisplay = document.getElementById('coordDisplay');
+        const bgTemplate = document.getElementById('bgTemplate');
+        const bgUploader = document.getElementById('bgUploader');
+
+        // Tab buttons & Panels
+        const tabCss = document.getElementById('tabCss');
+        const tabVectors = document.getElementById('tabVectors');
+        const panelCss = document.getElementById('panelCss');
+        const panelVectors = document.getElementById('panelVectors');
+
+        // Control buttons
+        const btnToggleGrid = document.getElementById('btnToggleGrid');
+        const btnReset = document.getElementById('btnReset');
+        const btnZoomIn = document.getElementById('btnZoomIn');
+        const btnZoomOut = document.getElementById('btnZoomOut');
+        const btnFit = document.getElementById('btnFit');
+        const btnApplyJson = document.getElementById('btnApplyJson');
+
+        // Initialize App
+        window.addEventListener('DOMContentLoaded', () => {
+            cssTextarea.value = initialCSS;
+            jsonTextarea.value = JSON.stringify(initialJSON, null, 2);
+            
+            parseAndCompileCSS();
+            renderVectors();
+            setupEvents();
+            autoFit();
+        });
+
+        // Parse absolute percentage bounding boxes from ClickPoint CSS Input
+        function parseAndCompileCSS() {
+            const rawCss = cssTextarea.value;
+            const parsedRegions = [];
+
+            // Pattern to match comments (optionally), class selector, and bounding properties
+            const blockRegex = /(?:\/\*\s*([\s\S]*?)\s*\*\/)?\s*\.([\w-]+)\s*\{([\s\S]*?)\}/g;
+            let match;
+
+            while ((match = blockRegex.exec(rawCss)) !== null) {
+                const rawComment = match[1] ? match[1].trim() : '';
+                const className = match[2].trim();
+                const styleBody = match[3];
+
+                // Parse internal declarations
+                const declarations = {};
+                styleBody.split(';').forEach(decl => {
+                    const pair = decl.split(':');
+                    if (pair.length === 2) {
+                        declarations[pair[0].trim()] = pair[1].trim();
+                    }
+                });
+
+                // Standard absolute metrics extraction
+                if (declarations.left && declarations.top && declarations.width && declarations.height) {
+                    parsedRegions.push({
+                        id: className,
+                        label: cleanComment(rawComment) || className,
+                        left: parseFloat(declarations.left),
+                        top: parseFloat(declarations.top),
+                        width: parseFloat(declarations.width),
+                        height: parseFloat(declarations.height)
+                    });
+                }
+            }
+
+            state.regions = parsedRegions;
+            renderRegions();
+            buildRegionsStack();
+        }
+
+        // Clean CSS multi-line formatting comments
+        function cleanComment(comment) {
+            if (!comment) return '';
+            return comment.replace(/\*+/g, '').trim();
+        }
+
+        // Render ClickPoint region overlays as bounding boxes in workspace SVG
+        function renderRegions() {
+            regionsGroup.innerHTML = '';
+
+            state.regions.forEach((reg) => {
+                // Percentage to absolute viewport conversion
+                const x = (reg.left / 100) * state.viewport.width;
+                const y = (reg.top / 100) * state.viewport.height;
+                const width = (reg.width / 100) * state.viewport.width;
+                const height = (reg.height / 100) * state.viewport.height;
+
+                // Interactive outer frame element
+                const rectElem = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                rectElem.setAttribute("x", x);
+                rectElem.setAttribute("y", y);
+                rectElem.setAttribute("width", width);
+                rectElem.setAttribute("height", height);
+                rectElem.setAttribute("fill", "rgba(99, 102, 241, 0.15)");
+                rectElem.setAttribute("stroke", "#6366f1");
+                rectElem.setAttribute("stroke-width", "2.5");
+                rectElem.setAttribute("class", "cursor-pointer hover:fill-indigo-500/25 transition duration-150");
+                rectElem.setAttribute("id", `svg-reg-${reg.id}`);
+                rectElem.addEventListener('click', () => selectRegion(reg.id));
+
+                // Label tag
+                const textElem = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                textElem.setAttribute("x", x + 6);
+                textElem.setAttribute("y", y + 16);
+                textElem.setAttribute("fill", "#ffffff");
+                textElem.setAttribute("font-size", "11px");
+                textElem.setAttribute("font-weight", "600");
+                textElem.setAttribute("font-family", "monospace");
+                textElem.setAttribute("class", "pointer-events-none select-none drop-shadow-md");
+                textElem.textContent = reg.label;
+
+                regionsGroup.appendChild(rectElem);
+                regionsGroup.appendChild(textElem);
+            });
+        }
+
+        // Build list elements under Regions panel tab
+        function buildRegionsStack() {
+            regionsList.innerHTML = '';
+            regionCount.textContent = `${state.regions.length} Active`;
+
+            if (state.regions.length === 0) {
+                regionsList.innerHTML = `
+                    <div class="py-6 text-center text-slate-500 text-xs">
+                        No ClickPoint hotspots detected. Add correct properties to the editor.
+                    </div>`;
+                return;
+            }
+
+            state.regions.forEach(reg => {
+                const isSelected = state.selectedRegionId === reg.id;
+                const card = document.createElement('div');
+                card.className = `p-3.5 rounded-lg border text-xs transition duration-150 cursor-pointer ${
+                    isSelected ? 'bg-indigo-950/40 border-indigo-500 shadow-md' : 'bg-slate-900 border-slate-850 hover:bg-slate-800'
+                }`;
+                card.innerHTML = `
+                    <div class="flex items-center justify-between font-mono mb-2">
+                        <span class="text-indigo-300 font-bold">.${reg.id}</span>
+                        <span class="text-slate-500 text-[10px]">${reg.label}</span>
+                    </div>
+                    <div class="grid grid-cols-4 gap-2 text-[10px] text-slate-400 font-mono">
+                        <div>L: <span class="text-slate-200">${reg.left}%</span></div>
+                        <div>T: <span class="text-slate-200">${reg.top}%</span></div>
+                        <div>W: <span class="text-slate-200">${reg.width}%</span></div>
+                        <div>H: <span class="text-slate-200">${reg.height}%</span></div>
+                    </div>
+                `;
+                card.addEventListener('click', () => selectRegion(reg.id));
+                regionsList.appendChild(card);
+            });
+        }
+
+        // Render Shape Vectors from Input JSON
+        function renderVectors() {
+            pathsGroup.innerHTML = '';
+
+            state.shapes.forEach((shape) => {
+                if (shape.type === 'freehand' && shape.data && shape.data.points) {
+                    const pathElem = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    let d = `M ${shape.data.points[0].x} ${shape.data.points[0].y}`;
+                    for (let i = 1; i < shape.data.points.length; i++) {
+                        d += ` L ${shape.data.points[i].x} ${shape.data.points[i].y}`;
+                    }
+
+                    pathElem.setAttribute("d", d);
+                    pathElem.setAttribute("fill", "none");
+                    pathElem.setAttribute("stroke", "#10b981");
+                    pathElem.setAttribute("stroke-width", "3.5");
+                    pathElem.setAttribute("stroke-linecap", "round");
+                    pathElem.setAttribute("stroke-linejoin", "round");
+                    pathElem.setAttribute("stroke-opacity", "0.75");
+                    pathElem.setAttribute("class", "pointer-events-none");
+
+                    pathsGroup.appendChild(pathElem);
+                }
+            });
+        }
+
+        // Select specific region on click
+        function selectRegion(id) {
+            state.selectedRegionId = (state.selectedRegionId === id) ? null : id;
+            buildRegionsStack();
+
+            state.regions.forEach(reg => {
+                const rect = document.getElementById(`svg-reg-${reg.id}`);
+                if (rect) {
+                    if (reg.id === state.selectedRegionId) {
+                        rect.setAttribute("fill", "rgba(99, 102, 241, 0.45)");
+                        rect.setAttribute("stroke", "#ffffff");
+                        rect.setAttribute("stroke-width", "3.5");
+                    } else {
+                        rect.setAttribute("fill", "rgba(99, 102, 241, 0.15)");
+                        rect.setAttribute("stroke", "#6366f1");
+                        rect.setAttribute("stroke-width", "2.5");
+                    }
+                }
+            });
+        }
+
+        // Set up Event Listeners
+        function setupEvents() {
+            // Live parsing CSS modifications
+            cssTextarea.addEventListener('input', parseAndCompileCSS);
+
+            // Tab Switching View Controls
+            tabCss.addEventListener('click', () => switchTab('css'));
+            tabVectors.addEventListener('click', () => switchTab('vectors'));
+
+            // View transformations Controls
+            btnZoomIn.addEventListener('click', () => adjustZoom(0.15));
+            btnZoomOut.addEventListener('click', () => adjustZoom(-0.15));
+            btnFit.addEventListener('click', autoFit);
+            btnReset.addEventListener('click', autoFit);
+
+            btnToggleGrid.addEventListener('click', () => {
+                state.gridVisible = !state.gridVisible;
+                gridOverlay.style.opacity = state.gridVisible ? '1' : '0';
+                btnToggleGrid.classList.toggle('bg-indigo-600/20');
+                btnToggleGrid.classList.toggle('bg-slate-800');
+            });
+
+            btnApplyJson.addEventListener('click', () => {
+                try {
+                    const parsed = JSON.parse(jsonTextarea.value);
+                    if (parsed.shapes) state.shapes = parsed.shapes;
+                    renderVectors();
+                } catch (e) {
+                    alert("Incorrect JSON vector coordinates layout");
+                }
+            });
+
+            // Pan Controls
+            canvasViewport.addEventListener('mousedown', (e) => {
+                state.isDragging = true;
+                state.startX = e.clientX - state.panX;
+                state.startY = e.clientY - state.panY;
+            });
+
+            canvasViewport.addEventListener('mousemove', (e) => {
+                const rect = canvasViewport.getBoundingClientRect();
+                const relativeX = (e.clientX - rect.left - state.panX) / state.zoom;
+                const relativeY = (e.clientY - rect.top - state.panY) / state.zoom;
+                coordDisplay.innerText = `X: ${Math.round(relativeX)}, Y: ${Math.round(relativeY)}`;
+
+                if (state.isDragging) {
+                    state.panX = e.clientX - state.startX;
+                    state.panY = e.clientY - state.startY;
+                    updateTransform();
+                }
+            });
+
+            window.addEventListener('mouseup', () => {
+                state.isDragging = false;
+            });
+
+            // Local reference image uploader for hot-spot background alignment checks
+            bgUploader.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        bgTemplate.setAttributeNS("http://www.w3.org/1999/xlink", "href", event.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        // Switch Tab views
+        function switchTab(tab) {
+            state.activeTab = tab;
+            if (tab === 'css') {
+                tabCss.className = "flex-1 py-3.5 text-center text-[11px] font-bold uppercase tracking-wider border-b-2 border-indigo-500 text-slate-100 focus:outline-none";
+                tabVectors.className = "flex-1 py-3.5 text-center text-[11px] font-bold uppercase tracking-wider border-b-2 border-transparent text-slate-400 hover:text-slate-100 focus:outline-none";
+                panelCss.classList.remove('hidden');
+                panelVectors.classList.add('hidden');
+            } else {
+                tabCss.className = "flex-1 py-3.5 text-center text-[11px] font-bold uppercase tracking-wider border-b-2 border-transparent text-slate-400 hover:text-slate-100 focus:outline-none";
+                tabVectors.className = "flex-1 py-3.5 text-center text-[11px] font-bold uppercase tracking-wider border-b-2 border-indigo-500 text-slate-100 focus:outline-none";
+                panelCss.classList.add('hidden');
+                panelVectors.classList.remove('hidden');
+            }
+        }
+
+        // Zoom view logic
+        function adjustZoom(factor) {
+            const oldZoom = state.zoom;
+            state.zoom = Math.max(0.1, Math.min(10, state.zoom + factor));
+            
+            const viewportWidth = canvasViewport.clientWidth;
+            const viewportHeight = canvasViewport.clientHeight;
+            state.panX = viewportWidth / 2 - (viewportWidth / 2 - state.panX) * (state.zoom / oldZoom);
+            state.panY = viewportHeight / 2 - (viewportHeight / 2 - state.panY) * (state.zoom / oldZoom);
+            
+            updateTransform();
+        }
+
+        // Align and center the design canvas relative to standard viewing boundaries
+        function autoFit() {
+            const containerWidth = canvasViewport.clientWidth;
+            const containerHeight = canvasViewport.clientHeight;
+            const ratioX = containerWidth / state.viewport.width;
+            const ratioY = containerHeight / state.viewport.height;
+            state.zoom = Math.min(ratioX, ratioY) * 0.95;
+
+            state.panX = (containerWidth - (state.viewport.width * state.zoom)) / 2;
+            state.panY = (containerHeight - (state.viewport.height * state.zoom)) / 2;
+
+            updateTransform();
+        }
+
+        function updateTransform() {
+            drawingCanvas.style.transform = `translate(${state.panX}px, ${state.panY}px) scale(${state.zoom})`;
+        }
+    </script>
+</body>
+</html>

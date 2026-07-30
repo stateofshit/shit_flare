@@ -1,0 +1,85 @@
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+  .term { font-family: 'Share Tech Mono', 'Courier New', monospace; }
+  #login-box { min-height: 420px; display: flex; align-items: center; justify-content: center; background: #0a0a0a; border-radius: var(--border-radius-lg); border: 0.5px solid #1a1a1a; }
+  .screen { width: 100%; max-width: 480px; padding: 2rem; }
+  .scanline { color: #00ff41; font-size: 13px; line-height: 1.8; }
+  .scanline .dim { color: #2a6e3a; }
+  .scanline .blink { animation: blink 1s step-end infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  #pass-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid #00ff41;
+    color: #00ff41;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 15px;
+    padding: 4px 0;
+    outline: none;
+    caret-color: #00ff41;
+    box-sizing: border-box;
+    letter-spacing: 4px;
+  }
+  #pass-input::placeholder { color: #1a4a2a; letter-spacing: 1px; }
+  #err-msg { color: #ff4444; font-size: 13px; min-height: 20px; margin-top: 8px; }
+  #success-msg { color: #00ff41; font-size: 13px; min-height: 20px; margin-top: 8px; }
+  .prompt-line { display: flex; align-items: center; gap: 8px; margin-top: 1.5rem; }
+  .prompt-sym { color: #00ff41; font-size: 15px; }
+</style>
+
+<div id="login-box">
+  <div class="screen term">
+    <div class="scanline">
+      <div><span class="dim">██████╗  █████╗ ████████╗ ██████╗██╗  ██╗</span></div>
+      <div><span class="dim">██╔══██╗██╔══██╗╚══██╔══╝██╔════╝██║  ██║</span></div>
+      <div><span class="dim">██████╔╝███████║   ██║   ██║     ███████║</span></div>
+      <div><span class="dim">██╔═══╝ ██╔══██║   ██║   ██║     ██╔══██║</span></div>
+      <div><span class="dim">██║     ██║  ██║   ██║   ╚██████╗██║  ██║</span></div>
+      <div><span class="dim">╚═╝     ╚═╝  ╚═╝   ╚═╝    ╚═════╝╚═╝  ╚═╝</span></div>
+      <br>
+      <div><span class="dim">// PATCHNOTES.OOO — RESTRICTED ACCESS</span></div>
+      <div><span class="dim">// BUILD 2026.05.16 — ALL CONNECTIONS LOGGED</span></div>
+      <br>
+      <div>SYSTEM STATUS: <span style="color:#00ff41">ONLINE</span></div>
+      <div>AUTH REQUIRED: <span style="color:#00ff41">YES</span></div>
+      <br>
+      <div class="dim">────────────────────────────────────────</div>
+      <br>
+      <div>ENTER ACCESS CODE:</div>
+      <div class="prompt-line">
+        <span class="prompt-sym">root@patchnotes:~$</span>
+        <input type="password" id="pass-input" placeholder="••••••••" autocomplete="off" />
+      </div>
+      <div id="err-msg"></div>
+      <div id="success-msg"></div>
+      <br>
+      <div class="dim">press [ENTER] to authenticate<span class="blink">_</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const input = document.getElementById('pass-input');
+  const err = document.getElementById('err-msg');
+  const ok = document.getElementById('success-msg');
+  const PASSWORD = 'debtooo';
+
+  input.addEventListener('keydown', function(e) {
+    if (e.key !== 'Enter') return;
+    err.textContent = '';
+    ok.textContent = '';
+    if (input.value === PASSWORD) {
+      ok.textContent = '> ACCESS GRANTED. LOADING DASHBOARD...';
+      input.disabled = true;
+      setTimeout(() => sendPrompt('Access granted — show me the app dashboard'), 1500);
+    } else {
+      err.textContent = '> ACCESS DENIED. INVALID CREDENTIALS.';
+      input.value = '';
+      input.focus();
+    }
+  });
+
+  input.focus();
+</script>

@@ -1,0 +1,99 @@
+
+<style>
+.resume { max-width: 680px; padding: 1.5rem 0; font-size: 15px; color: var(--color-text-primary); }
+.name { font-size: 22px; font-weight: 500; margin: 0 0 4px; }
+.tagline { font-size: 14px; color: var(--color-text-secondary); margin: 0 0 1.5rem; }
+.section { margin-bottom: 1.5rem; }
+.section-title { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-secondary); border-bottom: 0.5px solid var(--color-border-tertiary); padding-bottom: 6px; margin-bottom: 12px; }
+.skills-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px; }
+.skill-card { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 10px 14px; }
+.skill-label { font-size: 13px; font-weight: 500; margin: 0 0 4px; }
+.skill-detail { font-size: 12px; color: var(--color-text-secondary); margin: 0; line-height: 1.5; }
+.service { display: flex; gap: 12px; padding: 10px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.service:last-child { border-bottom: none; }
+.service-icon { color: var(--color-text-secondary); font-size: 20px; padding-top: 2px; flex-shrink: 0; }
+.service-name { font-size: 14px; font-weight: 500; margin: 0 0 2px; }
+.service-desc { font-size: 13px; color: var(--color-text-secondary); margin: 0; line-height: 1.5; }
+.badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.badge { font-size: 11px; background: var(--color-background-secondary); border: 0.5px solid var(--color-border-tertiary); border-radius: 100px; padding: 3px 10px; color: var(--color-text-secondary); }
+</style>
+
+<div class="resume">
+  <h2 class="sr-only">Freelance skills resume</h2>
+  <p class="name">Full-stack developer & local data engineer</p>
+  <p class="tagline">Building AI-powered web apps, news aggregators, and local data tools · Available on Fiverr</p>
+
+  <div class="section">
+    <p class="section-title">Services</p>
+    <div class="service">
+      <i class="ti ti-robot service-icon" aria-hidden="true"></i>
+      <div>
+        <p class="service-name">AI-powered web apps</p>
+        <p class="service-desc">Build sites that scrape, summarize, and surface content automatically using LLMs. Daily updates, semantic search, edge AI via Cloudflare Workers AI.</p>
+        <div class="badges"><span class="badge">Cloudflare Workers AI</span><span class="badge">LLM integration</span><span class="badge">automated pipelines</span></div>
+      </div>
+    </div>
+    <div class="service">
+      <i class="ti ti-database service-icon" aria-hidden="true"></i>
+      <div>
+        <p class="service-name">Semantic search & vector databases</p>
+        <p class="service-desc">Set up pgvector on Postgres for meaning-based search across large content sets — articles, events, listings, and more.</p>
+        <div class="badges"><span class="badge">pgvector</span><span class="badge">Postgres</span><span class="badge">Heroku</span><span class="badge">semantic search</span></div>
+      </div>
+    </div>
+    <div class="service">
+      <i class="ti ti-news service-icon" aria-hidden="true"></i>
+      <div>
+        <p class="service-name">Local news & events aggregators</p>
+        <p class="service-desc">Custom scrapers that pull from multiple local sources, deduplicate, and publish clean feeds. Real-time traffic, fire/EMS, weather integration.</p>
+        <div class="badges"><span class="badge">web scraping</span><span class="badge">RSS feeds</span><span class="badge">content pipelines</span></div>
+      </div>
+    </div>
+    <div class="service">
+      <i class="ti ti-world service-icon" aria-hidden="true"></i>
+      <div>
+        <p class="service-name">Cloudflare setup & optimization</p>
+        <p class="service-desc">DNS, caching rules, bot protection, Workers, Pages deployments. Multi-domain account management and performance tuning.</p>
+        <div class="badges"><span class="badge">Cloudflare Pages</span><span class="badge">Workers</span><span class="badge">Bot Fight Mode</span><span class="badge">cache rules</span></div>
+      </div>
+    </div>
+    <div class="service">
+      <i class="ti ti-device-desktop service-icon" aria-hidden="true"></i>
+      <div>
+        <p class="service-name">Hyperlocal directory & deal sites</p>
+        <p class="service-desc">Build niche local sites targeting happy hours, events, restaurants, and specials — structured for AdSense approval and SEO.</p>
+        <div class="badges"><span class="badge">local SEO</span><span class="badge">AdSense optimization</span><span class="badge">content strategy</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <p class="section-title">Technical skills</p>
+    <div class="skills-grid">
+      <div class="skill-card">
+        <p class="skill-label">Backend</p>
+        <p class="skill-detail">Python, Postgres, pgvector, Heroku, REST APIs</p>
+      </div>
+      <div class="skill-card">
+        <p class="skill-label">Frontend</p>
+        <p class="skill-detail">HTML, CSS, JS, Cloudflare Pages</p>
+      </div>
+      <div class="skill-card">
+        <p class="skill-label">AI & search</p>
+        <p class="skill-detail">LLM integration, Workers AI, vector search, semantic dedup</p>
+      </div>
+      <div class="skill-card">
+        <p class="skill-label">Infrastructure</p>
+        <p class="skill-detail">Cloudflare, DNS, caching, multi-domain management</p>
+      </div>
+      <div class="skill-card">
+        <p class="skill-label">Data</p>
+        <p class="skill-detail">Web scraping, feed aggregation, content pipelines, SQLite</p>
+      </div>
+      <div class="skill-card">
+        <p class="skill-label">Monetization</p>
+        <p class="skill-detail">AdSense strategy, content structure, local SEO</p>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #111827; color: #f3f4f6; overflow: hidden; }
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 1fr 250px 1fr;
+            height: 100vh;
+            width: 100vw;
+        }
+        canvas {
+            cursor: crosshair;
+            background-color: #1f2937;
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .panel {
+            border-left: 1px solid #374151;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow-y: auto;
+        }
+        .rendered-ui {
+            background: #ffffff;
+            color: #000000;
+            padding: 1rem;
+            min-height: 50%;
+            border-bottom: 1px solid #374151;
+            overflow-y: auto;
+        }
+        .json-ast {
+            background: #000000;
+            color: #10b981;
+            padding: 1rem;
+            font-family: monospace;
+            font-size: 0.75rem;
+            white-space: pre-wrap;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+
+<div class="layout-grid">
+    <!-- Canvas Region -->
+    <div class="relative w-full h-full flex flex-col" id="canvasContainer">
+        <div class="bg-gray-800 border-b border-gray-700 p-2 flex gap-2 items-center z-10 w-full shrink-0" id="toolbar">
+            <span class="text-xs font-bold text-gray-500 uppercase tracking-wider mr-2">Tools</span>
+            <button class="tool-btn active bg-blue-600 text-white px-3 py-1 rounded text-xs transition-colors" data-label="card">Card (Default)</button>
+            <button class="tool-btn bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded text-xs transition-colors" data-label="header">Header</button>
+            <button class="tool-btn bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded text-xs transition-colors" data-label="nav">Navigation</button>
+            <button class="tool-btn bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded text-xs transition-colors" data-label="button">Button</button>
+            <button class="tool-btn bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded text-xs transition-colors" data-label="input">Input</button>
+        </div>
+        
+        <div class="relative flex-grow w-full" id="canvasWrapper">
+            <div class="absolute top-4 left-4 pointer-events-none text-xs text-gray-400 font-mono z-10">
+                Select a tool. Draw bounding boxes to instantiate components.
+            </div>
+            <canvas id="canvas" class="absolute inset-0"></canvas>
+        </div>
+    </div>
+
+    <!-- Node Editor Region -->
+    <div class="panel bg-gray-900 p-4">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-gray-500 mb-4">Semantic Mapping</h2>
+        <div id="nodeList" class="flex flex-col gap-2">
+            <!-- Dynamically populated inputs -->
+            <div class="text-xs text-gray-500 italic">No nodes drawn.</div>
+        </div>
+        <button id="clearBtn" class="mt-auto bg-red-900 hover:bg-red-800 text-red-100 text-xs px-3 py-2 rounded">Clear Canvas</button>
+    </div>
+
+    <!-- Output Region -->
+    <div class="panel">
+        <div class="bg-gray-800 p-2 text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-700">Compiled Render</div>
+        <div id="renderedUI" class="rendered-ui flex flex-col gap-4"></div>
+        
+        <div class="bg-gray-800 p-2 text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-700">JSON AST Output</div>
+        <div id="jsonAst" class="json-ast"></div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const canvasContainer = document.getElementById('canvasContainer');
+    const canvasWrapper = document.getElementById('canvasWrapper');
+    const nodeList = document.getElementById('nodeList');
+    const renderedUI = document.getElementById('renderedUI');
+    const jsonAst = document.getElementById('jsonAst');
+    
+    let boxes = [];
+    let isDrawing = false;
+    let startX = 0;
+    let startY = 0;
+    let currentBox = null;
+    let idCounter = 1;
+    let activeLabel = 'card';
+    // Component Dictionary mapping semantic labels to HTML/Tailwind classes
+    const componentDictionary = {
+        'header': { tag: 'header', classes: 'w-full bg-blue-600 text-white p-4 text-xl font-bold rounded shadow', defaultContent: 'Header Block' },
+        'nav': { tag: 'nav', classes: 'w-full bg-gray-200 text-gray-700 p-2 text-sm rounded flex gap-4', defaultContent: 'Nav Item 1 | Nav Item 2' },
+        'card': { tag: 'div', classes: 'flex-1 bg-white border border-gray-200 p-4 rounded-lg shadow-sm min-w-[200px]', defaultContent: 'Data Card' },
+        'button': { tag: 'button', classes: 'bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded text-sm', defaultContent: 'Action Button' },
+        'input': { tag: 'input', classes: 'border border-gray-300 rounded px-3 py-2 text-sm w-full', defaultContent: '', attributes: { placeholder: 'Input field...' } },
+        'footer': { tag: 'footer', classes: 'w-full bg-gray-800 text-gray-400 p-4 text-xs mt-auto rounded', defaultContent: 'Footer Block' },
+        'default': { tag: 'div', classes: 'flex-1 bg-gray-100 border-dashed border-2 border-gray-300 p-4 rounded text-gray-500 flex items-center justify-center text-sm', defaultContent: 'Generic Node' }
+    };
+
+    function resizeCanvas() {
+        canvas.width = canvasWrapper.clientWidth;
+        canvas.height = canvasWrapper.clientHeight;
+        drawAll();
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    const toolBtns = document.querySelectorAll('.tool-btn');
+    toolBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            toolBtns.forEach(b => {
+                b.classList.remove('bg-blue-600', 'active');
+                b.classList.add('bg-gray-700', 'hover:bg-gray-600');
+            });
+            e.target.classList.remove('bg-gray-700', 'hover:bg-gray-600');
+            e.target.classList.add('bg-blue-600', 'active');
+            activeLabel = e.target.getAttribute('data-label');
+        });
+    });
+
+    canvas.addEventListener('mousedown', (e) => {
+        isDrawing = true;
+        const rect = canvas.getBoundingClientRect();
+        startX = e.clientX - rect.left;
+        startY = e.clientY - rect.top;
+        currentBox = { x: startX, y: startY, w: 0, h: 0 };
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+        if (!isDrawing) return;
+        const rect = canvas.getBoundingClientRect();
+        const currentX = e.clientX - rect.left;
+        const currentY = e.clientY - rect.top;
+        
+        currentBox.w = currentX - startX;
+        currentBox.h = currentY - startY;
+        drawAll();
+        
+        // Draw preview
+        ctx.strokeStyle = '#3b82f6';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(currentBox.x, currentBox.y, currentBox.w, currentBox.h);
+        ctx.fillStyle = 'rgba(59, 130, 246, 0.2)';
+        ctx.fillRect(currentBox.x, currentBox.y, currentBox.w, currentBox.h);
+    });
+
+    canvas.addEventListener('mouseup', () => {
+        if (!isDrawing) return;
+        isDrawing = false;
+        
+        // Normalize negative widths/heights
+        let normalizedBox = {
+            id: `node-${idCounter++}`,
+            x: currentBox.w < 0 ? currentBox.x + currentBox.w : currentBox.x,
+            y: currentBox.h < 0 ? currentBox.y + currentBox.h : currentBox.y,
+            w: Math.abs(currentBox.w),
+            h: Math.abs(currentBox.h),
+            label: activeLabel        };
+
+        // Ignore tiny accidental clicks
+        if (normalizedBox.w > 20 && normalizedBox.h > 20) {
+            boxes.push(normalizedBox);
+            updateNodeList();
+            compilePipeline();
+        }
+        currentBox = null;
+        drawAll();
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', () => {
+        boxes = [];
+        updateNodeList();
+        compilePipeline();
+        drawAll();
+    });
+
+    function drawAll() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        boxes.forEach(box => {
+            ctx.strokeStyle = '#10b981';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(box.x, box.y, box.w, box.h);
+            ctx.fillStyle = 'rgba(16, 185, 129, 0.1)';
+            ctx.fillRect(box.x, box.y, box.w, box.h);
+            
+            ctx.fillStyle = '#10b981';
+            ctx.font = '12px monospace';
+            ctx.fillText(`${box.id} [${box.label}]`, box.x + 4, box.y + 14);
+        });
+    }
+
+    function updateNodeList() {
+        if (boxes.length === 0) {
+            nodeList.innerHTML = '<div class="text-xs text-gray-500 italic">No nodes drawn.</div>';
+            return;
+        }
+        
+        nodeList.innerHTML = '';
+        boxes.forEach(box => {
+            const row = document.createElement('div');
+            row.className = 'flex items-center gap-2 bg-gray-800 p-2 rounded';
+            
+            const idLabel = document.createElement('span');
+            idLabel.className = 'text-xs text-gray-400 font-mono w-12 truncate';
+            idLabel.innerText = box.id;
+            
+            const select = document.createElement('select');
+            select.className = 'bg-gray-700 text-white text-xs p-1 rounded flex-grow outline-none border border-gray-600 focus:border-blue-500';
+            
+            Object.keys(componentDictionary).forEach(key => {
+                const opt = document.createElement('option');
+                opt.value = key;
+                opt.innerText = key;
+                if (box.label === key) opt.selected = true;
+                select.appendChild(opt);
+            });
+            
+            select.addEventListener('change', (e) => {
+                box.label = e.target.value;
+                drawAll();
+                compilePipeline();
+            });
+            
+            const delBtn = document.createElement('button');
+            delBtn.className = 'text-red-400 hover:text-red-300 text-xs px-1';
+            delBtn.innerHTML = '×';
+            delBtn.addEventListener('click', () => {
+                boxes = boxes.filter(b => b.id !== box.id);
+                updateNodeList();
+                compilePipeline();
+                drawAll();
+            });
+            
+            row.appendChild(idLabel);
+            row.appendChild(select);
+            row.appendChild(delBtn);
+            nodeList.appendChild(row);
+        });
+    }
+
+    function compilePipeline() {
+        if (boxes.length === 0) {
+            jsonAst.innerText = '{}';
+            renderedUI.innerHTML = '';
+            return;
+        }
+
+        // 1. Spatial Inference Engine (AABB sorting)
+        // Calculate center points
+        const boxesWithCenters = boxes.map(b => ({
+            ...b,
+            centerY: b.y + (b.h / 2),
+            centerX: b.x + (b.w / 2)
+        }));
+
+        // Sort globally by Y center
+        boxesWithCenters.sort((a, b) => a.centerY - b.centerY);
+
+        // Group into rows based on Y overlap tolerance
+        const rows = [];
+        let currentRow = [];
+        const yTolerance = 40; // Pixels of vertical leniency to be considered same row
+
+        boxesWithCenters.forEach(box => {
+            if (currentRow.length === 0) {
+                currentRow.push(box);
+            } else {
+                const avgY = currentRow.reduce((sum, b) => sum + b.centerY, 0) / currentRow.length;
+                if (Math.abs(box.centerY - avgY) < yTolerance) {
+                    currentRow.push(box);
+                } else {
+                    rows.push(currentRow);
+                    currentRow = [box];
+                }
+            }
+        });
+        if (currentRow.length > 0) rows.push(currentRow);
+
+        // Sort items within each row by X center
+        rows.forEach(row => row.sort((a, b) => a.centerX - b.centerX));
+
+        // 2. Map to AST via 12-Column Grid Quantization
+        const canvasW = canvas.width;
+        
+        const ast = {
+            type: 'RootLayout',
+            gap: '1rem', // Deterministic layout token
+            children: rows.map((row, index) => ({
+                type: 'GridRow',
+                id: `row-${index}`,
+                children: row.map(node => {
+                    // Calculate relative grid positions
+                    let colStart = Math.max(1, Math.min(12, Math.round((node.x / canvasW) * 12) + 1));
+                    let colSpan = Math.max(1, Math.min(12, Math.round((node.w / canvasW) * 12)));
+                    
+                    // Enforce boundary constraints
+                    if (colSpan === 0) colSpan = 1;
+                    if (colStart + colSpan > 13) colSpan = 13 - colStart;
+
+                    return {
+                        type: 'Component',
+                        id: node.id,
+                        semanticToken: node.label,
+                        spatialData: { rawX: node.x, rawW: node.w },
+                        gridData: { colStart, colSpan }
+                    };
+                })
+            }))
+        };
+
+        // Output AST JSON
+        jsonAst.innerText = JSON.stringify(ast, null, 2);
+
+        // 3. Compile AST to DOM
+        renderedUI.innerHTML = '';
+        ast.children.forEach(rowNode => {
+            const rowEl = document.createElement('div');
+            // Utilize a 12-column grid instead of flexbox for absolute-to-relative placement
+            rowEl.className = 'grid grid-cols-12 gap-4 w-full items-start mb-4';
+            
+            rowNode.children.forEach(compNode => {
+                const dict = componentDictionary[compNode.semanticToken] || componentDictionary['default'];
+                const wrapperEl = document.createElement('div');
+                
+                // Apply computed grid column tracking using inline styles 
+                // (Prevents Tailwind CDN JIT compiler misses on dynamic class names)
+                wrapperEl.style.gridColumn = `${compNode.gridData.colStart} / span ${compNode.gridData.colSpan}`;
+                
+                const el = document.createElement(dict.tag);
+                el.className = dict.classes + ' w-full h-full'; 
+                
+                if (dict.attributes) {
+                    Object.entries(dict.attributes).forEach(([k, v]) => el.setAttribute(k, v));
+                }
+                
+                if (dict.tag !== 'input') {
+                    el.innerText = dict.defaultContent;
+                }
+                
+                wrapperEl.appendChild(el);
+                rowEl.appendChild(wrapperEl);
+            });
+            
+            renderedUI.appendChild(rowEl);
+        });
+    }
+</script>
+</body>
+</html>
