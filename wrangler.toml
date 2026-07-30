@@ -1,0 +1,12 @@
+# Wrangler configuration for deploying this static site to Cloudflare Workers Sites
+# Replace YOUR_ACCOUNT_ID with your Cloudflare Account ID before using locally with `wrangler`.
+# If you deploy via GitHub Actions, set CF_ACCOUNT_ID as a repository secret and update wrangler publish command accordingly.
+
+name = "shit-flare-site"
+compatibility_date = "2026-07-30"
+account_id = "YOUR_ACCOUNT_ID"
+workers_dev = true
+
+[site]
+  bucket = "./"
+  entry-point = "."
