@@ -3,6 +3,5 @@ compatibility_date = "2026-07-30"
 account_id = "10afa4fafa5072f324a2c8e50df20955"
 workers_dev = true
 
-[site]
-  bucket = "./"
-  entry-point = "."
+[assets]
+  directory = "./"
