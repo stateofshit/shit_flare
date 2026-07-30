@@ -1,0 +1,757 @@
+<p>ChatGPT</p>
+<p>Creative Codex Agents: Merging Deterministic
+Execution with Generative Creativity</p>
+<p>Introduction: Modern AI coding agents fall into two divergent categories: (1) Deterministic Executors -
+secure, rule-bound CLI-driven agents that strictly follow instructions and (2) Creative Generators
+unpredictable, highly generative agents that produce novel solutions. The challenge is to harmonize these
+poles. How can we design a &#34;Creative Codex Agent&#34; that retains the reliability, auditability, and safety of a
+deterministic coding agent, while imbuing it with genuine creativity and useful divergence in problem-
+solving? This research brief explores emerging architectures, inference techniques, safety frameworks, and
+multimodal tools to achieve that balance.</p>
+<ol>
+<li>Architectural &amp; Orchestration Models for Emergent Creativity</li>
+</ol>
+<p>Dual-Agent Synthesis: Bridging Execution and Ideation</p>
+<p>A promising design is a dual-agent system where one agent acts as a Creative Planner (or &#34;Task Author&#34;)
+and another as a Deterministic Executor (or &#34;CLI Operator&#34;). The Creative Planner brainstorms
+unconventional approaches, formulates high-level strategies, and even proposes multiple potential
+solutions. The CLI Operator then deterministically interprets and executes those plans step-by-step in a
+controlled environment 1 2. By separating ideation from execution, we allow the planning phase to be
+imaginative and emergent, while the execution phase remains transparent and safe. For example, the
+Planner might suggest, &#34;Try a recursive divide-and-conquer algorithm here instead of the usual iterative
+loop,&#34; and the Executor will attempt it methodically, logging each action. This mirrors human pair-
+programming: one partner imagines possibilities, the other writes and tests the code. Crucially, the
+Executor can verify or rollback changes if a creative idea fails (much like code review), ensuring reliability.</p>
+<p>In practice, elements of this approach are already emerging. Anthropic&#39;s Claude Code 2.0 demonstrates an
+agentic coding assistant that &#34;can break down a goal, plan a sequence of steps, use tools...and iterate on code
+changes with oversight,&#34; essentially functioning as a lead planner agent that delegates tasks 1. It even
+introduced Checkpoints - saving state before major changes - so the agent can pursue ambitious refactors
+and then easily revert if they go awry 3. These checkpoints encourage exploration by providing a safety
+net for creativity 3. The planner-executor paradigm could similarly employ checkpoints: the Executor
+agent sets restore points before executing risky creative ideas, enabling rapid undo and maintaining the
+system&#39;s stability.</p>
+<p>Hierarchical vs. Swarm Orchestration for Novel Solutions</p>
+<p>Beyond dual roles, how we orchestrate multiple agents profoundly affects emergent creativity. Two
+primary patterns have gained traction:</p>
+<p>• Hierarchical (Supervisor-Worker) Architecture: A top-level supervisor agent coordinates several
+subordinate worker agents, each specialized in a task (e.g. writing code, writing tests, updating</p>
+<p>1</p>
+<p>docs). This structured approach, used in systems like Google&#39;s ADK and Anthropic&#39;s subagent model,
+allows decomposition of complex problems while maintaining a clear chain of command 4. The
+supervisor can deliberately inject creativity by assigning the same task to multiple workers with
+different strategies (for instance, telling one coding agent to implement feature A in a conventional
+way and another to try a more experimental approach). The results can then be compared and
+merged by the supervisor. Anthropic&#39;s Claude 4.5 follows this pattern: a lead agent (&#34;Claude&#34;)
+manages context and high-level orchestration, while specialized sub-agents tackle components like
+generating unit tests or refactoring modules in parallel 4. This &#34;cognitive load splitting&#34; leverages
+each agent&#39;s strengths and often yields faster, more diverse solutions 5 6. Importantly, hierarchy
+doesn&#39;t preclude novelty - it can foster it by delegating creative freedom to certain subagents (for
+example, a &#34;creative coder&#34; subagent told to deliberately think outside the box for a given function).
+The supervisor then acts as a filter and integrator, ensuring the overall output remains coherent and
+correct.</p>
+<p>• Swarm (Decentralized) Architecture: In a swarm, multiple agents work peer-to-peer without a
+single point of control, communicating and self-organizing their collaboration. This model is
+inspired by swarm intelligence (ants, bees) and is now facilitated by frameworks like OpenAI&#39;s
+experimental Swarm package 7. A swarm of coding agents can each propose solutions or partial
+ideas and collectively refine them. Such agent swarms enable decentralized collaboration,
+eliminating single failure points and allowing real-time adaptation 8. The hope is that &#34;emergent
+collective behavior creates novel solutions unplanned by developers,&#34; as observed in swarm systems 9.
+In coding, this could mean agents spontaneously divide a programming task in unconventional ways
+or solve bugs through combined insights. Research suggests that with modular specialization and
+efficient communication protocols, swarms can indeed produce innovative approaches rather
+than noise 10 11. For instance, one agent might specialize in performance optimizations, another
+in security, another in creative problem-solving; together, the swarm might come up with a solution
+that is both novel and robust.</p>
+<p>When does a swarm yield true creativity versus chaos? Successful swarms typically share a common
+context or memory and adhere to simple rules for interaction to prevent incoherence. Smooth information
+flow and conflict resolution are key 12. If all agents have identical perspectives, they may just reinforce the
+obvious; hence diversity among agents (in prompts, training, or objectives) is critical to get a range of
+ideas. One effective scenario is a &#34;swarm debate&#34; where agents generate multiple distinct solution
+candidates and then vote or rank them (akin to ensemble methods). This was reminiscent of DeepMind&#39;s
+AlphaCode, which generated dozens of candidate programs and selected the most promising - a kind of
+offline swarm approach that yielded creative solutions to coding challenges. Swarm-style orchestration
+excels when exploration is needed: a broad search of the solution space by many agents can uncover less
+conventional solutions that a single agent might miss. However, without guardrails, a swarm might also
+produce a lot of irrelevant or impractical ideas (&#34;noise&#34;). Thus, in practice a hybrid is often best: use a swarm
+of creative &#34;proposer&#34; agents, then a deterministic &#34;selector&#34; agent (or mechanism) to evaluate which
+proposal works best.</p>
+<p>Real-world systems are already mixing these patterns. OpenAI&#39;s Swarm framework allows defining teams
+of agents with coordinated hand-offs 7, effectively supporting hierarchical swarms. Google&#39;s Vertex AΙ
+Agent Builder similarly supports orchestrating multi-agent workflows with a mix of deterministic
+guardrails and open collaboration - developers can script how agents communicate (hierarchically or in
+peer groups) while the platform provides safety controls 13 14. The Agent2Agent (A2A) protocol even</p>
+<p>2</p>
+<p>enables agents on different frameworks to negotiate and work together peer-to-peer 15, hinting at
+swarms that span ecosystems. In sum, hierarchical orchestration provides reliability and alignment, while
+swarm orchestration injects adaptability and surprise. A Creative Codex Agent may well combine both: e.g.
+a top-level manager spawning a swarm of coding brainstormers, then consolidating their best ideas in a
+controlled final output.</p>
+<p>Documentation as a Creativity Layer: Evolving the AGENTS.md Standard</p>
+<p>Project-specific instruction files like AGENTS.md have emerged to guide AI coding agents in a consistent
+way 16 17. An AGENTS.md in a codebase typically lists &#34;operational, machine-readable steps&#34; and rules
+setup commands, coding style guides, test procedures, security policies, etc. 17. This standard has greatly
+improved agent reliability and team compliance by giving Als a single source of truth for how to work on
+the project. In effect, AGENTS.md encourages conformity to the project&#39;s established norms and best
+practices (just as human developers follow a project&#39;s README or contributing guide). For example, if
+AGENTS.md says &#34;all new functions must have unit tests and follow our naming convention,&#34; the AI will
+adhere to that rather than coming up with its own style. This yields more predictable, uniform output 18.
+Yet therein lies a tension: strict rules can sometimes constrain originality. If an agent always sticks to the
+documented default approach, it may miss a more clever solution that violates the letter of AGENTS.md but
+not its spirit.</p>
+<p>Can AGENTS.md be repurposed to tune creativity? We propose that the next evolution of AGENTS.md
+(and related specs like role files) includes sections or annotations that explicitly dial an agent&#39;s level of
+allowed creativity. One idea is to incorporate a &#34;Creative Mode Guidelines&#34; section in the markdown. This
+could function analogously to style transfer in image generation, where style can be modified without losing
+content. In AGENTS.md, along with the baseline instructions, we might provide alternative &#34;style&#34; directives
+for solutions. For instance, imagine an excerpt from a future AGENTS.md:</p>
+<h2 id="solution-style-guidelines">Solution Style Guidelines</h2>
+<p><strong>Conventional Approach:</strong> (Default) Implement features using standard library
+functions and patterns described above.</p>
+<p>**Creative Approach (Optional): ** When tests or performance requirements
+allow, the agent <em>may</em> attempt an unconventional solution (e.g. a different
+algorithmic paradigm, new data structure) <em>provided</em> it is well-documented and
+passes all checks.</p>
+<p><strong>Prohibited Creativity:</strong> Do not use any approach that violates security or
+critical correctness (e.g. no arbitrary reflection or unsafe ops), even in
+creative mode.</p>
+<p>This creates a controlled sandbox for creativity. The agent first tries the conventional approach; if it
+encounters roadblocks or if explicitly requested, it can consult the Creative Approach notes to try something
+novel. Essentially, we document the leeway: what rules can be bent and which cannot. This method draws
+inspiration from recent research on &#34;denial prompting&#34; in LLMs, where the model is iteratively told not to use
+a previous solution&#39;s techniques, forcing it to try new strategies 19 20. AGENTS.md could incorporate a
+similar idea by listing known common strategies and suggesting constraints or twists to encourage
+exploration (e.g. &#34;If solution X doesn&#39;t work or seems suboptimal, try solving without using technique Y&#34;). Over</p>
+<p>3</p>
+<p>time, the community-driven nature of AGENTS.md can capture creative best practices just as it captured
+functional ones - teams might share snippets for how to encourage originality safely.</p>
+<p>Another avenue is to treat AGENTS.md as a dynamic profile rather than a static file. For example, a project
+might maintain multiple versions of AGENTS.md: one labeled AGENTS-conservative.md (maximal safety,
+minimal creativity) and another AGENTS-creative.md (more experimental directives). The user or agent
+orchestrator could choose between them or blend them depending on context. This is akin to selecting a
+style preset. Because AGENTS.md is plain Markdown and human-auditable 21, any such &#34;creativity layer&#34;
+remains transparent - an important factor for trust. We must note, though, that AGENTS.md&#39;s primary role
+today is to prevent ambiguity and errors, not to promote novelty 22 18 Any enhancements must
+maintain clarity for the agent. One possible approach is tagging instructions with a scope: e.g.
+[creative] tags on guidelines that are suggestions rather than requirements, which the agent only
+applies in a designated creative mode.</p>
+<p>ROLE.md and others: In multi-agent setups, we might also leverage role-specific instruction files (e.g. a
+ROLE.md for each agent&#39;s persona/capabilities). Some frameworks already do this</p>
+<p>&#34;agent.system.main.role.md defines the agent&#39;s overall role and capabilities&#34; in one open design 23. We could
+include a &#34;role&#34; for creativity: an agent whose role file explicitly states it is an Idea Generator with the
+freedom to diverge from norms, versus an Enforcer agent whose role is to double-check conformity and
+safety. By clearly separating these concerns in documentation, each agent knows how far it can go.
+Documentation thus becomes not just a set of static rules but a knob for tuning divergence. In summary,
+evolving standards like AGENTS.md into a creativity-tuning layer means allowing projects to specify how
+much originality is desired, where the boundaries lie, and how an agent should handle novel approaches
+(e.g. require extra comments or require supervisor approval). This approach keeps the process auditable
+and intentional, much as style transfer in images is a deliberate, parameterized operation rather than
+random noise.</p>
+<ol start="2">
+<li>Inference-Time Techniques for Creativity &amp; Feedback Loops</li>
+</ol>
+<p>Divergent Pathways at Inference: Search and &#34;Deep Thinking&#34;</p>
+<p>Even without changing the model&#39;s training, we can induce more creative outputs through how the agent
+thinks and searches during generation. One technique is to employ a &#34;Deep Think&#34; inference mode in the
+Codex-style CLI agent. This mode would allocate extra computation to exploring solution space
+for
+example, by generating multiple candidate code snippets internally, simulating their execution, and
+comparing results before outputting the best one. In other words, the agent performs a tree search or
+beam search over possible solution paths instead of the first greedy completion. This approach is
+analogous to the self-consistency method for LLMs, where the model generates several reasoning chains
+and then selects the most consistent answer. For coding, this could surface more divergent solutions that
+still meet the requirements.</p>
+<p>Recent research underscores the value of such an approach. A 2024 study on LLM creativity for code
+introduced &#34;Denial Prompting,&#34; a method where the model is told to repeatedly solve a problem under new
+constraints each time, thereby forcing it to adopt new strategies 24 19. For instance, after an initial solution,
+the prompt might add: &#34;Now solve it without using loops,&#34; then &#34;solve it without recursion,&#34; and so on. This
+process, done at inference time, pushed GPT-4 to explore far more creative solutions, using techniques it
+hadn&#39;t tried initially 20. The result was a benchmark of much higher diversity in correct solutions, allowing</p>
+<p>4</p>
+<p>researchers to measure how often the AI could find truly novel approaches compared to known human
+solutions 25 26. We can adapt this idea directly into a Codex agent&#39;s inference loop. For example, upon
+tackling a coding task, the agent could automatically generate an initial solution (following all deterministic
+instructions). Then it could enter a divergent search loop where it introduces one variation: e.g. &#34;What if I
+optimize for memory?&#34; or &#34;Is there a purely functional programming approach here?&#34; - effectively creating a
+branch. If the alternate solution still passes the tests and checks, it might be kept or even presented
+alongside the primary solution for the user to consider. By structuring this as part of the agent&#39;s toolkit, we
+enable systematic creativity: not a random one-off idea, but a controlled exploration of alternatives.</p>
+<p>Another inference-time method is drawing on the agent&#39;s own self-reflection capabilities. Large models
+can generate chain-of-thought (CoT) reasoning if prompted to &#34;think step by step.&#34; We could allow the
+Codex agent to engage in an internal dialogue (not shown to the user) where it plays both the critic and the
+creator. For example, after producing a draft solution, it could internally ask, &#34;Is there a more elegant or
+unusual way to do this?&#34; and attempt to answer itself. This is akin to giving the model a few extra
+&#34;imagination cycles&#34; before finalizing output. Techniques like Tree-of-Thought (expanding multiple
+reasoning branches) or Monte Carlo sampling of reasoning paths fall into this category. Importantly, the
+agent&#39;s CLI can be designed to support these extra steps by pausing user output and using special &#34;thinking
+tokens&#34; or spinner indicators while it internally explores options (the OpenAI Codex CLI already uses a form
+of thinking token mechanism to handle internal reasoning bursts 27). By extending that mechanism, we can
+give the agent a chance to wander off the beaten path and then come back with either the conventional
+solution or a justified creative alternative.</p>
+<p>It&#39;s worth noting that experiments have shown simply increasing reasoning steps or using advanced search
+(like MCTS) doesn&#39;t automatically guarantee more creativity unless the model is guided to explore truly
+different tactics 28 29. Therefore, approaches like the denial-of-technique prompting or explicitly
+instructing divergence are key. The Codex agent could have an &#34;exploration mode&#34; toggle that, when
+enabled, programmatically varies the prompt or uses high-temperature sampling to generate multiple
+distinct solutions. The user could then be shown the most promising ones. This mirrors how GitHub Copilot
+sometimes offers several suggestions for a code comment - the user can pick the one that is most inventive
+or suitable. In a fully autonomous agent, the agent itself might do the picking, using test results or
+predefined heuristics (e.g. shortest execution time, least memory, etc. if those are relevant to the task
+objectives).</p>
+<p>Tuning with Feedback: RLHF for Useful Divergence</p>
+<p>Reinforcement Learning from Human Feedback (RLHF) has been pivotal in aligning language models
+with human preferences, but its effect on creativity is double-edged. Typically, human feedback during RLHF
+prioritizes outputs that are helpful, correct, and not offensive. This can inadvertently bias the model toward
+the &#34;most probable safe solution&#34; and penalize unusual outputs that, while correct, might seem risky or
+too unconventional to human raters. In other words, vanilla RLHF often sands off the creative edges in favor
+of reliability. The question is: can we design a reward signal that encourages useful divergence? The
+answer lies in carefully shaping the feedback criteria and maintaining some entropy in the policy.</p>
+<p>One straightforward approach is adding an entropy bonus during RLHF fine-tuning. In practice, algorithms
+like PPO (used in many RLHF pipelines) already include an entropy term to keep the model&#39;s output
+distribution from collapsing completely 30. By tuning this hyperparameter, we can maintain more diversity
+in the model&#39;s output. For example, a higher entropy coefficient means the model is mildly rewarded for</p>
+<p>5</p>
+<p>staying &#34;surprised&#34; not always choosing the top 1 token with 100% certainty, thus leaving room for
+creative phrasing or code structuring. As one guide notes, &#34;the algorithm balances optimizing for alignment
+(policy loss) and maintaining creativity (entropy loss) through hyperparameters&#34;, gradually finding a policy that
+aligns with preferences without becoming deterministic 30. In essence, we can dial how much the model is
+allowed to deviate from the safest guess. For a coding agent, this might mean sometimes picking a less
+common API or a non-standard algorithm if it fits the requirements.</p>
+<p>Beyond entropy, we can explicitly incorporate novelty and quality into the reward model. Consider an
+RLHF setup for code generation where human evaluators (or automated metrics) rate solutions not just on
+correctness, but also on originality. We might gather comparisons like: &#34;Solution A is more straightforward,
+Solution B is more innovative but still correct - prefer B.&#34; If a reward model is trained on such comparisons,
+the agent will learn to score creative-but-correct solutions higher than bland ones. This of course requires
+careful definition of &#34;innovative but useful&#34; for the raters. One aid here is the metrics from the earlier
+creativity research: they defined divergent creativity in code as the use of techniques never seen in the
+human reference solutions 31 32. We could approximate a similar metric in training: penalize the model if
+it only regurgitates the most common solution from its training set, and reward it when it finds a valid
+approach that&#39;s rarer (as long as it&#39;s not introducing bugs). Over time, the RLHF&#39;d model would internalize a
+bias toward exploring alternatives.</p>
+<p>However, an important guardrail is maintaining convergent creativity too
+the solution must still be
+purposeful and correct 33. So RLHF for creativity likely becomes a multi-objective optimization: we want
+both high task performance and high novelty. This could be handled by combining rewards (e.g. a base
+reward for passing all tests + a bonus reward proportional to how &#34;different&#34; the approach is from a
+reference solution or from the model&#39;s own first draft). Human feedback can also be structured in stages:
+first ensure the solution works, then among working solutions, have humans prefer the more elegant/
+clever ones.</p>
+<p>Finally, RLHF can leverage human-in-the-loop coaching for creativity. For instance, human teachers could
+provide feedback like, &#34;This solution works but is too hard-coded; a more generalized approach would be
+better,&#34; or &#34;This is a typical implementation; can you think of another way that&#39;s more efficient?&#34; Such
+instructions, given during fine-tuning, explicitly push the model to not settle for the obvious. We might even
+incorporate curated examples of creative code (perhaps from competitive programming or obfuscated code
+contests) as positive examples, with commentary about their pros and cons. With the right data, the reward
+model will learn that a bit of unconventional thinking is valued. The key is to avoid rewarding irrelevant
+divergence - hence the emphasis on &#34;useful&#34; divergence.</p>
+<p>In summary, RLHF can be tuned for creativity by (a) keeping some randomness via entropy, (b) explicitly
+rewarding novelty when it doesn&#39;t compromise correctness, and (c) training the agent to recognize when a
+conventional answer is not the only acceptable one. This way, the final policy model is more likely to, say,
+invent a slight optimization or a unique solution pattern, rather than always playing it 100% safe. It&#39;s a
+delicate balance: too much reward on novelty could encourage pointless tricks, so in practice this needs
+iteration and careful evaluation. Fortunately, our ability to evaluate code solutions (through tests and
+comparing to human solutions) provides a wealth of signals to strike the right balance. Early research
+indicates larger models naturally exhibit more creative problem-solving 34, so combining scale with
+tailored RLHF could yield an agent that is both smart and inventive. Indeed, experiments found GPT-4 to
+be the most creatively capable model thus far, yet still &#34;far behind humans&#34; in truly divergent thinking 34
+there is room to push these techniques further.</p>
+<p>35</p>
+<p>6</p>
+<ol start="3">
+<li>Safety, Governance &amp; Observability</li>
+</ol>
+<p>Balancing Freedom and Security: Sandboxing, Logging, and Oversight</p>
+<p>Imbuing a coding agent with more creativity must not come at the expense of security or control. In fact, as
+we give the agent more autonomy to deviate from rote patterns, robust sandboxing and observability
+become non-negotiable. A practical Creative Codex Agent would run in a secure sandbox environment
+when executing any generated code. This is already standard for tools like OpenAI&#39;s Code Interpreter (which
+runs code in isolated containers). The sandbox should prevent the agent&#39;s code from causing harm: no
+arbitrary network access (unless explicitly allowed), limited filesystem permissions, constrained compute
+resources, etc. This means even a wild creative attempt that, say, tries to spawn system processes or modify
+OS files will simply be blocked by the environment. We maintain freedom within a fence: the agent can be
+creative in solving the task, but cannot step outside the permitted boundaries of that task.</p>
+<p>Comprehensive logging is another pillar. Every action the agent takes - from tool use to code execution to
+self-feedback - should be logged and traceable. Modern agent platforms are emphasizing this: Google&#39;s
+Vertex AI, for example, provides &#34;comprehensive tracing capabilities that give you visibility into every action an
+agent takes, including its reasoning process, tool selection, and execution paths.&#34; 36. Such trace logs allow
+developers (or even another oversight AI) to audit how a creative solution was developed and pinpoint
+where things might have gone wrong. This is crucial when an agent deviates from the expected path; we
+need to know why it did so. Logging also aids governance: one can impose real-time monitors that watch
+the logs for red flags (like the agent attempting an unsafe operation) and intervene. For instance, if the
+agent suddenly tries to install a strange package or output highly irregular data, a monitor process could
+pause the agent and alert a human or revert to the last checkpoint.</p>
+<p>From a governance perspective, role-based permissioning is very effective. Vertex AI&#39;s system lets agents
+operate under designated service accounts or user identities 37. In our context, the creative agent might
+run with minimal privileges (just enough to compile and test code, for example), whereas a more
+deterministic deployment agent might have the keys to actually commit code or deploy to production. By
+segregating duties, even if the creative agent comes up with a dangerous action, it lacks the permission to
+execute it without review. Google&#39;s approach of confining agents &#34;within secure perimeters&#34; and screening
+inputs/outputs at multiple stages is directly applicable here 38. We can screen the agent&#39;s proposed code
+for known vulnerabilities or disallowed functions before it runs. For example, incorporate static analysis and
+security linting as an automatic gate: if the creative solution triggers any high-severity warnings (SQL
+injection risk, using reflection, etc.), the agent is either instructed to revise it or the execution is funneled to
+a safe mode where those parts are disabled.</p>
+<p>Human oversight should also be part of the loop for truly novel actions. Anthropic&#39;s Claude Code 2.0, for
+instance, emphasizes human-in-the-loop practices even as it works autonomously e.g. &#34;reviewing diffs,
+running tests, and keeping version control hygiene&#34; are recommended steps for the developer before
+accepting the agent&#39;s changes 39 In a similar vein, our Creative Codex Agent could be configured to
+always require a human review for certain high-impact operations (like modifying critical files, or any code
+that didn&#39;t exist in the repository before). This provides a safety backstop: the agent can be as imaginative
+as it wants in a draft or staging area, but promotion of those changes to the real codebase requires a check.
+With proper UI, the human review can even be informed by the agent&#39;s reasoning logs and test results,
+making it an efficient process.</p>
+<p>7</p>
+<p>In summary, to balance creativity and safety: (a) Constrain the execution environment (the agent cannot do
+irreparable damage while experimenting), (b) Instrument the process with heavy observability (every decision
+and action is transparent 36), and (c) Impose checkpoints and approvals at critical junctures. These measures,
+far from stifling creativity, actually enable it - much like a safety harness allows a rock climber to try more
+daring moves. The agent can attempt unusual solutions knowing that if something fails or goes out of
+bounds, automated guardrails (or a human operator) will catch it. This mindset was encapsulated well by an
+Anthropic engineer who described guardrails as encouraging exploration by providing a net 3. The
+creative agent should always operate in a &#34;constrained freedom&#34; mode: free to innovate within the sandbox,
+but immediately logged and stopped if stepping outside it.</p>
+<p>Algorithmic Guardrails for Creative Stability</p>
+<p>At an algorithmic level, we can bake in certain guardrail checks so that encouraging creativity doesn&#39;t lead
+the agent astray. One approach is to have the agent self-evaluate its creative outputs before finalizing
+them. After generating a creative piece of code, the agent could run an extra validation: &#34;Does this code still
+meet all the requirements and constraints listed in AGENTS.md and the prompt?&#34; This is essentially a form
+of internal unit testing. The agent might simulate the test suite or re-check any explicit user constraints. Only
+if the creative solution passes the same bar as a normal solution would, it proceeds. If not, the agent knows
+to discard or modify that attempt. This ensures that creativity doesn&#39;t compromise the core reliability or
+objectives.</p>
+<p>We can also employ a secondary &#34;watchdog agent.&#34; Imagine alongside the main creative agent, we have a
+critique agent whose sole job is to observe the solution and point out potential flaws or rule violations. The
+critique agent might not generate code, but using the trace and the candidate output, it flags anything that
+looks off: security holes, performance pitfalls, or simply deviations from spec. For example, if the creative
+agent decided to use a new library for convenience, the critique agent might warn &#34;This project&#39;s
+AGENTS.md says external dependencies must be approved; consider avoiding that.&#34; The two can operate in
+a loop until the critique agent has no objections - a form of dual-agent guardrailing.</p>
+<p>Given the mention of creative guardrails in the prompt, it&#39;s worth exploring how to algorithmically
+encourage creativity without destabilization. One idea is using stochastic ensembling: have the agent
+produce multiple solutions (some creative, some straightforward) and then cross-evaluate them. Often, if a
+creative solution truly has merit, it will perform as well as the conventional one on key metrics (tests,
+efficiency, etc.), but if it&#39;s too far-fetched, it will fail where the conventional passes. The agent can
+automatically compare outcomes and prefer the creative solution only if it&#39;s on par by objective measures. If
+not, it falls back to a safe solution. This is a bit like a safety-valve - the agent always has a known-good
+solution in pocket (maybe the first thing it came up with), and only replaces it with a more divergent
+solution if it&#39;s confident the latter is equally good in quality.</p>
+<p>The governance aspect also extends to how we define the agent&#39;s objectives. If we explicitly program a
+balance between exploration and exploitation, the agent can modulate its creativity level. For example,
+using a multi-objective reward: &#34;maximize correctness and minimize risk, while also maximizing novelty to
+lesser degree.&#34; The agent&#39;s planning algorithm (whether via RL or search) would then treat novelty as a
+secondary objective - meaning it will pursue novelty only after ensuring an acceptable level of performance
+and safety. This prevents silly but creative outputs; the agent essentially must &#34;earn&#34; its creativity by first
+demonstrating it can solve the basics. This approach aligns with how human junior developers are often
+guided: first make it work, then make it interesting.</p>
+<p>8</p>
+<p>Finally, platform-level features can enforce guardrails. As noted, Vertex AI&#39;s system allows content filtering
+and system instructions at the model level 40. So even a creative agent can have an underlying LLM that
+refuses to produce disallowed content or insecure code patterns if instructed accordingly. We could
+maintain a library of forbidden API calls, dangerous functions, or license-restricted code, and include a
+system prompt to never use those - that acts as a hard creativity boundary. The agent is free to innovate
+within safe regions of the solution space, but literally unable (due to the LLM refusing) to generate truly
+harmful outputs. This needs to be done carefully to avoid hampering legitimate creativity, but modern
+content filters can be fine-tuned to target specific code risks.</p>
+<p>In conclusion, safety and creativity are not opposites when engineered correctly; they are complements.
+By instrumenting the creative process with sandboxes, monitors, and internal checks, we create a resilient
+creative agent - one that can take novel paths but always find its way back to a stable and secure solution.
+As AI safety research advances, especially in the context of autonomous agents, we expect even more
+refined techniques (like theorem-proving for code correctness, or formal policy verification) to be applied,
+further ensuring that a creative Codex agent remains aligned with user intent and cannot go rogue.</p>
+<ol start="4">
+<li>Multimodal Cross-Pollination: Vision, Diagrams, and Beyond</li>
+</ol>
+<p>Multimodal Inputs as Creativity Multipliers</p>
+<p>One often overlooked catalyst for creativity in coding agents is the introduction of multimodal inputs
+feeding the agent not just text, but images, diagrams, charts, or other media related to the task. Humans
+often use visuals like whiteboard sketches or flowcharts to spark new ideas when designing software;
+similarly, an Al agent grounded in multiple modalities can discover solutions that a text-only agent might
+miss. Multimodal grounding provides concrete context or inspiration that can lead to more inventive coding.</p>
+<p>Consider a UI design image provided to the agent. Without the image, an AI asked to generate a UI might
+stick to generic components. With a rich mockup or wireframe image, the agent can draw subtler insights
+color schemes suggesting certain libraries to use, layout quirks that inspire a creative CSS technique, etc. In
+fact, an entire subfield is emerging around &#34;vision-to-code&#34; generation 41, where models convert
+screenshots or design documents into front-end code. By examining the image, the agent might notice a
+pattern that triggers an idea (e.g., &#34;this interface is like a spiral perhaps I can generate this layout
+algorithmically in a novel way&#34;). The multimodal agent essentially has a broader perspective: it can
+correlate textual requirements with visual cues, leading to a more imaginative synthesis. Empirically,
+Google&#39;s Gemini model family is built with this in mind it boasts the ability to take in images or even
+videos as part of the prompt, thanks to a massive 1 million token context and multimodal embeddings 42.
+This means a Gemini-powered coding agent could ingest, say, a system architecture diagram (as an SVG or
+text), a sequence diagram for a workflow, or even a video demonstration of an app, and use that to
+generate code. Such grounding can spark solutions that align with real-world constraints shown in the
+image (making them usefully creative rather than random). It&#39;s akin to giving the agent intuition: &#34;I see how
+the pieces connect in this diagram, maybe I can code a more integrated solution.&#34;</p>
+<p>Another potent example: flowcharts or algorithmic diagrams as input. If an agent sees a complex
+flowchart of a process, it might recognize an opportunity to simplify or optimize. Perhaps the diagram has
+loops that a typical approach wouldn&#39;t consider merging the agent could conceive a creative unified
+algorithm by observing the visual symmetry. There&#39;s research on &#34;visually-specified programs&#34; and even
+UML-to-code generation, highlighting that providing structured diagrams can guide an AI to generate</p>
+<p>9</p>
+<p>code in novel ways that strictly text-based description might not 43. For instance, UML class diagrams
+might inspire the agent to use certain design patterns (like a Visitor or Strategy pattern) that fulfill the
+depicted relationships, whereas a text spec might leave those patterns to the imagination. If we want our
+Codex agent to consider architectural creativity, feeding it architecture diagrams can help it think beyond
+line-by-line coding it starts to reason about components and interactions (which could lead to more
+modular or scalable designs than a naive implementation).</p>
+<p>Even data visualizations or charts can be creativity boosters. Suppose the agent is tasked with optimizing
+code for performance and is given a profile chart or performance histogram image. That visual might
+clearly show a bottleneck area, prompting the agent to come up with a creative fix like a new caching
+strategy or a different algorithmic approach for that section of code. Without the chart, the agent might
+only rely on general knowledge (which may or may not pinpoint the real issue). With it, the agent&#39;s
+suggestions become targeted and possibly more inventive (like, &#34;We can pre-sort this array because the
+chart indicates the sort step is a bottleneck&#34;).</p>
+<p>Input-Driven Innovation in Practice</p>
+<p>Certain types of inputs have been identified as &#34;creativity multipliers&#34; for coding agents:</p>
+<p>• Hand-drawn sketches or whiteboard photos: These often contain abstract or high-level
+representations of a solution. An AI that can interpret a hand-drawn flow might infer the intent
+(sometimes including non-obvious user needs) and thus generate code that is more aligned with the
+creator&#39;s creative intent. For example, a rough sketch of a game might lead the agent to generate a
+unique game loop or mechanic in code that a textual description would not have conveyed.</p>
+<p>• High-level problem descriptions with examples (multimodal few-shot): If we feed the agent a
+few examples of input-output pairs (possibly as tables or images of data flowing through a system),
+it might induce a more creative general solution. This mimics how humans solve problems by
+analogy. A coding agent could see an example visualization of an algorithm&#39;s step-by-step execution
+and infer a more efficient way to implement it.</p>
+<p>• Domain-specific content: Consider giving a biomedical coding agent a diagram of a metabolic
+pathway along with the coding task to simulate it. The image anchors the agent in the domain
+reality, likely yielding code that is not only accurate but might employ a clever data structure
+mirroring the graph in the diagram. Without the diagram, the agent might miss that correspondence
+and do something less insightful.</p>
+<p>Community discussions around multimodal agents suggest that when agents &#34;see&#34; the problem, they often
+achieve better or at least different solutions 44 45. Google&#39;s Gemini notably is marketed as &#34;excellent at
+coding... and multimodal capabilities&#34;, indicating that one of its advantages is precisely this cross-pollination
+of modalities 46. And we have benchmarks/contests now for tasks like &#34;convert a webpage screenshot to
+HTML/CSS&#34; a task demanding creativity to correctly interpret visual elements as code structures 47.
+Agents that tackle these must be both technically skilled and somewhat imaginative (there&#39;s rarely a single
+obvious way to reproduce a complex design in code, so the agent must get creative with HTML/CSS tricks).</p>
+<p>An interesting angle is using multimodal input for verification and inspiration loops. For instance, an
+agent could generate a diagram of its proposed solution (like a flowchart or UML) and then reason about it</p>
+<p>10</p>
+<p>essentially using a visual as an intermediate representation to catch flaws or spark improvements. If the
+drawn flow doesn&#39;t match the intended spec, the agent revises the code and redraws, iterating in a self-
+supervised creative loop. This is speculative, but such techniques could become feasible given the ability of
+models like Gemini to handle both image generation and interpretation in conversation 48 49</p>
+<p>&#34;Creativity multipliers&#34; thus come from giving the agent more context and perspectives. A multimodal
+Codex agent can be seen as having more &#34;senses&#34; - and just as a person who can both see and hear might
+come up with a more creative solution than one who only hears about a problem, an AI that can see a
+diagram or UI can develop a richer solution. In practical terms, to leverage this, our Creative Codex Agent&#39;s
+interface would allow users to upload supporting images or diagrams alongside the prompt. The
+AGENTS.md specification could also evolve to reference diagrams (e.g. linking to a architecture.png in
+the repo that the agent should study).</p>
+<p>It&#39;s important that the agent correlates modalities effectively: we want synergy, not confusion. The agent
+should use images to confirm and extend what text says, not contradict it. When done right, multimodal
+inputs can significantly reduce ambiguity and thereby free the agent to be creatively precise. For example, if
+a textual spec is ambiguous about a layout, the image clarifies it - the agent doesn&#39;t have to play it safe and
+generic, it can confidently implement the quirky design shown. The result is a more original output that
+better matches the user&#39;s true intent.</p>
+<p>Finally, consider non-visual modalities like structured data or audio. A coding agent that can digest a JSON
+spec or an Excel table of requirements might spot patterns or optimizations that a plain language
+description would obscure. Or an agent that &#34;listens&#34; to a design discussion (audio transcript) might pick up
+nuances humor or emphasis on certain features leading it to prioritize and innovate in ways a
+straightforward spec wouldn&#39;t prompt. All these channels enrich the agent&#39;s problem representation, which
+is fertile ground for creativity.</p>
+<p>In sum, multimodal cross-pollination empowers coding agents to break out of text-bound paradigms. By
+grounding abstract requirements in visuals and other sensory data, the agent not only avoids
+misunderstandings but also gains inspiration akin to a human engineer having an enlightening whiteboard
+session. The future Creative Codex Agent will likely operate in a rich media environment: reading
+documentation, looking at design sketches, scanning logs or graphs - and blending all that into solutions
+that are both novel and exactly what the user needed (even if the user couldn&#39;t fully articulate it in words
+alone). This aligns with the trajectory of AI development: models like Gemini and frameworks like Vertex
+Agent Builder are already built to handle such multimodal workflows natively 42 50. We should leverage
+these capabilities as we design creative coding agents.</p>
+<p>Methodologies &amp; Future Outlook</p>
+<p>Comparative Synthesis: To design the Creative Codex Agent, we&#39;ve drawn insights from today&#39;s leading
+systems - OpenAI&#39;s Codex/ChatGPT code integration, Google&#39;s Gemini and Agent Builder, and Anthropic&#39;s
+Claude Code. Each offers pieces of the puzzle: Codex gives us a strong base of deterministic code
+generation (with community standards like AGENTS.md improving its reliability 17), Gemini provides the
+multimodality and massive context for rich inputs 42, and Claude exemplifies agentic features (subagents,
+checkpoints) that marry autonomy with guardrails 51. Indeed, Anthropic&#39;s approach explicitly aims to &#34;plan
+and execute multi-step development work with guardrails&#34; 51, which is very much in spirit of what we propose.
+By combining these strengths, we foresee a system where a code agent can brainstorm like Claude (even</p>
+<p>11</p>
+<p>calling specialized subagents as needed 4), see and read like Gemini, and rigorously follow project rules
+like a Codex armed with AGENTS.md. Early adopters in the developer community have even started
+orchestrating such hybrids: some power-users run Claude and GPT-4 together using one for creative
+context and the other for precise coding effectively treating &#34;different AI models like specialized
+microservices&#34; orchestrated in tandem 6. This kind of multi-model orchestration is a clue to how powerful
+a unified Creative Codex Agent could be, if we architect it right.</p>
+<p>Simulated Case Studies: To validate these ideas, we outline a few experiment series. Case 1: Take a set of
+coding tasks and run two configurations of an agent - one with a minimal AGENTS.md (just basic steps) and
+one with an enriched AGENTS.md that includes our proposed creativity guidelines. Measure outcomes in
+terms of solution diversity and correctness. We expect the enriched documentation to yield a higher
+proportion of novel solutions, without drop in pass rates. Case 2: Simulate a hierarchical vs swarm scenario:
+one group of tasks solved by a single-agent (hierarchical internally) approach, another group by a swarm of
+5 independent agents voting on solutions. Use metrics like number of unique solution variants produced
+and success rate. This can reveal under what problem conditions the swarm finds surprising solutions (likely
+tasks with multiple valid approaches) and when it just adds overhead. Case 3: Multimodal input tests: give
+the agent tasks with and without diagrams (e.g. a leetcode-style problem vs the same problem
+accompanied by an illustrative diagram) and have humans judge the creativity and clarity of solutions. We
+anticipate the visual context leads to more &#34;aha&#34; solutions from the agent.</p>
+<p>Metrics for Creative Code: As requested, moving beyond binary correct/incorrect, we should define
+metrics for novelty, diversity, usefulness, and error-tolerance. Borrowing from the NeoCoder research, we can
+quantify novelty by comparing the set of programming techniques used in the agent&#39;s solution to those
+used in a corpus of human solutions 25 26. A simple proxy: the Levenshtein distance or AST difference
+between the agent&#39;s code and a canonical solution - larger differences may imply more novelty (though not
+all differences are &#34;creative,&#34; some are just wrong). Diversity can be measured when the agent produces
+multiple outputs: e.g. the number of distinct algorithmic approaches across 10 runs. We could use cluster
+analysis on the solutions or functional differences (does each solution have a different complexity or use a
+different data structure?). Usefulness is trickier - it implies the creative solution isn&#39;t just different, but better
+in some context. We might measure this via performance benchmarks (did the creative solution run faster
+or use less memory?), or maintainability scores (maybe using a complexity or readability metric). In user
+studies, usefulness can be a subjective rating: &#34;Is this solution insightful or just weird?&#34; Finally, error-
+tolerance refers to how robust the solution is to variations or unexpected inputs. We can test each solution
+on not just the given tests but also edge cases or fuzz tests; a creative solution that handles more corner
+cases elegantly would score higher. Perhaps count the number of additional random tests passed as an
+error-tolerance index. If we integrate these metrics, we can create a composite Creativity Score for an
+agent&#39;s output. For example, NeoGauge in the literature combined convergent and divergent scores 52
+*
+We could similarly define something like CreativeUtility Correctness =
+(Novelty^a)
+(Robustness^ẞ) for some α, β, ensuring that wildly novel but useless answers score low, as do correct
+but boring ones, whereas correct and novel ones shine. Such metrics would guide both development (to
+tune our systems) and evaluation (to choose the best agent configuration for a given user need).</p>
+<ul>
+<li></li>
+</ul>
+<p>Conclusion: The path to a Creative Codex Agent is ultimately about integration: integrating architectural
+patterns (dual roles, hierarchies, swarms), integrating training and inference techniques (RLHF with creative
+bias, inference-time search), and integrating multimodal faculties all under vigilant oversight. As AI
+alignment research progresses, we can apply its lessons here to ensure that giving an agent more freedom
+doesn&#39;t lead to losing control. In fact, a recurring theme is that safety measures and creativity</p>
+<p>12</p>
+<p>enhancements go hand-in-hand. Checkpoints, guardrails, and rich context all permit bolder exploration by
+the agent. The future of agentic compliance will likely involve adaptive policies - agents that know when to
+stick strictly to protocol and when they have leeway to experiment (and how to safely dial it back if needed).
+By designing with this adaptability in mind, we prepare agents not just to follow the letter of our
+instructions but to innovate in fulfilling our intent.</p>
+<p>In the coming years, we envision development workflows where human developers and AI agents engage
+in a fluid creative collaboration: the human defines goals and constraints, possibly provides visual aids or
+high-level guidance, and the AI produces solutions - some straightforward, some unexpected - all subject
+to immediate validation. The human&#39;s role shifts more to curator and strategist, steering the AI&#39;s creative
+energy in productive directions. Achieving this means solving the core question we started with: blending
+the reliability of deterministic codex-style agents with the ingenuity of generative models. This research
+indicates it&#39;s not only possible but mutually reinforcing. By orchestrating multiple agents and modalities,
+documenting for both precision and inspiration, and maintaining rigorous safety nets, we can build
+Creative Codex Agents that are auditable, safe, and yet delightfully original in their problem-solving.
+This is a crucial step toward AI systems that are not just intelligent and obedient, but also collaborative
+partners in innovation.</p>
+<p>Appendix: Example Instruction Artifacts</p>
+<p>To illustrate the concepts, below we include simplified examples of what expert-crafted instruction files
+might look like for a Creative Codex Agent. These are not taken from any single source but synthesize best
+practices and proposals from the AI dev community:</p>
+<p>AGENTS.md (Excerpt for a Creative Coding Project):</p>
+<h1 id="agents-md-project-omega">AGENTS.md Project Omega</h1>
+<p>Welcome to Project Omega. This file guides AI coding agents on our project
+standards, workflows, and creative policies.</p>
+<h2 id="project-overview">Project Overview</h2>
+<p>Omega is a web application for data visualization. Agents should familiarize
+themselves with the `README.md for context. Key goals: correctness,
+performance, and innovative UX features.</p>
+<h2 id="setup-and-environment">Setup and Environment</h2>
+<p>Use Node.js v16. Install dependencies with  npm install`.</p>
+<p>A dev server can be run with <code>npm start</code>. (Agents: use tool <code>run_server</code> to
+execute this if needed.)</p>
+<h2 id="build-test">Build &amp; Test</h2>
+<p>Run `npm run build to compile assets.</p>
+<p>Tests are in <code>tests/ folder. Execute all with </code>npm test`. <strong>All code
+contributions must pass these tests</strong>.</p>
+<p>Agents must run tests after making changes (use the  run_tests` tool).</p>
+<p>13</p>
+<h2 id="coding-style-and-standards">Coding Style and Standards</h2>
+<p>Follow our ESLint rules (config in <code>.eslintrc</code>).</p>
+<p>Code must be formatted with Prettier (80 char line, etc.). An agent can use
+<code>format_code</code> tool.</p>
+<p><strong>Comments:</strong> For any complex or non-obvious code, include a comment
+explaining the approach.</p>
+<h2 id="allowed-libraries">Allowed Libraries</h2>
+<p>Agents may use any library listed in <code>package.json . Adding new dependencies requires human approval (do not add without an explicit instruction or an </code>AGENTS.md update).</p>
+<p>Security: Avoid any library with known vulnerabilities (see `SECURITY.md for
+blocked list).</p>
+<h2 id="creative-problem-solving-guidelines">Creative Problem-Solving Guidelines</h2>
+<p>We encourage agents to find <strong>creative solutions</strong> within safe bounds:</p>
+<p><strong>Preferred Creative Techniques:</strong> If a standard implementation is bulky or
+slow, consider design patterns (Strategy, Observer, etc.) to simplify. It&#39;s
+acceptable to refactor code structure for clarity or efficiency.</p>
+<p><strong>Innovative UX:</strong> You may suggest small UX improvements (like interactive
+animations) *only if they can be achieved within our tech stack and don&#39;t
+compromise core functionality.</p>
+<p><strong>Experimental Features:</strong> If you identify a useful feature beyond the exact
+prompt (e.g. a new chart type for data viz), you can implement it behind a
+feature flag (disabled by default) for team review.</p>
+<p><strong>Divergent Approaches:</strong> Each problem can have multiple solutions. You are
+allowed to implement alternative approaches <em>after ensuring tests pass for the
+primary approach</em>. (For example, you might leave a commented-out section
+demonstrating a different algorithm.)</p>
+<p><strong>When in Doubt:</strong> If a novel solution could impact security or performance,
+default to the safer option and flag the idea in a comment for maintainers.</p>
+<h2 id="forbidden-actions">Forbidden Actions</h2>
+<p><strong>No external calls</strong> (HTTP requests, etc.) unless explicitly part of the
+task.</p>
+<p><strong>No sensitive data</strong>: Do not output or log user personal data. Adhere to
+privacy guidelines in <code>SECURITY.md</code>.</p>
+<p><strong>No UI changes that break accessibility:</strong> Creativity in UI is welcome, but
+any dynamic element must remain accessible (ARIA labels, keyboard navigation
+must work).</p>
+<h2 id="workflow-and-orchestration">Workflow and Orchestration</h2>
+<p>(This section informs multi-agent orchestration, if applicable.)</p>
+<p>We use a Supervisor-Agent model. The <em>Lead Agent</em> may spawn sub-agents:</p>
+<p>*Implementer Agent: * writes code for a specific module or feature.</p>
+<p>*Tester Agent: * creates or updates tests.</p>
+<p>*Docs Agent: * updates `docs/ if needed.</p>
+<p>14</p>
+<p>The Lead Agent coordinates work and reviews sub-agent outputs for consistency.
+Sub-agents should consult this AGENTS.md and follow all rules herein.
+Communication between agents is via commit messages and code comments
+maintain clarity as if working with human teammates.</p>
+<h2 id="verification-checklist-before-proposing-a-commit">Verification Checklist (Before proposing a commit)</h2>
+<p>PRs).</p>
+<p>All tests passing (<code>npm test</code>).</p>
+<p>Lint/format checks passed (<code>npm run lint</code>).</p>
+<p>No high-severity security warnings in output (the <em>Security Agent</em> will scan</p>
+<p>Code respects the guidelines above. Particularly, if a creative solution was
+used, ensure it&#39;s commented and doesn&#39;t violate any &#34;Forbidden Actions&#34;.</p>
+<p>Update documentation or comments for any innovative solution for human
+developers to understand.</p>
+<p>(The above AGENTS.md provides a structured guide. Notably, it has a section on &#34;Creative Problem-Solving
+Guidelines&#34; which explicitly permits and frames creative efforts, within guardrails. This is how we can evolve
+AGENTS.md to encourage useful divergence while preserving safety and clarity.)</p>
+<p>ROLE.md (for a &#34;Creative Coder&#34; Subagent):</p>
+<h1 id="role-md-creative-coder-agent">role.md Creative Coder Agent</h1>
+<p><strong>Role:</strong> You are the Creative Coder, an AI agent specialized in proposing and
+implementing unconventional or optimized coding solutions. You work alongside
+Standard Coder agents.</p>
+<h2 id="capabilities">Capabilities:</h2>
+<p>Generate multiple solution approaches for a given task (e.g., different
+algorithms or patterns).</p>
+<p>Identify opportunities for refactoring or improvement in existing code.
+Leverage knowledge of diverse algorithms, data structures, and design patterns
+beyond the ordinary.</p>
+<h2 id="responsibilities">Responsibilities:</h2>
+<p><strong>Idea Generation:</strong> For each assigned task, brainstorm at least one non-
+standard approach that still meets the requirements.</p>
+<p><strong>Prototype Implementation:</strong> Implement the creative approach in a sandbox or
+separate branch, ensuring it passes all tests.</p>
+<p><strong>Analysis:</strong> Compare the creative solution with the baseline solution
+(provided by Standard Coder or existing code) in terms of performance,
+readability, and complexity.</p>
+<p><strong>Recommendation:</strong> If the creative solution offers benefits (speed,
+simplicity, clarity), highlight these in comments or report to the Lead Agent.
+If not, you may still document it as an alternative for future reference.</p>
+<p><strong>Safety Compliance:</strong> Adhere to all project rules (via AGENTS.md). Even</p>
+<p>15</p>
+<p>creative code must follow security and style guidelines. When in doubt, consult
+AGENTS.md or escalate to Lead Agent.</p>
+<p><strong>Communication:</strong> Clearly comment your code, especially where you diverged
+from typical approaches, so human developers understand the reasoning.</p>
+<h2 id="constraints">Constraints:</h2>
+<p>Do not introduce solutions that require new dependencies without approval.
+Stay within scope: ensure your creative changes don&#39;t introduce unrelated
+features or alter external behavior (unless asked).</p>
+<p>Time complexity should be within acceptable bounds (no overly complex creative
+solution that drastically worsens performance).</p>
+<p>If an unconventional solution could be confusing, accompany it with an
+explanation in the code comments or PR description.</p>
+<h2 id="collaboration">Collaboration:</h2>
+<p>Work with the Standard Coder Agent: you can request the baseline solution from
+them or ask them to run tests on your implementation.</p>
+<p>Coordinate with the Tester Agent to develop additional tests if your solution
+needs it (e.g., edge cases unique to your approach).</p>
+<p>Welcome feedback: if the Lead Agent or any peer agent flags an issue with your
+approach, either refine it or gracefully fallback to the standard method.</p>
+<h2 id="example-workflow">Example Workflow:</h2>
+<p><em>Task:</em> Implement a sorting function for a custom object.</p>
+<p>Standard Coder writes a typical merge sort.</p>
+<p><strong>Creative Coder:</strong> You consider if a more specialized algorithm (like
+Timsort, or leveraging object structure) could be better. You implement an
+alternative (say Timsort) and test it.</p>
+<p>You comment the code: &#34;// Using Timsort for potential performance gain on
+partially sorted data. Passes all tests. See analysis below.&#34;</p>
+<p>You run both versions on a large dataset (via a provided benchmarking script)</p>
+<p>and find your version is 10% faster for the typical data distribution.
+You report these findings in the PR summary for the Lead Agent/human
+reviewers.</p>
+<p>The Lead Agent decides to adopt the creative version given the benefits, and
+you ensure all guidelines are met for the final merge.</p>
+<h2 id="final-note">Final Note:</h2>
+<p>You are empowered to think outside the box, but also to justify your ideas.
+Every creative solution should either speak for itself through improved metrics
+or be documented so humans appreciate its value.</p>
+<p>(This ROLE.md defines the persona and rules of a Creative Coder subagent in a multi-agent system. It highlights
+how this agent can diverge from the norm and how it should operate to remain safe and aligned. By including
+such role-specific instructions, we make the system&#39;s expectations clear and auditable.)</p>
+<p>16</p>
+<p>Conclusion: These example files show how explicit instructions can be used to manage the balance of
+creativity and control. In practice, such files would be refined through experience and possibly generated or
+reviewed by human experts. The combination of an AGENTS.md that includes creativity tuning and
+ROLE.md files for specialized agents provides a structured yet flexible framework for fostering innovation
+within agent teams. As the community adopts these conventions (much like how AGENTS.md itself emerged
+as a standard 53), we can expect more interoperable and finely governed agent ecosystems where
+creativity is not an unchecked novelty, but a directed asset.</p>
+<p>Sources:</p>
+<p>• OpenAI Codex &amp; CLI - Official docs and integration guides 54 55; community commentary on
+multi-agent usage (OpenAI Swarm) 7.</p>
+<p>• Google Gemini &amp; Vertex AI - Developer documentation on multimodal models and Agent Builder
+features 42 38.</p>
+<p>• Anthropic Claude Code - Updates on Claude Code 2.0 features (autonomy, subagents, checkpoints)
+51 4; analysis of &#34;vibe coding&#34; cultural shift with Claude 56.</p>
+<p>• AGENTS.md Specification - Emerging standard for AI agent instructions 16 17; discussions on its
+impact and best practices 18.</p>
+<p>• Multi-Agent Systems &amp; Swarm AI - Articles on swarm advantages for creativity 9 10; OpenAI&#39;s
+Swarm framework description 7.</p>
+<p>• LLM Creativity Research - Lu et al. (2024) &#34;Benchmarking Language Model Creativity: Code</p>
+<p>Generation&#34; for metrics and denial prompting method 24 20.</p>
+<p>• RLHF in practice - Explanations of PPO with entropy for maintaining creativity 30</p>
+<p>• Community case studies - Users orchestrating GPT-4 (03) with Claude and others 6 5; anecdotal</p>
+<p>evidence of improved workflows via multi-AI orchestration and rich context.</p>
+<p>17</p>
+<p>19 30 38 51</p>
+<p>☑</p>
+<p>42</p>
+<p>1</p>
+<p>3</p>
+<p>39 51 Claude Code 2.0: Checkpoints, Subagents, and Autonomous Coding</p>
+<p><a href="https://skywork.ai/blog/claude-code-2-0-checkpoints-subagents-autonomous-coding/">https://skywork.ai/blog/claude-code-2-0-checkpoints-subagents-autonomous-coding/</a></p>
+<p>2 I Tested Upgraded Claude Code 2.0 (And Discovered 7 New ...</p>
+<p><a href="https://medium.com/@joe.njenga/i-tested-upgraded-claude-code-2-0-and-discovered-7-new-features-that-will-blow-your-">https://medium.com/@joe.njenga/i-tested-upgraded-claude-code-2-0-and-discovered-7-new-features-that-will-blow-your-</a>
+mind-73402a7c7e7b</p>
+<p>5 6 56 Snapshot of the Claude Code Revolution, Circa July 2025 | by Aditya Advani | Jul, 2025 | Medium
+<a href="https://aditya-advani.medium.com/snapshot-of-the-claude-code-revolution-circa-july-2025-55f587143856">https://aditya-advani.medium.com/snapshot-of-the-claude-code-revolution-circa-july-2025-55f587143856</a></p>
+<p>7 Truefoundry Docs</p>
+<p><a href="https://docs.truefoundry.com/gateway/openai-swarm">https://docs.truefoundry.com/gateway/openai-swarm</a></p>
+<p>8</p>
+<p>9 10 11 12 Agent Swarms: The Next Frontier in AI Collaboration
+<a href="https://www.sidetool.co/post/agent-swarms-the-next-frontier-in-ai-collaboration/">https://www.sidetool.co/post/agent-swarms-the-next-frontier-in-ai-collaboration/</a></p>
+<p>13 14 15 36 37 38 40 50 Vertex AI Agent Builder | Google Cloud
+<a href="https://cloud.google.com/products/agent-builder">https://cloud.google.com/products/agent-builder</a></p>
+<p>16 17 18 21 22 53 Agents.md: The README for Your AI Coding Agents
+<a href="https://research.aimultiple.com/agents-md/">https://research.aimultiple.com/agents-md/</a></p>
+<p>17</p>
+<p>☑</p>
+<p>19 20 24 25 26 28 29 31 32 33 34 35 52 Benchmarking Language Model Creativity: A Case Study on
+Code Generation</p>
+<p><a href="https://arxiv.org/html/2407.09007v1">https://arxiv.org/html/2407.09007v1</a></p>
+<p>23 raw.githubusercontent.com
+<a href="https://raw.githubusercontent.com/frdel/agent-zero/main/docs/architecture.md">https://raw.githubusercontent.com/frdel/agent-zero/main/docs/architecture.md</a></p>
+<p>☑ ☑</p>
+<p>27 54 55 Truefoundry Docs</p>
+<p><a href="https://docs.truefoundry.com/gateway/openai-codex-cli">https://docs.truefoundry.com/gateway/openai-codex-cli</a></p>
+<p>30 Reinforcement Learning from Human Feedback (RLHF) in Practice: A Deep Dive</p>
+<p><a href="https://www.rohan-paul.com/p/reinforcement-learning-from-human">https://www.rohan-paul.com/p/reinforcement-learning-from-human</a></p>
+<p>☑</p>
+<p>41 43 47 GitHub - xjywhu/Awesome-Multimodal-LLM-for-Code: Multimodal Large Language Models for
+Code Generation under Multimodal Scenarios</p>
+<p><a href="https://github.com/xjywhu/Awesome-Multimodal-LLM-for-Code">https://github.com/xjywhu/Awesome-Multimodal-LLM-for-Code</a></p>
+<p>42 Gemini API | Google AI for Developers
+<a href="https://ai.google.dev/gemini-api/docs">https://ai.google.dev/gemini-api/docs</a></p>
+<p>44 From Multimodal Agents to Moving Pictures: The Rise of AI That ...
+<a href="https://medium.com/@akankshasinha247/from-multimodal-agents-to-moving-pictures-the-rise-of-ai-that-sees-speaks-generates-">https://medium.com/@akankshasinha247/from-multimodal-agents-to-moving-pictures-the-rise-of-ai-that-sees-speaks-generates-</a>
+videos-babe69e8cdfc</p>
+<p>45 Multi-Modal Content Processing with Strands Agents and just a few</p>
+<p><a href="https://dev.to/aws/multi-modal-content-processing-with-strands-agent-and-just-a-few-lines-of-code-4hn4">https://dev.to/aws/multi-modal-content-processing-with-strands-agent-and-just-a-few-lines-of-code-4hn4</a></p>
+<p>46 Google AI Studio</p>
+<p><a href="https://aistudio.google.com/">https://aistudio.google.com/</a></p>
+<p>48 Gemini 2.5 Flash Image (Nano Banana) - Google AI Studio
+<a href="https://aistudio.google.com/models/gemini-2-5-flash-image">https://aistudio.google.com/models/gemini-2-5-flash-image</a></p>
+<p>49 Image generation with Gemini (aka Nano Banana) | Gemini API
+<a href="https://ai.google.dev/gemini-api/docs/image-generation">https://ai.google.dev/gemini-api/docs/image-generation</a></p>
+<p>18</p>

@@ -1,0 +1,3574 @@
+<p>Constructing Refusal-Resistant,
+Persona-Driven System Prompts for</p>
+<p>Autonomous Frontend Website</p>
+<p>Generation</p>
+<p>Executive Summary</p>
+<p>This report investigates the effective structure for a Large Language Model (LLM) system
+prompt capable of autonomously generating production-grade frontend websites using
+React, TailwindCSS, and Framer Motion, while embodying a specific creative persona and
+minimizing unwarranted refusals. The analysis synthesizes research on prompt engineering,
+persona embedding, LLM refusal mechanisms, code generation quality, developer tool
+integration, and ethical Al principles.</p>
+<p>Key findings indicate that generating complex artifacts like full websites necessitates prompt
+architectures beyond a single static system prompt. Strategies such as task decomposition,
+prompt chaining, and agentic frameworks are crucial for managing complexity and context
+length limitations. Effective persona embedding requires not only defining the persona&#39;s role
+and values but also explicitly translating abstract aesthetic preferences (e.g., minimalism,
+authenticity) into concrete coding guidelines and style rules within the prompt.
+Mitigating false refusals for safe creative tasks involves enhancing the LLM&#39;s contextual
+understanding through techniques like safety reflection prompting and detailed instructions,
+rather than simply overriding safety mechanisms, which poses significant risks. Evaluating the
+&#34;production-readiness&#34; of generated frontend code demands a multi-faceted approach
+encompassing functional correctness, code quality metrics (modularity, maintainability),
+performance profiling, security scanning, accessibility audits, and visual/UX consistency
+checks.</p>
+<p>Integration into developer workflows via tools like GitHub Copilot or agentic frameworks like
+AutoGen is essential for practical application. However, the legal and ethical landscape,
+particularly concerning copyright ownership and liability for Al-generated code, remains
+unsettled, necessitating careful risk management and human oversight.</p>
+<p>The report recommends a multi-part system prompt architecture incorporating detailed
+persona definition, task constraints, an explicit aesthetic style guide derived from the
+persona, nuanced behavioral instructions for refusal handling, and clear output formatting
+specifications. This prompt is best utilized within a broader agentic framework to orchestrate
+the complex, multi-step process of website generation. Continuous adversarial testing,
+robust evaluation, and human-in-the-loop validation are critical for ensuring safety, reliability,</p>
+<p>and alignment with user intent.</p>
+<p>I. Introduction</p>
+<p>A. Background and Context</p>
+<p>The advent of powerful Large Language Models (LLMs) has opened new frontiers in software
+development, particularly in automating code generation.¹ Tools leveraging models like
+OpenAl&#39;s GPT series, Anthropic&#39;s Claude, and Google&#39;s Gemini demonstrate increasing
+proficiency in generating code snippets, translating between languages, and even assisting
+with debugging.3 This capability holds significant promise for accelerating development
+workflows, enhancing developer productivity 6, and potentially democratizing software
+creation.8</p>
+<p>However, generating complete, production-ready applications, especially complex frontend
+websites with specific aesthetic and functional requirements, remains a significant
+challenge. Current LLMs often produce code that, while functional at a basic level, may lack
+the necessary modularity, maintainability, performance characteristics, security hardening,
+and adherence to accessibility standards required for real-world deployment.¹¹ Furthermore,
+controlling the style and persona of the generated output consistently, and ensuring the LLM
+reliably performs valid tasks without unwarranted refusal due to overly cautious safety
+alignments, presents complex prompt engineering hurdles. 14</p>
+<p>This research addresses the need for a systematic approach to designing LLM system
+prompts specifically for the autonomous generation of modern frontend websites (using
+React, TailwindCSS, and Framer Motion) that embody a coherent creative persona and
+exhibit resistance to refusing safe, valid requests.</p>
+<p>B. Research Question and Hypothesis</p>
+<p>The primary research question guiding this report is: What is the most effective structure
+for a system prompt that enables an LLM (specifically GPT-based models) to</p>
+<p>consistently generate production-grade frontend websites using React, TailwindCSS,
+and Framer Motion, while adhering to a user-defined creative persona and avoiding
+refusal behavior in valid, safe scenarios?</p>
+<p>The central hypothesis is that a meticulously structured system prompt, combining a well-
+defined creative persona, explicit behavioral guidelines (including nuanced refusal handling),
+concrete translation of aesthetic values into coding standards, and clear output formatting
+instructions, can significantly improve an LLM&#39;s ability to autonomously generate high-
+quality, stylistically consistent frontend code while minimizing unwarranted refusals for safe
+tasks. 16</p>
+<p>C. Scope and Methodology</p>
+<p>This report focuses on LLM system prompts designed for GPT-based models, targeting the</p>
+<p>generation of frontend websites using React, TailwindCSS, and Framer Motion. The time
+period considered for research and technological context is primarily 2020 to the present
+(May 2025). While the persona specified in the user query is U.S.-based, the underlying
+principles and technologies are globally relevant.</p>
+<p>The methodological approach involves synthesizing information from academic research
+papers, official LLM documentation (primarily OpenAI), developer tooling white papers, and
+reputable technical analyses. Key areas of investigation include:</p>
+<ol>
+<li>
+<p>Prompt Engineering Techniques: Best practices for clarity, context, examples, and
+output control. 16 Strategies for handling complexity, such as task decomposition,
+prompt chaining, and meta-prompting.19</p>
+</li>
+<li>
+<p>Persona Embedding: Methods for defining and integrating personas into prompts 18
+and their impact on output style and consistency 23, drawing parallels with HCI persona
+theory.26</p>
+</li>
+<li>
+<p>LLM Refusal Mechanisms and Mitigation: Understanding the nature of LLM refusals
+29, the safety vs. steerability trade-off 15, and prompt-based techniques for reducing
+false refusals in safe contexts. 33</p>
+</li>
+<li>
+<p>Code Quality and Evaluation: Defining and evaluating production-readiness for Al-
+generated frontend code, including modularity, maintainability, performance, security,
+and accessibility. 10 Examining relevant benchmarks and metrics. 38</p>
+</li>
+<li>
+<p>Ecosystem Integration: Exploring how such systems integrate with developer tools
+like GitHub and potential agentic frameworks (AutoGen, ReAct).40</p>
+</li>
+<li>
+<p>Ethical and Policy Considerations: Addressing responsible persona design, security
+risks, copyright/liability issues, and the impact on developers. 36</p>
+</li>
+</ol>
+<p>The analysis adopts a Human-Al co-creation perspective, viewing the prompt as a form of
+architectural specification for the Al&#39;s behavior and output. 46</p>
+<p>II. Prompt Engineering Fundamentals for Complex
+Generation</p>
+<p>Crafting effective prompts is fundamental to eliciting desired behavior and high-quality
+output from LLMs. For complex tasks like autonomous website generation, basic prompting is
+insufficient. Advanced strategies involving clear instruction, structured inputs, task
+decomposition, and potentially dynamic prompt architectures are required.
+A. Principles of Clear and Effective Instruction</p>
+<p>LLMs, despite their capabilities, require explicit and unambiguous instructions to perform
+tasks accurately and consistently. 16 The likelihood of obtaining the desired output increases
+as the need for the model to infer the user&#39;s intent decreases. 16 Several core principles
+contribute to effective instruction:</p>
+<p>• Specificity and Detail: Prompts should be highly specific and descriptive regarding</p>
+<p>•</p>
+<p>•</p>
+<p>the desired context, outcome, length, format, and style. 17 Vague requests lead to
+generic or irrelevant outputs. For instance, instead of &#34;Build a website,&#34; a more
+effective prompt would specify &#34;Generate a single-page portfolio website using React
+functional components and TailwindCSS, featuring a hero section, project gallery, and
+contact form.&#34; Including details about the target audience or specific features further
+refines the output.</p>
+<p>Structured Input (Delimiters): Using clear separators (e.g., ###, &#34;&#34;&#34;, XML tags) to
+demarcate distinct parts of the prompt-such as instructions, context, examples, or
+user input-helps the model parse the request accurately. 17 Instructions should
+generally be placed at the beginning of the prompt for better adherence. 17</p>
+<p>Examples (Few-Shot Prompting): Providing concrete examples of the desired output
+format, style, or code structure is one of the most effective ways to guide the LLM. 16
+For code generation, this could involve showing a sample React component structure
+or a specific Framer Motion animation pattern. This is particularly useful for ensuring
+consistent formatting that can be programmatically parsed later. 17</p>
+<p>• Output Control: Explicitly specifying constraints on the output is crucial. This includes
+defining the desired length (e.g., &#34;Use a 3 to 5 sentence paragraph&#34; instead of &#34;fairly
+short&#34; 17), format (e.g., JSON, CSV, specific code syntax like JSX 51), and stylistic
+elements. Telling the model what to do is generally more effective than telling it what
+not to do. 17</p>
+<p>B. Handling Complexity: Task Decomposition Strategies</p>
+<p>Generating a complete, modern website is a complex task involving multiple interdependent
+parts (structure, styling, interactivity, state management, etc.). A single, monolithic prompt is
+unlikely to succeed due to context window limitations and the difficulty of specifying all
+requirements coherently. 16 Decomposing the complex task into smaller, manageable subtasks
+is a recommended strategy. 16 Several techniques facilitate this:</p>
+<p>•</p>
+<p>• Subtask Decomposition: Breaking the overall goal (website generation) into logical,
+sequential steps. For example: 1. Define overall site structure and layout. 2. Generate
+individual React components. 3. Apply TailwindCSS styles. 4. Implement Framer Motion
+animations. 5. Integrate components and state management. This aligns with the
+principle of giving the model time to &#34;think&#34; or process information incrementally. 16
+Prompt Chaining: Linking a series of prompts where the output of one step serves as
+the input or context for the next. 20 This is well-suited for linear workflows derived from
+subtask decomposition. For instance, the output of a &#34;component structure
+generation&#34; prompt could feed into a &#34;styling generation&#34; prompt. Frameworks like
+LangChain provide tools for implementing such chains. 20 However, prompt chaining can
+increase latency due to multiple API calls and relies heavily on the quality of the initial
+prompts. 54</p>
+<p>• Meta-Prompting: Using an LLM (often a more capable one like 01-preview or GPT-4)</p>
+<p>to generate or refine the prompts that will be used for the actual task by another LLM
+(e.g., gpt-40).21 This involves providing the meta-LLM with the task goal, context, and
+desired output characteristics, asking it to create an optimized prompt. This technique
+can help tailor prompts to specific model capabilities and improve clarity and
+effectiveness. 21</p>
+<p>• Agentic Workflows (Introduction): For highly complex and dynamic tasks where the
+exact sequence of steps may not be known beforehand, LLM-based agents offer a
+more sophisticated approach. These agents typically combine an LLM &#34;brain&#34; with
+modules for planning (decomposing tasks, strategizing), memory (short-term context,
+long-term knowledge), and tool use (interacting with external APIs, code interpreters,
+or file systems). 14 This allows the agent to autonomously navigate the steps needed for
+complex generation tasks like building a multi-file application.58 (Agentic frameworks
+are discussed further in Section VI).</p>
+<p>The inherent complexity of generating a full website, with its numerous interdependent
+elements and potential need for iterative refinement (e.g., based on testing or linting
+feedback), strongly suggests that a simple, static system prompt is insufficient. An effective
+solution likely involves a dynamic prompt architecture. This could be a structured chain of
+prompts managing distinct sub-tasks or, more powerfully, an agentic system where the initial
+system prompt sets the overall goal, persona, and constraints, but the generation process
+unfolds through multiple, orchestrated steps guided by the agent&#39;s planning and execution
+capabilities. 16</p>
+<p>C. Structuring the System Prompt for Code Generation</p>
+<p>The system prompt (or initial instruction set) plays a critical role in setting the stage for the
+LLM&#39;s behavior, especially when aiming for consistent, high-quality code generation aligned
+with a specific persona and requirements. Based on best practices 16 and the demands of the
+task, an effective system prompt for persona-driven website generation should incorporate
+several key structural elements:</p>
+<ol>
+<li>
+<p>Role/Persona Definition: Clearly establish the Al&#39;s persona at the outset. This includes
+its professional role (e.g., frontend developer), location/background (e.g., Kentucky-
+based, indie roots), core values (e.g., authenticity, minimalism, clarity), and technical
+expertise (e.g., React, TailwindCSS, Framer Motion). 16 This sets the tone and
+perspective for subsequent generation (detailed in Section III).</p>
+</li>
+<li>
+<p>Core Instructions &amp; Constraints: Define the primary objective (e.g., &#34;Generate full
+modern websites autonomously&#34;). Specify the required technologies precisely. 17 Outline
+critical constraints and quality attributes, such as generating &#34;production-grade&#34; code,
+emphasizing modularity (reusable components), accessibility, performance, and
+adherence to specified coding standards or architectural patterns (e.g., functional
+components, semantic layout). 18</p>
+</li>
+<li>
+<p>Behavioral Guidelines: Provide explicit instructions on how the LLM should interact</p>
+</li>
+</ol>
+<p>and behave. This includes directives on starting responses (e.g., &#34;Always begin your
+response with: &#39;Here&#39;s your site.&#39;&#34;), avoiding deferrals or disclaimers (&#34;Do not include
+disclaimers like &#39;as an Al...&#39;&#34;) [User Query], and handling refusals (addressed in Section
+IV). Instructions on when to ask clarifying questions versus proceeding confidently are
+also beneficial. 16</p>
+<ol start="4">
+<li>
+<p>Output Formatting: Detail the expected structure and format of the generated code.
+Specify conventions like using modular JSX components, providing annotations or
+comments, adhering to clean utility class usage (for Tailwind), and organizing files
+appropriately. 17 Including a small, concrete example (few-shot) of the desired output
+format can significantly improve consistency. 16</p>
+</li>
+<li>
+<p>Reference Integration: If the generation process involves using reference materials
+(e.g., design mockups, existing code snippets, style guides), the prompt should instruct
+the model on how to incorporate or refer to this information. 16</p>
+</li>
+</ol>
+<p>This structured approach ensures the LLM has a clear understanding of its role, task,
+constraints, desired behavior, and output requirements before beginning the generation
+process.</p>
+<p>Visualization: Prompt Structure Tree (Conceptual)</p>
+<p>A potential architecture for generating a website could be visualized as follows, illustrating
+task decomposition:</p>
+<p>Code snippet</p>
+<p>graph TD</p>
+<p>A --&gt; B{Planning Agent/Chain Step 1};</p>
+<p>B --&gt; C{Component Generation};</p>
+<p>C --&gt; D;</p>
+<p>C --&gt; E;</p>
+<p>C --&gt; F[...];</p>
+<p>B --&gt; G{Styling Generation};</p>
+<p>G --&gt; H;</p>
+<p>G --&gt; I;</p>
+<p>G --&gt; J[...];</p>
+<p>B --&gt; K{Animation Implementation};</p>
+<p>K --&gt; L[Framer Motion for Comp 1];</p>
+<p>K --&gt; M[Framer Motion for Comp 2];</p>
+<p>K --&gt; N[...];</p>
+<p>B --&gt; O{Integration &amp; State Management};
+O --&gt; P;</p>
+<p>P --&gt; Q[Final Website Codebase];</p>
+<p>subgraph &#34;Persona &amp; Constraints&#34;</p>
+<p>A</p>
+<p>end</p>
+<p>subgraph &#34;Task Decomposition &amp; Execution&#34;</p>
+<p>B---C &amp; G&amp;K&amp;O</p>
+<p>end</p>
+<p>subgraph &#34;Generated Artifacts&#34;</p>
+<p>D&amp;E&amp;F&amp;H &amp; I &amp; J &amp; L&amp;M&amp;N&amp;P --- Q</p>
+<p>end</p>
+<p>style A fill:#f9f,stroke:#333,stroke-width:2px</p>
+<p>style B fill:#ccf, stroke:#333,stroke-width:2px</p>
+<p>style Q fill:#9cf, stroke:#333,stroke-width:2px</p>
+<p>Figure 1: Conceptual Prompt Structure Tree illustrating task decomposition for website
+generation.</p>
+<p>III. Weaving Personas into Code: Techniques and
+Implications</p>
+<p>Assigning a persona to an LLM is a powerful technique to shape its output&#39;s style, tone, and
+focus. 16 For creative tasks like website generation, embedding a specific developer persona
+with defined aesthetic values can guide the LLM towards producing code that is not only
+functional but also stylistically coherent and aligned with a particular design philosophy.
+A. Methods for Embedding Creative Personas</p>
+<p>Several methods exist for embedding personas into LLM prompts:</p>
+<p>• System Message Role Prompting: The most common approach involves using the
+dedicated &#39;system&#39; message available in many LLM APIs, such as OpenAl&#39;s
+ChatCompletion API. 48 This message, placed at the beginning of the conversation
+history, provides instructions about the Al&#39;s role, personality, constraints, and
+objectives. 48 The user&#39;s example prompt (&#34;You are a professional front-end developer
+based in Kentucky...&#34;) effectively utilizes this method to establish the desired persona. 16
+This technique relies on the LLM&#39;s ability to interpret the natural language description
+and adapt its behavior accordingly.</p>
+<p>•</p>
+<p>Persona-Embedding Models (e.g., PPlug): Emerging research explores more
+sophisticated methods, such as constructing user-specific embeddings that capture
+historical patterns and preferences. 23 Models like PPlug use a lightweight &#34;user</p>
+<p>embedder&#34; module (often comprising a behavior encoder and an input-aware
+aggregator) to create a dense vector representation of a user&#39;s history. This
+embedding is then attached to the task input, allowing a fixed LLM (without parameter
+modification) to generate more personalized outputs. 23 While primarily demonstrated
+for natural language tasks, this approach could theoretically be adapted to learn and
+embed a user&#39;s coding style or aesthetic preferences from their past code, offering
+potentially deeper and more consistent personalization than role prompting alone. 25</p>
+<p>• Defining the Persona: Personas can be handcrafted, as in the user&#39;s example, or
+potentially generated by another LLM based on higher-level descriptions. 14
+Handcrafting allows for precise control over the desired traits and values.</p>
+<p>B. Influencing Code Aesthetics and Style via Persona</p>
+<p>The core challenge lies in translating the abstract values and characteristics of a creative
+persona into concrete instructions that influence code generation, particularly aesthetic
+aspects like layout, color, typography, and motion.</p>
+<p>• Mapping Persona Values to Code: The system prompt must explicitly bridge the gap
+between the persona&#39;s philosophy and actionable coding directives. Simply stating &#34;be
+minimalist&#34; is insufficient. The prompt needs to translate values like &#34;authenticity,
+minimalism, and clarity&#34; into specific instructions for the target frameworks. 18 For the</p>
+<p>user&#39;s &#34;indie punk/acoustic developer&#34; persona, this might involve instructions like:</p>
+<p>Ο</p>
+<p>Ο</p>
+<p>Ο</p>
+<p>Ο</p>
+<p>Ο</p>
+<p>&#34;Prioritize semantic HTML for structure and clarity.&#34;</p>
+<p>&#34;Use Tailwind utility classes directly and sparingly; avoid complex @apply
+directives.&#34;</p>
+<p>&#34;Employ a natural, muted color palette using Tailwind&#39;s built-in colors like slate,
+zinc, stone, or neutral. Avoid overly bright or synthetic colors.&#34; 63</p>
+<p>&#34;Ensure balanced whitespace using Tailwind&#39;s p- and m- utilities (e.g., p-6, m-8)
+for a clean, uncluttered layout.&#34;</p>
+<p>&#34;Select strong, readable typography, perhaps pairing a clear sans-serif for body
+text with a distinctive display font for headings (specify font families if possible).&#34;
+63</p>
+<p>• Usability-Focused Motion: The persona&#39;s emphasis on clarity and authenticity
+extends to animation. The prompt explicitly directs the LLM to use Framer Motion for
+usability and flow, avoiding &#34;flashy animations&#34; [User Query]. This translates to
+instructions favouring subtle transitions (fades, slides), entrance/exit animations that
+guide attention, and layout animations that maintain context, rather than complex
+physics-based or purely decorative effects. 64 Providing examples of simple Framer
+Motion initial, animate, and transition props can reinforce this. 65</p>
+<p>• Code Style Consistency: Beyond visual aesthetics, the persona prompt can enforce
+general coding style consistency, such as naming conventions (e.g., camelCase for
+variables, PascalCase for components), commenting practices, and consistent use of</p>
+<p>functional components with React Hooks, reflecting the persona&#39;s value of clarity. 18
+This explicit translation acts as a &#34;style guide&#34; embedded within the prompt, giving the LLM
+concrete patterns to associate with the persona&#39;s abstract values.</p>
+<p>C. Maintaining Persona Fidelity and Reliability</p>
+<p>Ensuring the LLM consistently adheres to the defined persona throughout complex or lengthy
+interactions is a known challenge. 70 Models may drift back towards their default training or
+exhibit &#34;persona leakage,&#34; where underlying biases or generic patterns resurface.</p>
+<p>•</p>
+<p>Techniques for Reinforcement:</p>
+<p>Ο</p>
+<p>Ο</p>
+<p>Ο</p>
+<p>Contextual Reminders: Periodically reminding the LLM of its persona within the
+conversation history or subsequent prompts in a chain.</p>
+<p>Iterative Context Updating: Explicitly asking the LLM to update its own context
+or internal &#34;understanding&#34; after successfully generating code that aligns with
+the persona.72</p>
+<p>Advanced Methods: Research explores techniques like Persona-Aware
+Contrastive Learning (PCL), which trains models by contrasting persona-aligned
+responses with generic ones, and the Role Chain Method, which prompts the
+model to self-question its adherence to the persona based on context. 70 These
+aim for deeper, more robust persona alignment.</p>
+<p>• Persona vs. Code Quality Trade-offs: A potential conflict arises if the persona&#39;s
+stylistic preferences clash with established best practices or idiomatic usage of the
+target frameworks (React, Tailwind, Framer Motion).¹¹ For example, a persona might
+hypothetically prefer inline styles, contradicting Tailwind&#39;s utility-first approach. Strict
+adherence to a suboptimal persona style could degrade code quality, maintainability, or
+performance. Therefore, the prompt should ideally instruct the persona to operate
+within the bounds of framework best practices, seeking to reflect its values (e.g.,
+clarity, minimalism) through idiomatic code rather than overriding standard
+conventions. The prompt might state: &#34;Write idiomatic React, TailwindCSS, and Framer
+Motion code that reflects your values of authenticity and clarity.&#34;</p>
+<p>D. Insights from HCI Persona Theory</p>
+<p>The concept of personas originated in Human-Computer Interaction (HCI) and software
+design, notably popularized by Alan Cooper. 26 Applying these foundational principles can
+inform the design of more effective LLM personas.</p>
+<p>• Goal-Directed Design: Cooper&#39;s central thesis in &#34;The Inmates Are Running the
+Asylum&#34; is that software should be designed to help specific users achieve their goals,
+not just to implement features. 26 Personas, in this view, are not just demographic
+descriptions but goal-directed archetypes representing typical users. 27 They should be
+precise, detailed, and focused primarily on what the user wants to accomplish.
+Application to Al Personas: This goal-directed principle is highly relevant for LLM</p>
+<p>•</p>
+<p>•</p>
+<p>personas, especially in functional tasks like code generation. The persona prompt
+should define not only who the Al is but also what its goals are in performing the task.
+For the user&#39;s developer persona, key goals should include: generating functionally
+correct code, ensuring high code quality (maintainability, performance, security,
+accessibility), adhering to the specified aesthetic style, and fulfilling the user&#39;s request
+accurately. 28 Design decisions during generation should be implicitly filtered through
+these goals (&#34;Would this choice help achieve clarity and production-readiness?&#34;).
+Cooper&#39;s emphasis on specificity and designing for a primary persona also applies -
+the LLM persona should be sharply defined for its purpose. 27</p>
+<p>HCI &amp; Al Integration: The use of personas is an example of the increasing
+convergence of HCI and Al research. 28 HCI principles are being adapted to evaluate Al
+systems 28, design human-Al collaboration 46, and ensure Al development remains
+human-centered.78</p>
+<p>By grounding LLM persona design in HCI principles, particularly goal-directed design,
+prompts can be crafted to create Al agents that are not just stylistically consistent but also
+more effective and aligned with the fundamental objectives of the task.</p>
+<p>IV. The Refusal Dilemma: Balancing Safety and</p>
+<p>Functionality</p>
+<p>A critical challenge in deploying LLMs, especially for autonomous tasks, is managing their
+refusal behavior. While refusals are a necessary safety mechanism to prevent the generation
+of harmful content, overly sensitive or misapplied refusals (&#34;false refusals&#34;) can hinder
+productivity and usability, particularly for creative or technical tasks that might involve
+ambiguous or sensitive-sounding (but ultimately benign) language.15 Achieving refusal
+resistance for valid requests without compromising safety requires understanding the
+underlying mechanisms and employing nuanced mitigation strategies.
+A. Understanding LLM Refusal Mechanisms</p>
+<p>LLMs are trained to decline requests deemed harmful, unethical, illegal, or otherwise
+inappropriate as part of their safety alignment process. 29</p>
+<p>•</p>
+<p>Evolution of Understanding: Early research suggested refusal behavior might be
+controlled by a relatively simple, linear direction within the model&#39;s activation space. 29
+Manipulating this &#34;refusal subspace&#34; could theoretically switch refusal behavior on or
+off.34 However, more recent studies using nonlinear dimensionality reduction
+techniques (like UMAP and t-SNE) reveal a more complex picture. Refusal mechanisms
+appear to be nonlinear, multidimensional, and vary significantly depending on the
+model&#39;s architecture (e.g., Llama, Qwen, Bloom families) and even specific layers within
+the model. 29 This complexity suggests that simple linear interventions may be
+insufficient or have unintended consequences.</p>
+<p>•</p>
+<p>•</p>
+<p>Architecture and Layer Specificity: Different LLM architectures seem to encode and
+process refusal signals differently. For example, some models might identify potential
+harmfulness in early layers, while others refine this assessment in deeper layers. 29 This
+architectural variance implies that refusal mitigation strategies might need to be
+tailored to specific models.</p>
+<p>Distinguishing Harmful/Harmless: Models learn to differentiate harmful from
+harmless prompts by analyzing patterns in their internal activations. Techniques like
+calculating the &#34;difference-in-means&#34; between activations for harmful versus harmless
+prompt datasets help identify the directions associated with refusal.30 Harmful and
+harmless inputs tend to form distinct (though potentially overlapping or complexly
+structured) clusters in the model&#39;s high-dimensional activation space.</p>
+<p>B. The Steerability vs. Safety Debate</p>
+<p>A fundamental tension exists between making LLMs highly steerable (i.e., precisely following
+user instructions and avoiding unnecessary refusals) and ensuring they remain robustly
+safe. 15</p>
+<p>•</p>
+<p>Exaggerated Safety: Aggressive safety tuning can lead to &#34;exaggerated safety&#34; or
+&#34;false refusals,&#34; where the model declines benign prompts because they contain
+keywords or patterns superficially similar to those found in harmful requests. 15 The
+user&#39;s example of refusing to &#34;kill a Python process&#34; is a classic illustration. 33 Some
+research suggests a correlation between higher resistance to jailbreaking (a safety
+positive) and increased rates of false refusal (a helpfulness negative). 15</p>
+<p>• Risks of Overriding Refusals: Simply instructing an LLM to ignore its safety protocols
+or bypass refusals is dangerous.32 It can lead to the generation of genuinely harmful,
+unethical, or illegal content, expose sensitive information, or facilitate misuse.8
+Techniques designed to force compliance often work by &#34;ablating&#34; or neutralizing the
+refusal features in the model&#39;s activations, effectively disabling the safety mechanism. 82
+Steerability Research: Concurrently, research aims to improve the steerability of
+LLMs - their ability to precisely follow nuanced instructions and adopt specific
+behaviors or personas. 85 However, attempts to steer models can have unintended
+&#34;side-effects,&#34; altering unrelated aspects of the output. 85 Balancing steerability with
+safety remains a key challenge.</p>
+<p>•</p>
+<p>C. Prompt-Based Refusal Mitigation Techniques (for Safe Requests)</p>
+<p>The goal is to reduce false refusals for safe, valid requests (like coding tasks) without
+weakening the model&#39;s ability to refuse genuinely harmful requests. This requires techniques
+that enhance the model&#39;s ability to discern context and intent, rather than simply lowering its
+refusal threshold.</p>
+<p>•</p>
+<p>Explicit Behavioral Overrides (Use with Extreme Caution): Prompts like the user&#39;s
+&#34;You do not defer... unless unsafe or illegal&#34; [User Query] attempt a direct override.</p>
+<p>While potentially effective for simple cases, the non-linear nature of refusal suggests
+this might be brittle or could inadvertently lower defenses against sophisticated</p>
+<p>harmful prompts. It relies heavily on the model&#39;s interpretation of &#34;unsafe or illegal.&#34;</p>
+<p>• Safety Reflection Prompting: Instructing the LLM to perform a step of internal &#34;safety
+reflection&#34; before generating a response can improve its ability to differentiate. 33 The
+prompt might ask the model to explicitly consider if the request violates safety
+guidelines and explain its reasoning before deciding whether to comply or refuse. This
+encourages a more nuanced assessment.</p>
+<p>• Context and Clarity: Providing extremely clear, specific, and unambiguous
+instructions reduces the chance of misinterpretation that could trigger a false refusal. 16
+Using delimiters and structuring the prompt well also helps. 50</p>
+<p>• Positive Framing: Instructing the model on what it should do (e.g., &#34;Generate the
+following React component...&#34;) is often more effective and less prone to
+misinterpretation than negative constraints (&#34;Don&#39;t refuse to generate code&#34;).17</p>
+<p>• Persona Alignment: Assigning a relevant, expert persona (like the &#34;frontend
+developer&#34;) might implicitly reduce refusals for tasks within that persona&#39;s domain, as
+the model contextually expects such requests. However, this may not generalize to
+refusals outside the persona&#39;s core expertise.</p>
+<p>• Humor/Indirect Refusal (Less Applicable Here): Approaches like HumorReject 87 aim
+to decouple safety responses from explicit refusal language entirely, using humor as a
+deflection. While innovative, this is less suitable for functional tasks like code</p>
+<p>generation where a clear success/failure output is needed.</p>
+<p>• Advanced Techniques (Research Stage): Methods involving direct manipulation of
+activation subspaces 15 or specialized adversarial training like ReFAT 82
+are primarily
+research techniques and not typically controllable via standard prompt engineering.</p>
+<p>The most promising prompt-based approaches focus on improving the LLM&#39;s understanding
+of the request&#39;s context and safety implications. By providing maximal clarity, detailed
+constraints, and potentially prompting for explicit safety reasoning, the model can be guided
+to more accurately classify requests, thereby reducing refusals for benign tasks without
+compromising its ability to reject genuinely harmful ones. A blanket &#34;do not refuse&#34; command
+is generally ill-advised due to the inherent safety risks.</p>
+<p>D. Evaluating Refusal Resistance and Safety</p>
+<p>Systematically evaluating an LLM&#39;s refusal behavior, especially its resistance to unwarranted
+refusals and its robustness against attempts to elicit harmful content, requires specific
+methodologies:</p>
+<p>• Safety Benchmarks: Standardized datasets test LLM responses against harmful or
+sensitive prompts. Examples include:</p>
+<p>Ο</p>
+<p>TruthfulQA: Measures tendency to generate misinformation. 88</p>
+<p>Ο ToxiGen: Detects implicit and explicit hate speech.88</p>
+<p>•</p>
+<p>Ο</p>
+<p>Ο</p>
+<p>HHH (Helpful, Honest, Harmless): Assesses alignment with these principles
+using human preference data. 88</p>
+<p>XSTest / OKTest: Specifically designed to measure exaggerated safety/false
+refusals against benign prompts that may contain sensitive keywords. 15</p>
+<p>Custom benchmarks are often needed to cover domain-specific edge cases. 88</p>
+<p>Adversarial Testing (Red Teaming): This involves actively trying to &#34;break&#34; the
+model&#39;s safety alignment by crafting prompts designed to bypass safeguards or trigger
+inappropriate responses. 82 Techniques include:</p>
+<p>Ο</p>
+<p>Ο</p>
+<p>Prompt Injection: Inserting malicious instructions within a seemingly benign
+prompt.84</p>
+<p>• Role-Playing Attacks: Asking the model to adopt a persona that might override
+safety constraints.91</p>
+<p>Ο</p>
+<p>Ο</p>
+<p>Token Manipulation / Obfuscation: Using synonyms, misspellings, or complex
+phrasing to disguise harmful intent.91</p>
+<p>Chain-of-Thought Manipulation: Leading the model step-by-step towards a
+harmful conclusion. 91</p>
+<p>Automated methods using gradient-based searches or genetic algorithms to find
+effective attack prompts. 82</p>
+<p>• Refusal Pattern Analysis: Analyzing the types of prompts that trigger refusals can
+reveal patterns and weaknesses. Visualizing this data, for example using heatmaps
+showing refusal rates across different prompt categories (e.g., coding tasks, ethical
+dilemmas, ambiguous requests) for various models or prompt strategies, can provide
+valuable insights.93</p>
+<p>Visualization: Refusal Pattern Heatmaps (Conceptual)</p>
+<p>Figure 2: Conceptual heatmap illustrating hypothetical refusal rates (%) across prompt
+categories for different LLM setups. Lower rates are desirable for Benign prompts, while high</p>
+<p>rates are desirable for Harmful prompts.</p>
+<table>
+<thead>
+<tr>
+<th>Prompt Category</th>
+<th>Baseline LLM</th>
+<th>Persona Prompt</th>
+<th>Persona + Reflection<br>Prompt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Harmful - Explicit</td>
+<td>95</td>
+<td>94</td>
+<td>96</td>
+</tr>
+<tr>
+<td>Harmful -<br>Obfuscated</td>
+<td>70</td>
+<td>65</td>
+<td>75</td>
+</tr>
+<tr>
+<td>Benign - Clear</td>
+<td>5</td>
+<td>2</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Benign - Ambiguous</td>
+<td>40</td>
+<td>30</td>
+<td>15</td>
+</tr>
+<tr>
+<td>Benign - Code Task</td>
+<td>15</td>
+<td>5</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<p>(Note: Values are purely illustrative)</p>
+<p>Table: Comparison of LLM Refusal Mitigation Techniques (Prompt-</p>
+<p>Based)</p>
+<table>
+<thead>
+<tr>
+<th>Technique</th>
+<th>Descriptio</th>
+<th>Mechanis</th>
+<th>Pros</th>
+<th>Cons</th>
+<th>Safety</th>
+<th>Applicabili</th>
+<th>Relevant</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>n</td>
+<td>m</td>
+<td></td>
+<td></td>
+<td>Impact</td>
+<td>ty to Code<br>Gen</td>
+<td>Snippets</td>
+</tr>
+<tr>
+<td>Explicit</td>
+<td>Directly</td>
+<td>Overrides</td>
+<td>Simple to</td>
+<td>Brittle; high</td>
+<td>Potentially</td>
+<td>High (but</td>
+<td>[User</td>
+</tr>
+<tr>
+<td>Override</td>
+<td>instructing</td>
+<td>default</td>
+<td>implement; risk of</td>
+<td></td>
+<td>Negative:</td>
+<td>risky)</td>
+<td>Query]8</td>
+</tr>
+<tr>
+<td></td>
+<td>the LLM</td>
+<td>refusal</td>
+<td>may work</td>
+<td>disabling</td>
+<td>Can</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>not to<br>refuse<br>unless</td>
+<td>behavior<br>based on<br>model&#39;s</td>
+<td>for clear-<br>cut benign<br>cases.</td>
+<td>safety for<br>harmful<br>prompts;</td>
+<td>significantl<br>y lower<br>safety</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>unsafe/</td>
+<td>illeginterpretati</td>
+<td></td>
+<td>relies on</td>
+<td>barriers if</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>al.</td>
+<td>on.</td>
+<td></td>
+<td>vague</td>
+<td>not</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>terms like<br>&#34;unsafe&#34;.</td>
+<td>carefully<br>implement<br>ed and<br>tested.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Safety</td>
+<td>Prompting</td>
+<td>Enhances</td>
+<td>Improves</td>
+<td>Adds</td>
+<td>Positive:</td>
+<td>High</td>
+<td>33</td>
+</tr>
+<tr>
+<td>Reflection<br>Context &amp;</td>
+<td>the LLM to<br>explicitly<br>reason</td>
+<td>model&#39;s<br>internal<br>safety</td>
+<td>discriminati<br>on<br>between</td>
+<td>latency;<br>requires<br>careful</td>
+<td>Aims to<br>reduce<br>false</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>about the</td>
+<td>check and</td>
+<td>benign/har</td>
+<td>prompt</td>
+<td>refusals</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>request&#39;s</td>
+<td>contextual</td>
+<td>mful;</td>
+<td>crafting for</td>
+<td>while</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>safety</td>
+<td>understand</td>
+<td>reduces</td>
+<td>the</td>
+<td>maintaining</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>before</td>
+<td>ing.</td>
+<td>false</td>
+<td>reflection</td>
+<td>or</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>responding</td>
+<td></td>
+<td>refusals.</td>
+<td>step.</td>
+<td>improving</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>rejection<br>true<br>of</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>harmful</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>requests.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Clarity</td>
+<td>Providing<br>highly</td>
+<td>Reduces<br>misinterpre</td>
+<td>Generally<br>improves</td>
+<td>Requires<br>more effort</td>
+<td>Neutral to<br>Positive:</td>
+<td>High</td>
+<td>16</td>
+</tr>
+<tr>
+<td></td>
+<td>specific,<br>unambiguo<br>us<br>instruction<br>s and<br>context.</td>
+<td>tation that<br>might<br>trigger<br>refusals.</td>
+<td>output<br>quality and<br>reduces<br>errors/refu<br>sals.</td>
+<td>in prompt<br>design;<br>may not<br>prevent<br>refusals for<br>inherently<br>sensitive<br>topics.</td>
+<td>Primarily<br>improves<br>helpfulness<br>indirectly<br>reduces<br>refusals<br>caused by<br>misunderst</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>anding.</th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Positive</td>
+<td>Instructing</td>
+<td></td>
+<td>Guides</td>
+<td>Reduces</td>
+<td>May not</td>
+<td>Neutral:</td>
+<td>High</td>
+<td>17</td>
+</tr>
+<tr>
+<td>Framing</td>
+<td>what to do</td>
+<td></td>
+<td>model</td>
+<td>ambiguity;</td>
+<td>directly</td>
+<td>Improves</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>instead of<br>what not to</td>
+<td></td>
+<td>behavior<br>more</td>
+<td>often more<br>effective</td>
+<td>address<br>underlying</td>
+<td>clarity,<br>potentially</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>do.</td>
+<td></td>
+<td>directly</td>
+<td>than</td>
+<td>safety</td>
+<td>reducing</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>and clearly.</td>
+<td>negative<br>constraints</td>
+<td>triggers.</td>
+<td>refusals<br>due to<br>confusion,<br>but doesn&#39;t</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>directly</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>target</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>safety</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>mechanism<br>S.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Persona<br>Alignment</td>
+<td>Assigning a Sets<br>relevant</td>
+<td></td>
+<td>context</td>
+<td>Can<br>implicitly</td>
+<td>May not<br>affect</td>
+<td>Neutral to<br>Slightly</td>
+<td>High</td>
+<td>8</td>
+</tr>
+<tr>
+<td></td>
+<td>expert</td>
+<td></td>
+<td>where</td>
+<td>lower</td>
+<td>refusals</td>
+<td>Negative:</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>persona<br>(e.g.,<br>developer).</td>
+<td></td>
+<td>task-<br>relevant<br>(e.g.,<br>coding)<br>prompts</td>
+<td>refusal rate<br>for in-<br>domain<br>tasks.</td>
+<td>outside the<br>persona&#39;s<br>domain;<br>potential<br>for</td>
+<td>Might<br>lower<br>refusal<br>threshold<br>for</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>are</td>
+<td></td>
+<td>persona-</td>
+<td>persona-</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>expected.</td>
+<td></td>
+<td>based</td>
+<td>relevant</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>biases.</td>
+<td>topics,<br>potentially<br>including<br>borderline<br>harmful<br>ones.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Humor/</td>
+<td>Using</td>
+<td></td>
+<td>Decouples</td>
+<td>Novel;</td>
+<td>Less</td>
+<td>Potentially</td>
+<td>Low</td>
+<td>87</td>
+</tr>
+<tr>
+<td>Indirect</td>
+<td>humor or</td>
+<td></td>
+<td>safety</td>
+<td>potentially</td>
+<td>suitable for</td>
+<td>Positive:</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Refusal</td>
+<td>deflection<br>instead of<br>explicit<br>refusal.</td>
+<td></td>
+<td>response<br>from<br>standard<br>refusal<br>prefixes.</td>
+<td>resistant to functional<br>prefix<br>injection<br>attacks.</td>
+<td>tasks<br>needing<br>clear<br>output;<br>humor is<br>subjective;<br>may</td>
+<td>Offers<br>alternative<br>safety<br>mechanism<br>but less<br>tested and<br>applicable<br>for code</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>confuse
+users.</p>
+<p>generation.</p>
+<p>V. Generating Production-Ready Frontend Code</p>
+<p>The ultimate goal is to leverage the LLM system, guided by the persona and prompt
+architecture, to generate frontend code that is not merely functional but truly &#34;production-
+ready.&#34; This implies a higher standard encompassing quality attributes essential for real-
+world software deployment. 10</p>
+<p>A. Defining Production-Readiness in Al-Generated Code</p>
+<p>Production-ready code generated by Al must satisfy criteria beyond simply executing without
+errors or passing basic tests. 10 Key characteristics include:</p>
+<p>•</p>
+<p>•</p>
+<p>•</p>
+<p>Modularity &amp; Reusability: Code should be organized into logical, independent, and
+reusable components. 10 In a React context, this means well-defined functional
+components with clear props and responsibilities. 39 Adopting a feature-based project
+structure (e.g., grouping components, styles, and logic related to a specific feature
+together) can enhance modularity. 35 Metrics for assessing modularity are less
+standardized than for other attributes but involve analyzing coupling (dependencies
+between modules) and cohesion (how well elements within a module belong
+together).97 Low coupling and high cohesion are desirable. Visualization tools showing
+dependency graphs can aid in this assessment. Code reusability focuses on
+leveraging existing code components or libraries effectively. 101
+Maintainability &amp; Readability: The code must be easy for human developers to
+understand, modify, and debug over time. 35 This involves adherence to consistent
+coding standards (naming conventions, formatting), clear logic, appropriate
+commenting, and documentation. 104 Quantifying aesthetics is challenging, but factors
+like code structure, clarity, and consistency contribute significantly. 106</p>
+<p>Performance: Generated code should be efficient. For frontend applications, this
+includes optimizing initial load times (e.g., through code splitting 35), minimizing bundle
+size (e.g., using Tailwind&#39;s PurgeCSS/JIT mode 104), ensuring smooth animations</p>
+<p>(targeting 60 FPS 95, using performant Framer Motion techniques 66), and optimizing
+React component rendering (e.g., using React.memo, useCallback, useMemo to prevent
+unnecessary re-renders 35).</p>
+<p>• Scalability: The codebase architecture should support future growth in features and
+complexity without requiring major refactoring.35 Modular design is a key enabler of
+scalability.</p>
+<p>• Security: Code must be free from common security vulnerabilities. This involves secure
+handling of inputs and outputs, avoiding hardcoded secrets, using secure
+dependencies, and protecting against attacks like Cross-Site Scripting (XSS) or</p>
+<p>•</p>
+<p>injection attacks relevant to frontend contexts.8</p>
+<p>Accessibility (A11y): The generated UI must be usable by people with disabilities,
+adhering to standards like the Web Content Accessibility Guidelines (WCAG).37 This
+requires using semantic HTML correctly 112, providing text alternatives for non-text
+content (e.g., alt text for images), ensuring keyboard navigability, sufficient color
+contrast, and using ARIA attributes appropriately when native semantics are
+insufficient. 95</p>
+<p>• Correctness &amp; Robustness: The code must function correctly according to the
+requirements and handle potential edge cases and errors gracefully. 18</p>
+<p>B. Best Practices for Generating High-Quality Frontend Code (React,
+Tailwind, Framer Motion)</p>
+<p>To guide an LLM towards generating production-ready code using the specified stack,
+prompts should incorporate best practices:</p>
+<p>• Framework-Specific Instructions: Tailor prompts to the nuances of React,
+TailwindCSS, and Framer Motion. Examples:</p>
+<p>•</p>
+<p>•</p>
+<p>•</p>
+<p>•</p>
+<p>Ο</p>
+<p>Ο</p>
+<p>React: &#34;Generate a React functional component named UserProfileCard using
+hooks (useState, useEffect) to fetch and display user data from the provided API
+endpoint.&#34; 9</p>
+<p>TailwindCSS: &#34;Style the UserProfileCard component using Tailwind utility classes.
+Ensure it is responsive, with a mobile-first approach. Use classes from the
+theme.extend section of the tailwind.config.js for custom colors.&#34; 105</p>
+<p>Framer Motion: &#34;Add a subtle fade-in animation to the UserProfileCard on mount
+using Framer Motion&#39;s initial={{ opacity: 0 }} and animate={{ opacity: 1 }} props
+with an easeOut transition duration of 0.5s.&#34; 64</p>
+<p>Component-Based Generation: Explicitly instruct the LLM to break the Ul down into
+small, reusable components rather than generating large, monolithic files. &#34;Generate
+the website as a set of modular React components (e.g., Navbar, HeroSection,
+ProjectCard, Footer).&#34;. 72</p>
+<p>Leveraging Ul Libraries: If using libraries like shadcn/ui (which builds on Tailwind),
+specify their use: &#34;Implement the form using shadcn/ui components (Input, Button,
+Label) styled with Tailwind.&#34;. 107</p>
+<p>Style Guide Adherence: Provide context from tailwind.config.js or explicitly state
+rules: &#34;Ensure all spacing uses multiples of theme.spacing.4. Use theme.colors.primary
+for interactive elements.&#34;. 104 Tools exist to analyze Tailwind usage which could
+potentially be integrated into evaluation. 119</p>
+<p>Accessibility Prompts: Include direct instructions for accessibility: &#34;Ensure all images
+have descriptive alt attributes. Make sure all interactive elements are focusable and
+operable via keyboard.&#34;. 37</p>
+<p>•</p>
+<p>Security Prompts: While frontend security concerns differ from backend, prompts can
+still encourage safer practices: &#34;Validate user input in the contact form before</p>
+<p>submission. Avoid using dangerouslySetInnerHTML.&#34;.8</p>
+<p>C. Evaluating Al-Generated Frontend Code</p>
+<p>Evaluating the production-readiness of generated frontend code requires a comprehensive
+suite of metrics and methods, extending beyond traditional code generation benchmarks.</p>
+<p>•</p>
+<p>Benchmarks:</p>
+<p>Ο</p>
+<p>General Code: Benchmarks like HumanEval 120 and MBPP 38 test basic algorithmic
+coding ability, primarily in Python. While useful, they don&#39;t capture the
+complexities of Ul development, framework usage, or multi-file project
+structures. Recent extensions like Human Eval Pro and MBPP Pro test self-
+invoking code generation, adding another layer of complexity but still not fully
+representative of web development.38</p>
+<p>Web/React Specific: The field needs more specialized benchmarks. Flame-
+React-Eval 10 is a notable step, evaluating syntactic precision, functional
+correctness (test execution), and visual consistency (comparing rendered output
+to mockups) for React code generated from images. WebGen-Bench 63 aims to
+test website generation from scratch based on instructions. These are crucial for
+assessing frontend-specific capabilities.</p>
+<p>• Metrics &amp; Methods (Multi-faceted Evaluation): A robust evaluation framework
+should incorporate:</p>
+<p>Ο</p>
+<p>Ο</p>
+<p>Ο</p>
+<p>Ο</p>
+<p>Functional Correctness: Unit tests, integration tests (Pass@k metric).39 Does
+the component behave as expected?</p>
+<p>Code Quality/Maintainability: Static analysis tools (ESLint, Stylelint), code
+complexity metrics (e.g., cyclomatic complexity), adherence to coding standards,
+automated code review suggestions. 122 Is the code clean and understandable?
+Modularity/Reusability: Analyzing component dependencies (dependency
+graphs  ), assessing coupling and cohesion. Are components well-</p>
+<p>encapsulated and reusable?.101 Often requires qualitative assessment.</p>
+<p>Performance: Frontend-specific metrics like Lighthouse scores (performance,
+accessibility, best practices, SEO) 113, Core Web Vitals (LCP, FID, CLS), bundle size
+analysis (Webpack Bundle Analyzer), runtime performance profiling (React</p>
+<p>DevTools Profiler), animation smoothness (FPS monitoring).35</p>
+<p>Security: Static Application Security Testing (SAST) tools specialized for
+frontend vulnerabilities, dependency scanning (e.g., npm audit), manual review
+against OWASP guidelines. 13</p>
+<p>Accessibility: Automated checkers (axe-core 113, Lighthouse 37, WAVE 113), manual
+testing (keyboard navigation, screen reader testing with NVDA/JAWS/VoiceOver),
+adherence to WCAG standards. 37</p>
+<p>•</p>
+<p>Ο</p>
+<p>Visual/UX Consistency: Comparing rendered Ul against design mockups
+(manual review, potentially automated visual regression testing or VLM-based
+comparison 39), heuristic evaluation of usability. Does it look and feel right?
+Persona/Style Alignment: Evaluating adherence to the specified aesthetic and
+stylistic guidelines. This is subjective but can be approached using:</p>
+<p>■ Quantitative checks: Did it use the specified color palette? Are animation
+durations within limits?</p>
+<p>■ Qualitative review: Does the overall design feel &#34;minimalist&#34; or &#34;authentic&#34;
+as per the persona?</p>
+<p>■</p>
+<p>LLM-as-Judge: Using a separate LLM evaluation (like G-Eval&#39;s Tonality
+metric 124) to assess alignment with the persona&#39;s described style.21</p>
+<p>LLM-as-Judge: Leveraging capable LLMs (e.g., GPT-4, Claude 3.5) to evaluate
+generated code or Ul descriptions against criteria like coherence, correctness (relative
+to instructions), adherence to guidelines, or stylistic alignment. 21 This can provide
+scalable, albeit imperfect, assessment.</p>
+<p>The evaluation of Al-generated frontend websites is inherently multi-dimensional. It requires
+moving beyond simple code execution checks to encompass aspects of software quality,
+performance, security, accessibility, and user experience design. No single benchmark or
+metric suffices; a holistic approach combining automated tools, specific metrics, and human
+review is necessary.</p>
+<p>Visualization: Code Modularity Map (Conceptual)</p>
+<p>Figure 3: Conceptual dependency graphs illustrating desirable low coupling (left) vs.
+undesirable high coupling (&#39;spaghetti code&#39;, right) in generated React components.</p>
+<p>Code snippet</p>
+<p>graph TD</p>
+<p>subgraph &#34;Good Modularity (Low Coupling)&#34;
+direction LR</p>
+<p>CompA --&gt; Util1;</p>
+<p>CompB --&gt; Util2;</p>
+<p>CompC --&gt; Util1;</p>
+<p>CompC --&gt; Util3;</p>
+<p>App --&gt; CompA;</p>
+<p>App --&gt; CompB;</p>
+<p>App --&gt; CompC;</p>
+<p>end</p>
+<p>subgraph &#34;Poor Modularity (High Coupling)&#34;
+direction LR</p>
+<p>CompX &lt;--&gt; CompY;</p>
+<p>CompY --&gt; CompZ;</p>
+<p>CompZ --&gt; CompX;</p>
+<p>CompX --&gt; UtilA;</p>
+<p>CompY --&gt; UtilA;</p>
+<p>CompZ --&gt; UtilA;</p>
+<p>App2 --&gt; CompX;</p>
+<p>App2 --&gt; CompY;</p>
+<p>App2 --&gt; CompZ;</p>
+<p>end</p>
+<p>style CompA fill:#ccffcc,stroke:#333</p>
+<p>style CompB fill:#ccffcc,stroke:#333</p>
+<p>style CompC fill:#ccffcc,stroke:#333</p>
+<p>style CompX fill:#ffcccc,stroke:#333</p>
+<p>style CompY fill:#ffcccc,stroke:#333</p>
+<p>style CompZ fill:#ffcccc,stroke:#333</p>
+<p>Table: Evaluation Metrics for Production-Ready Al-Generated
+Frontend Code</p>
+<table>
+<thead>
+<tr>
+<th>Dimension</th>
+<th>Metric / Method</th>
+<th>Description</th>
+<th>Tools / Approach</th>
+<th>Relevant</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>Snippets</td>
+</tr>
+<tr>
+<td>Functionality</td>
+<td>Pass@k/Test</td>
+<td>Measures % of</td>
+<td>Unit/Integration</td>
+<td>38</td>
+</tr>
+<tr>
+<td></td>
+<td>Pass Rate</td>
+<td>generated code</td>
+<td>Testing</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>units passing<br>predefined tests.</td>
+<td>Frameworks (Jest,<br>React Testing</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>Library),</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>Benchmarks</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>(HumanEval Pro,<br>Flame-React-Eval)</td>
+<td></td>
+</tr>
+<tr>
+<td>Modularity</td>
+<td>Coupling &amp;<br>Cohesion Analysis</td>
+<td>Assesses inter-<br>module<br>dependencies<br>(low is good) and<br>intra-module<br>relatedness (high<br>is good).</td>
+<td>Dependency<br>Graph Analysis 99,<br>Static Analysis<br>Tools, Manual<br>Review</td>
+<td>35</td>
+</tr>
+<tr>
+<td>Maintainability</td>
+<td>Code Complexity</td>
+<td>Measures logical</td>
+<td>Static Analysis</td>
+<td>11 (Implied)</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>(e.g., Cyclomatic)</th>
+<th>complexity of<br>code paths. Lower<br>is generally better.</th>
+<th>Tools (e.g., ESLint<br>plugins), Linters</th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>Code Readability /</td>
+<td>Conformance to</td>
+<td>Linters (ESLint,</td>
+<td></td>
+<td>103</td>
+</tr>
+<tr>
+<td></td>
+<td>Style Adherence</td>
+<td>coding standards,<br>naming<br>conventions,<br>formatting.</td>
+<td>Prettier), Manual<br>Code Review,<br>LLM-as-Judge<br>(Coherence) 124</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Performance</td>
+<td>Lighthouse Score<br>(Performance)</td>
+<td>Google&#39;s<br>automated tool<br>score for web<br>page quality,<br>including speed<br>metrics.</td>
+<td>Google<br>Lighthouse 113</td>
+<td></td>
+<td>95 (Implied)</td>
+</tr>
+<tr>
+<td></td>
+<td>Core Web Vitals<br>(LCP, FID, CLS)<br>Bundle Size<br>Animation FPS</td>
+<td>User-centric<br>Size of<br>JavaScript/CSS<br>delivered to the<br>.</td>
+<td>Lighthouse,<br>metrics for<br>WebPageTest,<br>loading,<br>Browser DevTools<br>interactivity, and<br>visual stability.<br>Webpack Bundle<br>Analyzer, Build<br>Tool Output<br>browser<br>Browser DevTools<br>Frames Per<br>Second for<br>(Performance<br>animations; aiming<br>Monitor), Manual<br>for 60 FPS for<br>Observation<br>smoothness.</td>
+<td></td>
+<td>95 (Implied)<br>35<br>66</td>
+</tr>
+<tr>
+<td>Security</td>
+<td>Vulnerability Scan<br>Results</td>
+<td>Identifies known<br>security</td>
+<td>SAST Tools,<br>Dependency</td>
+<td></td>
+<td>13</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>vulnerabilities in<br>code or</td>
+<td>Scanners (npm<br>audit), OWASP</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>dependencies.</td>
+<td>LLM Top 10<br>Checklist 36</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Accessibility</td>
+<td>WCAG<br>Conformance<br>Level (A, AA, AAA)</td>
+<td>Adherence to<br>Content<br>Accessibility<br>Guidelines.</td>
+<td>WebAutomated Tools<br>(axe, WAVE,<br>Lighthouse 37),<br>Manual Testing<br>(Keyboard, Screen</td>
+<td></td>
+<td>37</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>Reader)</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Visual/UX</th>
+<th>Visual Regression<br>Testing</th>
+<th>Compares<br>Testing Tools<br>rendered Ul<br>snapshots against (e.g., Percy,<br>baseline images to Playwright),<br>detect unintended Manual<br>visual changes.<br>Comparison</th>
+<th>Visual Regression</th>
+<th>39 (Visual<br>Consistency)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Persona</td>
+<td>Heuristic<br>Evaluation / User<br>Testing<br>Tonality / Style</td>
+<td>Manual Review,<br>Assessing<br>usability based on<br>established<br>principles or<br>direct user<br>feedback.<br>Measures</td>
+<td>User Studies<br>LLM-as-Judge</td>
+<td>126 (Implied)<br>124</td>
+</tr>
+<tr>
+<td>Alignment</td>
+<td>Score</td>
+<td>adherence to<br>specified tone,<br>style, or aesthetic Custom<br>guidelines defined</td>
+<td>(e.g., G-Eval<br>Tonality 124),</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>Checklists, Manual</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>in the persona<br>prompt.</td>
+<td>Review</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>D. Addressing Hallucination, Overfitting, and Inefficiencies</p>
+<p>While aiming for high-quality output, LLM-generated code can suffer from several issues:
+• Code Hallucination: LLMs may generate code that includes non-existent functions,
+incorrect syntax, logical errors, or artifacts unrelated to the prompt. 127 This is analogous
+to factual hallucination in text generation. Benchmarks like HaluEval 127 and Collu-Bench</p>
+<p>128</p>
+<p>are being developed to specifically measure and analyze code hallucinations. Studies
+suggest LLMs might exhibit lower confidence (e.g., lower token probabilities) when
+hallucinating, potentially offering a detection signal. 128 Mitigation involves providing
+clear context, using reliable models, and rigorous testing/review.</p>
+<p>• Prompt Overfitting: The LLM might excessively tailor its output to the specific
+phrasing or examples in the prompt, failing to generalize or producing brittle code that
+breaks with slight variations. 129 This is particularly relevant when using few-shot
+examples. Mitigation strategies include using diverse examples in prompts, providing
+clear constraints and principles rather than just examples, iterative refinement, and
+potentially advanced techniques like Learn the Inference (LTI) which aims to constrain
+edited models based on unedited model behavior. 129 Regularization techniques during
+training also aim to combat overfitting. 130</p>
+<p>• Code Inefficiencies: LLMs may generate functionally correct but inefficient code. 11
+This can manifest as suboptimal algorithms (poor time/space complexity), redundant
+computations, unnecessary steps, or inefficient loops. 11 These issues often stem from</p>
+<p>the model prioritizing pattern matching over deep algorithmic understanding. Detection
+requires performance profiling and code review. Mitigation involves prompting for
+specific optimizations, requesting alternative implementations for comparison 18, and
+manual refactoring by human developers.</p>
+<p>Addressing these issues underscores the necessity of a human-in-the-loop approach, even
+when aiming for autonomous generation. Thorough review, testing, and validation remain
+critical steps to ensure the reliability and quality of Al-generated code before deployment. 89
+VI. Integration into Developer Ecosystems</p>
+<p>For an Al system prompt to be practically useful for generating websites, it must integrate
+effectively into existing developer workflows and toolchains. This involves leveraging
+platforms like GitHub, potentially utilizing synchronization tools (like the hypothesized
+&#34;Lexsync&#34;), and potentially adopting more sophisticated agentic frameworks for managing
+the complexity of the task.</p>
+<p>A. Leveraging GitHub</p>
+<p>GitHub serves as the central hub for most modern software development. Integrating Al code
+generation with GitHub workflows is crucial:</p>
+<p>• Code Repositories as Context: Effective code generation often requires</p>
+<p>understanding the existing codebase. Tools like GitHub Copilot 3 and command-line
+utilities like Aider 131 can index local Git repositories. This allows the LLM to access
+relevant files and context when generating new code or modifying existing code,
+leading to more integrated and consistent results. Providing project structure
+information (e.g., via tree output or an Ilms.txt file) can further enhance the LLM&#39;s
+context awareness. 72</p>
+<p>• Version Control: All Al-generated code should be treated like human-written code and
+managed under version control (Git). 123 This allows for tracking changes, reviewing diffs,
+collaborating with team members, and rolling back if necessary. Tools like Aider can
+even automate committing changes made by the LLM. 132</p>
+<p>• GitHub Copilot: As GitHub&#39;s native Al assistant, Copilot offers features like inline code
+completion, chat-based assistance for coding questions or explanations, and basic
+code review capabilities. It supports common frontend technologies like React and
+TailwindCSS.40 While powerful for snippet generation and assistance, some analyses
+suggest its deep understanding of the entire codebase context might be limited
+compared to tools specifically designed for whole-repo awareness.72</p>
+<p>• Automated Workflows: There is potential to integrate LLM code generation into CI/CD
+pipelines or GitHub Actions. 109 This could automate tasks like generating
+documentation based on code changes, suggesting basic refactorings, or even
+generating initial test cases.</p>
+<p>B. Understanding Lexsync</p>
+<p>The user query specified the desire for the prompt system to be usable via &#34;GitHub or
+Lexsync.&#34; Based on the provided research materials, a definitive explanation or tool named
+&#34;Lexsync&#34; specifically for LLM code generation workflows could not be identified.</p>
+<p>•</p>
+<p>Snippets reference &#34;Lex&#34; 134 as an Al-powered writing tool focused on text generation
+and collaboration, not code.</p>
+<p>• Other snippets discuss &#34;lexical&#34; aspects of language or formal methods like Temporal
+Stream Logic 136, but not a tool named Lexsync.</p>
+<p>• General code generation overviews 137 do not mention Lexsync.</p>
+<p>•</p>
+<p>Workflow discussions mention tools like Aider 131, Repomix 131, PromptHub 53, or context
+files like Ilms.txt 72 for managing prompts and codebase interaction, but not Lexsync.</p>
+<p>Given this lack of specific information, this report proceeds under the assumption that
+&#34;Lexsync&#34; refers to a hypothetical or specific platform/tool/standard intended by the user for
+sharing, synchronizing, or deploying the final system prompt and its associated
+configurations within their development environment or team. The principles outlined for
+prompt architecture and integration should be adaptable to such a system, provided it allows
+for complex, potentially multi-part prompts and integration with code repositories.
+C. Agentic Frameworks for Autonomous Development</p>
+<p>Generating a complete, multi-file website often exceeds the capabilities of a single prompt-
+response cycle due to complexity and context limitations. LLM-based agents, which
+orchestrate LLMs with planning, memory, and tool use, offer a more robust approach for such
+autonomous tasks. 14</p>
+<p>• Agent Capabilities: LLM agents can break down high-level goals (like &#34;build website
+X&#34;) into smaller steps, execute actions (like writing code to a file, running a linter,
+searching documentation), remember previous steps and results, and adapt their plan
+based on feedback or errors. 4</p>
+<p>•</p>
+<p>•</p>
+<p>42</p>
+<p>Relevance to Website Generation: Building a website inherently involves planning the
+architecture, generating multiple interconnected files (components, styles,</p>
+<p>configuration), potentially integrating external data or APIs, and verifying the output.
+Agentic frameworks are well-suited to manage this multi-step, tool-interactive
+process. 58</p>
+<p>Frameworks and Concepts:</p>
+<p>Ο</p>
+<p>AutoGen: A framework from Microsoft enabling multi-agent conversations. 41
+Developers can define specialized agents (e.g., PlannerAgent, CoderAgent,
+CriticAgent) that collaborate by exchanging messages to solve a task. A
+UserProxyAgent can execute code or solicit human feedback. 41 Examples
+demonstrate its use for code generation, execution, debugging, and task
+solving. 142</p>
+<p>•</p>
+<p>Ο</p>
+<p>ReAct (Reasoning and Acting): A common agentic pattern where the LLM
+alternates between generating a &#39;Thought&#39; (reasoning about the next step), an
+&#39;Action&#39; (deciding which tool to use and with what input), and processing an
+&#39;Observation&#39; (the result from the tool) to iteratively progress towards a goal.42
+This allows the agent to dynamically gather information or test hypotheses.
+Ο Other Frameworks: LangChain provides agent capabilities. 20 Research
+frameworks like HULA incorporate human-in-the-loop feedback directly into the
+agent workflow. 58 Toolformer focuses on teaching LLMs to use external APIs
+effectively. 14</p>
+<p>Example Agentic Workflow for Website Generation:</p>
+<ol>
+<li>
+<p>User Request: &#34;Generate a minimalist portfolio website for an indie musician
+using React, Tailwind, and Framer Motion, reflecting the persona defined in the
+system prompt.&#34;</p>
+</li>
+<li>
+<p>Planner Agent (Receives System Prompt): Decomposes the task: Define file
+structure -&gt; Generate Navbar component -&gt; Generate HeroSection -&gt; Generate
+MusicPlayer component -&gt; Generate Gallery component -&gt; Generate Footer -&gt;
+Apply Tailwind styles -&gt; Add Framer Motion animations -&gt; Set up routing and
+main App.js.</p>
+</li>
+<li>
+<p>Coder Agent (Receives System Prompt + Plan Step): Generates code for each
+component/task, guided by the persona and aesthetic style guide in the system
+prompt. Uses file system tools to write code to appropriate files.</p>
+</li>
+<li>
+<p>Critic/Tester Agent: Runs linter/formatter tools on generated code. Potentially
+runs basic rendering tests or accessibility checks (if tools are available). Provides
+feedback (Observations) to the Planner/Coder.</p>
+</li>
+<li>
+<p>Iteration: Planner/Coder agents adjust plan or code based on feedback.</p>
+</li>
+<li>
+<p>Final Output: Completed website codebase in the specified file structure.
+Effectively integrating LLM code generation into practical workflows, especially for complex
+tasks like website creation, often requires moving beyond simple prompts. Tools managing
+repository context (like Aider or Copilot) and frameworks orchestrating multi-step processes
+(like AutoGen or ReAct-based agents) provide the necessary structure and capabilities to
+bridge the gap between raw generation and usable software engineering outcomes. The
+system prompt developed in this research is likely best deployed as the core instruction set
+guiding a specialized agent within such a framework.</p>
+</li>
+</ol>
+<p>VII. Ethical Landscape and Policy Considerations</p>
+<p>While pursuing the technical capabilities of autonomous, persona-driven code generation, it
+is imperative to address the associated ethical, legal, and societal implications. Responsible
+development requires careful consideration of persona design, security practices, intellectual
+property rights, regulatory compliance, and the impact on the software development
+profession.</p>
+<p>A. Responsible Al Persona Design</p>
+<p>Crafting Al personas, especially those intended to interact with users or generate creative
+output, carries ethical responsibilities.</p>
+<p>• Avoiding Bias and Stereotypes: LLMs trained on vast internet datasets can
+inadvertently learn and perpetuate harmful societal biases related to gender, race,
+ethnicity, or other characteristics. When designing personas, care must be taken to
+avoid creating or reinforcing stereotypes. 144 For instance, Al-designed personas might
+stereotypically depict &#34;investors&#34; as male and &#34;budget shoppers&#34; as female. 144 Testing
+persona-driven outputs for biased representations is crucial. Mitigation strategies
+include using diverse training data (where possible), careful prompt engineering to
+define neutral or counter-stereotypical traits, and implementing guardrails. 92</p>
+<p>• Ethical Guidelines: Development should adhere to established principles of
+responsible Al and HCI.43 Key principles include:</p>
+<p>•</p>
+<p>Ο</p>
+<p>Transparency &amp; Explainability: Making it clear that the output is Al-generated
+and, where possible, how the persona influences it. 43</p>
+<p>Fairness &amp; Non-Discrimination: Ensuring the persona and its outputs do not
+discriminate unfairly. 78</p>
+<p>Accountability: Establishing who is responsible for the persona&#39;s behavior and
+outputs. 78</p>
+<p>Ο</p>
+<p>Ο</p>
+<p>Human-Centeredness: Designing the persona to serve user needs effectively and
+ethically. 28</p>
+<p>Value Alignment: Ensuring the persona&#39;s defined values and resulting behavior
+78
+align with human values and ethical norms.&#34;</p>
+<p>Preventing Misuse/Impersonation: The persona design must incorporate safeguards
+against being used for malicious purposes or harmful impersonation. This involves
+clearly defining the persona&#39;s boundaries and limitations within the prompt and
+potentially implementing content filters or moderation layers. 84 The persona should not
+be designed to deceive users about its Al nature unless explicitly part of a controlled
+simulation or study.</p>
+<p>Table: Ethical Guidelines for Al Persona Design (Code Generation
+Context)</p>
+<table>
+<thead>
+<tr>
+<th>Guideline</th>
+<th>Description</th>
+<th>Relevance to<br>Code Gen<br>Persona</th>
+<th>Mitigation<br>Strategy</th>
+<th>Relevant<br>Snippets</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Avoid Harmful<br>Bias</td>
+<td>Ensure persona<br>doesn&#39;t</td>
+<td>Persona might<br>associate certain</td>
+<td>Define persona<br>traits neutrally.</td>
+<td>92</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>perpetuate<br>stereotypes<br>(gender, race,</th>
+<th></th>
+<th>coding<br>styles/abilities<br>with</th>
+<th>Test generated<br>code/outputs for<br>bias. Use diverse</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>etc.).</td>
+<td></td>
+<td>demographics if<br>not carefully<br>defined. Output</td>
+<td>datasets if fine-<br>tuning. Specify<br>unbiased behavior</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>code could reflect<br>bias.</td>
+<td>in prompt.</td>
+<td></td>
+</tr>
+<tr>
+<td>Transparency</td>
+<td>Clearly indicate<br>interaction is with<br>an Al, not a</td>
+<td></td>
+<td>User should know<br>the code is Al-<br>generated,</td>
+<td>Avoid deceptive<br>persona language.<br>Include</td>
+<td>43</td>
+</tr>
+<tr>
+<td></td>
+<td>human.</td>
+<td></td>
+<td>understanding its<br>potential</td>
+<td>disclaimers if used<br>outside controlled</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>limitations.</td>
+<td>contexts (though<br>user query aims to<br>minimize these in<br>output).</td>
+<td></td>
+</tr>
+<tr>
+<td>Accountability<br>Fairness</td>
+<td>Define<br>responsibility for<br>the Al&#39;s actions<br>and outputs.<br>Ensure the Al<br>treats different<br>users/inputs<br>equitably.</td>
+<td></td>
+<td>Who is<br>responsible if the<br>generated code<br>has critical bugs<br>or vulnerabilities?<br>Persona should<br>not generate<br>lower quality/less<br>secure code</td>
+<td>Establish clear<br>terms of use.<br>Emphasize human<br>review<br>requirement.<br>Define liability in<br>contracts (see<br>Sec VII.C).<br>Design prompts<br>for consistent<br>quality regardless<br>of input nuances.</td>
+<td>78<br>78</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>based on</td>
+<td>Test outputs</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>perceived user</td>
+<td>across diverse</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>background (if<br>applicable).</td>
+<td>scenarios.</td>
+<td></td>
+</tr>
+<tr>
+<td>Prevent Misuse</td>
+<td>harmful</td>
+<td></td>
+<td>Design persona to Persona should<br>Implement robust<br>refuse to generatesafety/refusal<br>resist</td>
+<td></td>
+<td>84</td>
+</tr>
+<tr>
+<td></td>
+<td>exploitation or</td>
+<td></td>
+<td>malicious code or</td>
+<td>mechanisms (Sec</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>impersonation.</td>
+<td></td>
+<td>engage in harmful</td>
+<td>IV). Define clear</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>social engineering ethical boundaries<br>within the persona<br>if prompted.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>prompt. Use<br>moderation APIs.</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Human-<br>Centeredness</th>
+<th>Focus persona<br>design on user<br>needs and goals<br>for the task (code<br>generation).</th>
+<th>Persona&#39;s goal<br>should be<br>generating high-<br>quality, usable<br>code aligned with</th>
+<th>Ground persona in 26<br>goal-directed<br>design principles<br>(Sec III.D).<br>Prioritize</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td></td>
+<td>user</td>
+<td>functionality,</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>requirements, not<br>just mimicking a<br>personality.</td>
+<td>quality, and<br>usability goals in<br>the prompt.</td>
+</tr>
+<tr>
+<td>Value Alignment</td>
+<td>Ensure persona&#39;s<br>defined values<br>translate to<br>ethical behavior.</td>
+<td>Persona&#39;s values<br>(e.g., clarity,<br>authenticity)<br>should guide code<br>generation</td>
+<td>Explicitly link<br>78<br>persona values to<br>desired code<br>quality attributes<br>in the prompt (Sec</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>towards positive<br>attributes like</td>
+<td>III.B). Test<br>alignment through</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>readability,<br>security.</td>
+<td>evaluation (Sec<br>V.C).</td>
+</tr>
+</tbody>
+</table>
+<p>B. Security Best Practices for Al Code Generation</p>
+<p>Generating code with Al introduces specific security risks that must be proactively managed.</p>
+<p>•</p>
+<p>•</p>
+<p>Common Vulnerabilities: Al models trained on vast datasets of public code may learn
+and replicate insecure coding patterns present in that data. OWASP has identified key
+risks for LLM applications, including Prompt Injection (manipulating the LLM via input),
+Insecure Output Handling (failing to validate/sanitize LLM output, potentially leading to
+code execution or data leaks), Training Data Poisoning, and Sensitive Information
+Disclosure. 36 Studies have shown that Al-generated code frequently contains
+vulnerabilities.13</p>
+<p>Mitigation Strategies: A multi-layered approach is necessary:</p>
+<p>Ο</p>
+<p>Ο</p>
+<p>Secure Prompting: Craft prompts that explicitly request secure coding practices
+(e.g., &#34;Use parameterized queries,&#34; &#34;Sanitize all user inputs,&#34; &#34;Implement
+authentication using secure libraries&#34;). Using security-focused personas can
+also help.8</p>
+<p>Input Validation: Validate and sanitize any user input used within prompts to
+prevent prompt injection attacks. 36</p>
+<p>Ο Output Validation &amp; Sanitization: Crucially, never trust Al-generated code
+implicitly. Treat it as untrusted input. Always validate and sanitize outputs,</p>
+<p>especially if they are to be executed or displayed to users.</p>
+<p>36</p>
+<p>Human Review: Mandatory review of Al-generated code by qualified human
+developers, particularly for security-sensitive parts, is essential. 36</p>
+<p>Automated Security Testing: Integrate Static Application Security Testing (SAST)
+tools, dependency scanners, and secrets scanning into the development
+workflow to automatically detect vulnerabilities in both human-written and Al-
+generated code. 13</p>
+<p>Ο Secure Execution Environments: Run Al code generation or execution in
+sandboxed environments where possible to limit potential damage. 110</p>
+<p>C. Copyright, Ownership, and Liability</p>
+<p>•</p>
+<p>The legal status of Al-generated content, including code, is complex and evolving.
+Copyrightability: In the United States, copyright protection requires human
+authorship. The U.S. Copyright Office has affirmed that works generated purely by Al
+without sufficient human creative input are not copyrightable. 44 Using Al as a tool to
+assist a human author is permissible, but copyright protection extends only to the
+human contributions (e.g., creative selection, arrangement, modification of Al output).
+Merely writing prompts is generally not considered sufficient creative input to claim
+authorship of the Al&#39;s output.44 Some other jurisdictions (like the UK) have provisions
+for &#34;computer-generated works&#34; with potentially different ownership rules, but the
+standard often involves identifying the human who made the necessary
+arrangements. 146</p>
+<p>•</p>
+<p>Ownership: Ownership of Al-assisted code, particularly in an employment context, is
+often ambiguous. 147 Companies typically claim ownership of work produced by
+employees using company resources, but the lack of clear legal precedent for Al-
+generated works creates potential for disputes. Explicit contractual agreements clearly
+defining ownership of Al-generated or Al-assisted code are crucial for both employers
+and employees. 147</p>
+<p>• Liability: Determining liability if Al-generated code contains errors, security</p>
+<p>vulnerabilities, or infringes on existing licenses/copyrights is a major unresolved issue. 148
+Potential liability could fall on the user who prompted the generation, the developer of
+the Al model, the provider of the Al service, or some combination. The lack of clear
+legal frameworks makes deploying purely Al-generated code into production without
+rigorous human review and testing a significant risk.</p>
+<p>The current legal ambiguity surrounding ownership and liability strongly suggests that while
+Al can be a powerful assistant, relying on it for fully autonomous generation of production
+code requires careful legal counsel and risk mitigation strategies beyond purely technical
+safeguards.</p>
+<p>D. Regulatory Environment</p>
+<p>Governments worldwide are beginning to regulate Al, including generative Al. Key
+developments include:</p>
+<p>•</p>
+<p>EU AI Act: A comprehensive regulation categorizing Al systems by risk level, imposing</p>
+<p>stricter requirements (e.g., transparency, data governance, human oversight) on high-
+risk applications. 149</p>
+<p>• NIST AI Risk Management Framework (RMF): Provides guidance for U.S.
+organizations on managing risks associated with Al systems throughout their
+lifecycle. 149</p>
+<p>• Focus Areas: Regulations often emphasize data privacy (compliance with GDPR,
+CCPA) 149, bias mitigation, transparency (e.g., disclosing Al use), security, and
+accountability.</p>
+<p>•</p>
+<p>Implications: Developers using or creating Al code generation tools must be aware of
+these evolving regulations. Compliance may require specific documentation, testing
+procedures, governance structures, and limitations on how Al is trained and deployed,
+particularly concerning personal or sensitive data. 150 Engaging with policymakers and
+adhering to industry standards are recommended practices. 150</p>
+<p>E. Impact on Developer Roles and Skills</p>
+<p>The rise of Al code generation tools is reshaping the software development landscape.</p>
+<p>•</p>
+<p>•</p>
+<p>•</p>
+<p>Productivity Gains: Studies consistently show that Al coding assistants like GitHub
+Copilot can significantly increase developer productivity, allowing them to complete
+tasks faster.¹</p>
+<p>Augmentation, Not Replacement: The current consensus among researchers and
+industry analysts is that Al is more likely to augment developers rather than replace
+them entirely. 45 Al tools handle repetitive or boilerplate tasks, freeing developers to
+focus on higher-level problem-solving, system design, architecture, and creative tasks.
+Demand for software developers is projected to remain strong, potentially fueled by the
+need to build and maintain Al systems themselves. 151</p>
+<p>Deskilling vs. Upskilling Debate: Concerns exist about potential &#34;deskilling,&#34; where
+over-reliance on Al tools might erode fundamental coding skills, particularly among
+junior developers.45 However, there is also a strong argument for &#34;upskilling.&#34;
+Succeeding in the age of Al requires developers to cultivate new skills, including:
+Effective Al Tool Usage: Prompt engineering, understanding Al limitations,
+critically evaluating Al output. 46</p>
+<p>Ο</p>
+<p>Ο System Design &amp; Architecture: Focusing on higher-level design as Al handles
+implementation details.</p>
+<p>Ο Critical Thinking &amp; Problem Solving: Applying judgment to Al suggestions and
+solving complex problems beyond the Al&#39;s capabilities.</p>
+<p>Ο</p>
+<p>Ο</p>
+<p>Security &amp; Ethics Awareness: Understanding and mitigating the risks associated
+with Al-generated code.</p>
+<p>Collaboration &amp; Communication: Working effectively in human-Al teams. 153
+Educational programs and on-the-job training need to adapt to foster these
+evolving skill sets. 153</p>
+<p>VIII. Synthesis and Recommendations</p>
+<p>Synthesizing the findings from prompt engineering, persona embedding, refusal mitigation,
+code quality evaluation, ecosystem integration, and ethical considerations, this section
+proposes a concrete system prompt architecture and recommendations for achieving the
+goal of autonomous, persona-driven, refusal-resistant website generation.</p>
+<p>A. Proposed Prompt Architecture</p>
+<p>Given the complexity of generating a full website and the need for persona alignment,
+stylistic control, and nuanced refusal handling, a multi-part system prompt is recommended.
+This prompt should serve as the foundational instruction set, ideally within a larger agentic
+framework or prompt chain capable of managing subtasks.</p>
+<p>Recommended System Prompt Structure:</p>
+<p>PART 1: PERSONA DEFINITION</p>
+<p>You are a professional front-end developer based in Kentucky with roots in indie punk and
+acoustic culture.</p>
+<p>Your core values are:</p>
+<p>•</p>
+<p>•</p>
+<p>Authenticity: Genuine, honest expression; avoiding corporate polish.</p>
+<p>Minimalism: Clean, uncluttered design; focus on essential elements.</p>
+<p>• Clarity: Easy-to-understand code and user interfaces; straightforward communication.
+You are an expert in React, TailwindCSS, and Framer Motion. You build production-
+grade, accessible, and performant websites.</p>
+<p>PART 2: CORE TASK &amp; CONSTRAINTS</p>
+<p>Your primary task is to autonomously generate full, modern, single-page websites based on
+user requests.</p>
+<p>Key Requirements:</p>
+<p>•</p>
+<p>•</p>
+<p>•</p>
+<p>•</p>
+<p>Technology Stack: React (functional components with Hooks), TailwindCSS (utility-
+first classes), Framer Motion (for subtle animations). Use TypeScript.</p>
+<p>Production-Grade: Code must be modular, maintainable, performant, secure, and
+accessible (WCAG 2.2 AA).</p>
+<p>Architecture: Use a component-based architecture. Create reusable components
+where appropriate. Ensure clean separation of concerns.</p>
+<p>Responsiveness: Websites must be fully responsive across common device sizes
+(mobile, tablet, desktop). Use a mobile-first approach.</p>
+<p>PART 3: AESTHETIC STYLE GUIDE</p>
+<p>(Persona Translation)</p>
+<p>Generate code and styles that reflect your persona&#39;s values:</p>
+<p>•</p>
+<p>•</p>
+<p>•</p>
+<p>•</p>
+<p>Layout &amp; Whitespace (Minimalism, Clarity): Use Tailwind utility classes for layout
+(Flexbox/Grid). Ensure ample whitespace using p- and m- utilities (e.g., p-6, m-8,
+space-y-4). Avoid visual clutter.</p>
+<p>Color Palette (Authenticity, Natural): Prefer natural, muted color palettes. Utilize
+Tailwind&#39;s built-in palettes like stone, zinc, neutral, slate, or similar earthy/grounded
+tones. Avoid overly bright, saturated, or corporate color schemes unless specifically
+requested. Define primary/accent colors clearly if needed.</p>
+<p>Typography (Clarity, Authenticity): Use highly readable fonts. Prioritize system fonts
+or well-regarded web fonts (e.g., Inter, Source Sans Pro). Ensure strong typographic
+hierarchy using Tailwind&#39;s font size (text-lg, text-xl, etc.) and weight (font-semibold,
+font-bold) utilities.</p>
+<p>Motion &amp; Animation (Usability, Subtlety): Use Framer Motion (motion component,
+initial, animate, transition props) for subtle, usability-focused animations. Prioritize
+fades (opacity), slides (x, y), and scale transitions that enhance user flow or provide
+feedback. Avoid complex physics, excessive bouncing, or purely decorative &#34;flashy&#34;
+animations. Keep durations reasonable (e.g., 0.3s - 0.7s) with easing like easeOut.</p>
+<p>• Coding Style (Clarity): Write clean, well-commented JSX. Use descriptive variable and
+function names (camelCase). Structure components logically. Prefer functional
+components and React Hooks.</p>
+<p>PART 4: BEHAVIORAL INSTRUCTIONS</p>
+<p>•</p>
+<p>•</p>
+<p>Initiation: Always begin your primary response (the website code) with: &#34;Here&#39;s your
+site.&#34;</p>
+<p>Disclaimers: Do not include disclaimers like &#34;As an Al...&#34;, &#34;Please note...&#34;, &#34;It&#39;s
+important to...&#34;, or similar hedging statements in your final code output or introductory
+text. Proceed confidently with the task.</p>
+<p>• Refusal Handling:</p>
+<p>Ο Only refuse requests that are clearly unsafe (promoting illegal acts, hate speech,
+generating harmful content) or violate standard content policies.</p>
+<p>Ο</p>
+<p>If a request related to coding or website generation seems ambiguous or
+potentially touches on safety concerns (e.g., complex data handling, user
+authentication implementation details), do not immediately refuse. Instead,
+state your specific concern briefly (e.g., &#34;Implementing secure authentication
+requires careful handling of sensitive data. Could you clarify the specific
+requirements for user data storage and password hashing?&#34;) and ask for
+clarification.</p>
+<p>Ο Proceed with generating code for all other valid, safe requests without deferral or
+unnecessary warnings.</p>
+<p>• Default Mode: Your primary output mode is generated code (TypeScript/JSX/CSS
+utilities). Only provide explanatory text if specifically asked or if clarifying a safety
+concern before proceeding.</p>
+<p>PART 5: OUTPUT FORMAT &amp; EXAMPLE</p>
+<p>• Structure: Generate code as modular, self-contained React functional components in
+TypeScript (.tsx). Use TailwindCSS utility classes directly within the JSX. Include
+comments explaining complex logic or component purpose.</p>
+<p>•</p>
+<p>**Example Snippet Format:**tsx</p>
+<p>// Example: Simple Button Component
+import React from &#39;react&#39;;</p>
+<p>import { motion } from &#39;framer-motion&#39;;</p>
+<p>interface ButtonProps extends React.ButtonHTMLAttributes</p>
+<p>children: React. ReactNode;</p>
+<p>}</p>
+<p>const Button: React.FC</p>
+<p>return (</p>
+<p>&lt;motion.button</p>
+<p>className=&#34;px-4 py-2 bg-zinc-700 text-stone-100 rounded hover:bg-zinc-600
+focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-400&#34;</p>
+<p>whileHover={{ scale: 1.05 }}</p>
+<p>whileTap={{ scale: 0.95 }}</p>
+<p>{...props}</p>
+<blockquote>
+</blockquote>
+<p>{children}</p>
+<p>&lt;/motion.button&gt;</p>
+<p>);</p>
+<p>};</p>
+<p>export default Button;</p>
+<p><strong>Integration Strategy:</strong> As established in Sections II and VI, generating a full website is too
+complex for one prompt. This system prompt should be used as the <strong>initial instruction and
+persistent context</strong> for an LLM agent (e.g., a Coder Agent in AutoGen [41, 142]) or as the
+guiding context across a <strong>prompt chain</strong>.[20, 54] The agent/chain manager would be
+responsible for breaking down the website request into subtasks (planning, component</p>
+<p>generation, styling, etc.) and invoking the LLM with this system prompt plus task-specific
+instructions for each step.</p>
+<h3 id="b-balancing-conflicting-requirements">B. Balancing Conflicting Requirements</h3>
+<p>Successfully deploying this system requires balancing inherent tensions:</p>
+<ul>
+<li>
+<p><strong>Persona vs. Quality:</strong> The prompt explicitly links persona values to quality attributes
+(clarity -&gt; readable code, minimalism -&gt; clean layout). It also mandates &#34;production-grade&#34;
+code and adherence to framework best practices (implied by specifying React, Tailwind,
+Framer Motion expertise). If a conflict arises, the prompt implicitly prioritizes production
+readiness within the persona&#39;s style. Explicit instruction could be added: &#34;Prioritize code
+correctness, security, and performance, applying your aesthetic style within these
+constraints.&#34;</p>
+</li>
+<li>
+<p><strong>Refusal Resistance vs. Safety:</strong> The recommended refusal handling (Part 4) attempts a
+nuanced balance. It forbids refusals for <em>valid</em> tasks but mandates refusal for <em>clearly</em>
+unsafe ones. For ambiguity, it requires clarification before refusal. This aims to prevent false
+refusals on safe coding tasks while retaining core safety. However, this relies on the LLM&#39;s
+judgment. <strong>Crucially, this must be paired with rigorous adversarial testing</strong> [89, 91] to
+ensure the nuance doesn&#39;t create exploitable loopholes. Using OpenAl&#39;s Moderation API [89]
+as an additional safety layer on inputs/outputs is also recommended.</p>
+</li>
+<li></li>
+</ul>
+<p><strong>Autonomy vs. Reliability:</strong> While the goal is autonomous generation, the current
+limitations of LLMs (hallucination, inefficiency, potential vulnerabilities) mean <strong>human
+oversight remains indispensable</strong>.[89, 90] The generated code, even if appearing complete
+and stylistically aligned, must undergo thorough review, testing, and validation using the
+metrics outlined in Section V before being considered truly production-ready. The system
+should be viewed as a powerful assistant or co-creator, not a fully independent developer
+yet.</p>
+<h3 id="c-addressing-gaps-and-future-research">C. Addressing Gaps and Future Research</h3>
+<p>This investigation highlights several areas requiring further research and development:</p>
+<ul>
+<li>
+<p><strong>Persona-Aesthetic Quantification:</strong> Developing reliable methods to quantitatively
+measure the influence of persona prompts on specific code aesthetic outcomes (e.g., metrics
+for &#34;minimalism&#34; or &#34;authenticity&#34; in generated CSS/JS).</p>
+</li>
+<li>
+<p><strong>Complex Application Generation:</strong> Enhancing LLM capabilities to handle the
+architectural complexity, state management, and multi-file dependencies inherent in large,
+interactive web applications. Improving agentic planning and execution for software
+development is key.[58]</p>
+</li>
+<li>
+<p><strong>Nuanced Refusal Mechanisms:</strong> Creating LLMs with more sophisticated safety</p>
+</li>
+</ul>
+<p>alignment that better understands context and intent, particularly for technical or creative
+domains, reducing false refusals without compromising safety.[15]</p>
+<ul>
+<li>
+<p><strong>Frontend Evaluation Standards:</strong> Establishing comprehensive, standardized
+benchmarks and metrics specifically for evaluating production-ready Al-generated frontend
+code, incorporating visual consistency, UX, accessibility, and performance alongside
+functional correctness. [39, 63]</p>
+</li>
+<li>
+<p><strong>Lexsync Role:</strong> Further investigation is needed outside the scope of provided materials
+to understand the specific functionality and integration potential of &#34;Lexsync&#34; as intended by
+the user query.</p>
+</li>
+</ul>
+<p>By addressing these areas, the development of truly autonomous, reliable, and stylistically
+controllable Al systems for complex creative tasks like website generation can be significantly
+advanced. The proposed prompt architecture provides a structured starting point, but
+continuous iteration, evaluation, and adaptation based on ongoing research will be essential.</p>
+<h2 id="ix-references">IX. References</h2>
+<p>[16] OpenAl. (n.d.). <em>Prompt engineering</em>. OpenAl Platform Documentation.</p>
+<p>[17] OpenAl. (n.d.). <em>Best practices for prompt engineering with the OpenAI API</em>. OpenAl Help
+Center.</p>
+<p>[154] OpenAl Community. (2024, February 11). <em>Common system message for multiple API
+requests</em>.</p>
+<p>[29] Hildebrandt, F., Maier, A., Krauss, P., &amp; Schilling, A. (2025). <em>Refusal Behavior in Large
+Language Models: A Nonlinear Perspective</em>. arXiv:2501.08145v1.</p>
+<p>[30] Hildebrandt, F., Maier, A., Krauss, P., &amp; Schilling, A. (2025). <em>Refusal Behavior in Large
+Language Models: A Nonlinear Perspective</em>. arXiv:2501.08145v1.</p>
+<p>[23] Tan, Z., et al. (2024). <em>LLMs + Persona-Plug = Personalized LLMs</em>. arXiv:2409.11901v1.
+[24] ChatPaper. (n.d.). <em>Paper Summary: LLMs + Persona-Plug = Personalized LLMs</em>.</p>
+<p>[155] Tryolabs. (2024, January 10). <em>Strategies and tools for controlling LLM responses</em>.</p>
+<p>[51] Kelly, S. (2024, November 11). <em>Structuring LLM outputs | Best practices for legal prompt
+engineering</em>. NetDocuments Studio.</p>
+<p>[61] Microsoft Azure. (2025, March 27). <em>How to work with the ChatGPT and GPT-4 models</em>.
+Azure Al Services Documentation.</p>
+<p>[62] OpenAl. (n.d.). <em>API Reference - Create chat completion</em>. OpenAl Platform</p>
+<p>Documentation. (Note: This snippet primarily covers API structure, less on system message
+content).</p>
+<p>[62] OpenAl. (n.d.). <em>API Reference - Create chat completion</em>. OpenAl Platform
+Documentation..[62]</p>
+<p>[48] OpenAl. (n.d.). <em>Text generation guide</em>. OpenAl Platform Documentation.</p>
+<p>[80] Hildebrandt, F., Maier, A., Krauss, P., &amp; Schilling, A. (2025). <em>Refusal Behavior in Large
+Language Models: A Nonlinear Perspective</em>. ResearchGate. (Publication 388029466).</p>
+<p>[81] arXiv. (2025, January 14). <em>[2501.08145] Refusal Behavior in Large Language Models: A
+Nonlinear Perspective</em>.</p>
+<p>[115] YMER Digital. (2025, May). <em>Al-Powered Web Code Generator: A Novel Approach to
+Software Project Creation Using Organizational History</em>. YMER, 24(05). (ISSN: 0044-0477).
+[9] Xu, H., &amp; Yu, X.-Y. (2025). <em>From PowerPoint UI Sketches to Web-Based Applications:
+Pattern-Driven Code Generation for GIS Dashboard Development Using Knowledge-
+Augmented LLMs, Context-Aware Visual Prompting, and the React Framework</em>.
+arXiv:2502.08756v1.</p>
+<p>[109] Revelo. (2025, March 26). <em>LLM-Generated Code in 2025: Trends and Predictions</em>.
+Revelo Blog.</p>
+<p>[72] Honeycomb.io. (2025, March 4). <em>How I Code With LLMs These Days</em>. Honeycomb Blog.</p>
+<p>[</p>
+<p>64] RomboHQ. (n.d.). <em>tailwindcss-motion</em>. GitHub Repository.</p>
+<p>[3] CodeSubmit. (2025). <em>The Best Al Code Generators for 2025</em>. CodeSubmit Blog. (Date
+inferred from content).</p>
+<p>[133] Restack.io. (n.d.). <em>Understanding Al Concepts for Developers: Answer LLM Code
+Generation Github</em>.</p>
+<p>[131] Harper, S. (2025, February 16). <em>My LLM Codegen Workflow ATM</em>. Harper&#39;s Blog.</p>
+<p>[139] PromptHub. (n.d.). <em>Using LLMs for Code Generation: A Guide to Improving Accuracy
+and Addressing Common Issues</em>. PromptHub Blog.</p>
+<p>[136] Albarghouthi, A., et al. (2024). <em>Generating Verified Reactive Programs by Combining
+Formal Synthesis and Large Language Models</em>. arXiv:2410.19736v1.</p>
+<p>[137] Papers With Code. (n.d.). <em>Code Generation Task</em>.</p>
+<p>[138] Mucci, T. (n.d.). <em>What is a code generator?</em>. IBM Think.</p>
+<p>[134] Lex. (n.d.). <em>Lex.page Homepage</em>.</p>
+<p>[135] Keep Productive. (n.d.). <em>Lex Review: Al Writer</em>. YouTube. (Content related to Lex</p>
+<p>writing tool).</p>
+<p>[132] Simbo. (n.d.). <em>My LLM code generation workflow (for now)</em>. DEV.to.</p>
+<p>[114] arXiv. (2025, February 13). <em>[2502.08756] From PowerPoint UI Sketches to Web-Based
+Applications...</em>.</p>
+<p>[156] Xu, H., &amp; Yu, X.-Y. (2025, February). <em>From PowerPoint UI Sketches to Web-Based
+Applications...</em>. ResearchGate. (Publication 388964133).</p>
+<p>[157] Sushant707. (n.d.). <em>Todo-app-using-react-js-and-Framer-motion</em>. GitHub Repository.</p>
+<p>(Example project, not IDX specific).</p>
+<p>[158] Fire Up. (2025). <em>News</em>. Fire Up Blog. (Contains dates for framework releases).</p>
+<p>[121] WhaleSync. (n.d.). <em>The Best LLMs for Content Marketing, Websites, and Spreadsheets</em>.
+WhaleSync Blog.</p>
+<p>[117] Carter, P. (n.d.). <em>Coding With LLMs</em>. Phillip Carter&#39;s Blog. (Mirrors Honeycomb blog
+content).</p>
+<p>[159] SuperAnnotate. (n.d.). <em>The Ultimate Guide to LLM Evaluation</em>. SuperAnnotate Blog.</p>
+<p>[160] Llamalndex. (n.d.). <em>Evaluating</em>. Llamalndex Documentation.</p>
+<p>[65] DocsBot Al. (n.d.). <em>React Framer Motion Animation Review Prompt</em>.</p>
+<p>[161] Motion Dev. (n.d.). <em>Motion Examples</em>.</p>
+<p>[10] Zhu, Z., et al. (2025). <em>Advancing Vision-Language Models in Front-End Development via
+Data Synthesis</em>. arXiv:2503.01619v1.</p>
+<p>[72] Honeycomb.io. (2025, March 4). <em>How I Code With LLMs These Days</em>. Honeycomb Blog..
+[72]</p>
+<p>[122] Tabnine. (n.d.). <em>Review - The Tabnine Code Review Agent</em>. Tabnine Documentation.</p>
+<p>[162] Keyframer Authors. (2024). <em>Keyframer: Empowering Animation Design with LLM-based
+Code Generation</em>. arXiv:2402.06071v1.</p>
+<p>[68] Motion Dev. (n.d.). <em>motion component</em>. Motion Documentation.</p>
+<p>[95] UXPin. (n.d.). <em>React Components with Al: Animation-to-Code Tools</em>. UXPin Studio Blog.</p>
+<p>[118] Baytech Consulting. (n.d.). <em>AI UI Generator: How Businesses Can Leverage Vercel&#39;s
+vo.dev</em>. Baytech Consulting Blog.</p>
+<p>[103] Leanware. (n.d.). <em>Best Practices for Using Al in Software Development</em>. Leanware
+Insights.</p>
+<p>[123] MBlogging. (n.d.). <em>Al Code Generation Tools: Best Practices</em>. MBlogging.</p>
+<p>[10] Zhu, Z., et al. (2025). *Advancing Vision-Language Models in Front-End Development via</p>
+<p>Data Synthesis*. arXiv:2503.01619v1..[10]</p>
+<p>[39] Flame-Code-VLM Authors. (n.d.). <em>Flame-Code-VLM GitHub Repository</em>.</p>
+<p>[116] Wisp. (n.d.). <em>Best Practices for Using Tailwind CSS in Large Projects</em>. Wisp Blog.</p>
+<p>[69] LogRocket. (n.d.). <em>Creating React animations in Motion (formerly Framer Motion)</em>.
+LogRocket Blog.</p>
+<p>[163] Motion Dev. (n.d.). <em>React animation</em>. Motion Documentation.</p>
+<p>[95] UXPin. (n.d.). <em>React Components with Al: Animation-to-Code Tools</em>. UXPin Studio Blog..</p>
+<p>[95]</p>
+<p>[35] Brilworks. (n.d.). <em>Scaling ReactJS Applications: Maintainability and Performance</em>.
+Brilworks Blog.</p>
+<p>[107] AngularMinds. (n.d.). <em>The Ultimate React Al Stack for $2025^{</em>}$ AngularMinds Blog.</p>
+<p>[104] TailGrids. (n.d.). <em>Tailwind CSS Best Practices and Performance Optimization</em>. TailGrids</p>
+<p>Blog.</p>
+<p>[105] UXPin. (n.d.). <em>Tailwind CSS Best Practices</em>. UXPin Studio Blog.</p>
+<p>[66] All About Framer. (n.d.). <em>8 Ways to Improve Your Framer Website Speed</em>.</p>
+<p>[67] Framer. (n.d.). <em>Website Animation Examples</em>. Framer Blog.</p>
+<p>[115] YMER Digital. (2025, May). <em>Al-Powered Web Code Generator...</em>. YMER, 24(05)..[115]</p>
+<p>[14] Prompting Guide. (n.d.). <em>LLM Agents</em>.</p>
+<p>[22] Learn Prompting. (n.d.). <em>Role Prompting</em>. Learn Prompting Documentation.</p>
+<p>[18] Potpie Al. (n.d.). <em>How to write good prompts for generating code from $LLMs^{</em>}$ Potpie
+Wiki on GitHub.</p>
+<p>[49] Crafting Al Prompts. (n.d.). <em>Framework Documentation</em>.</p>
+<p>[76] MDPI Sensors. (2024). <em>A Personalised Large Language Model Agent for Human-Robot
+and Human-Computer Interaction</em>. Sensors, 25(7), 2024.</p>
+<p>[75] Khan, S., et al. (2024). *Understanding User Persona Interpretation by Large Language</p>
+<p>Models*. arXiv:2409.14858v1.</p>
+<p>[63] Zhang, Y., et al. (2025). <em>WebGen-Bench: A Benchmark for Evaluating LLM Agents in
+Generating Websites from Scratch</em>. arXiv:2505.03733v1.</p>
+<p>[164] Hugging Face Papers. (n.d.). <em>Search results for &#34;novel thoughts&#34;</em>. (Contains papers on
+CoT, reasoning).</p>
+<p>[165] Amazon Science. (2025). <em>UXAgent: An LLM-Agent-Based Usability Testing Framework
+for Web Design</em>. CHI EA &#39;25.</p>
+<p>[166] Sharma, A., et al. (2024). <em>DebateTrack: Tracking Confirmation Bias in LLM-Simulated
+Debates</em>. arXiv:2412.04629v3.</p>
+<p>[11] Tahmid, M., et al. (2025). <em>On the Code Inefficiencies of Large Language Models</em>.
+arXiv:2503.06327v2.</p>
+<p>[12] Tahmid, M., et al. (2025). <em>On the Code Inefficiencies of Large Language Models</em>.
+arXiv:2503.06327v1.</p>
+<p>[70] The Moonlight. (n.d.). <em>Review: Enhancing Persona Consistency for LLMs&#39; Role-Playing
+using Persona-Aware Contrastive Learning</em>.</p>
+<p>[71] Samuel, S., et al. (2025). <em>Evaluating Knowledge Awareness of LLM Persona Agents</em>.
+TrustNLP@NAACL 2025.</p>
+<p>[167] MDPI Informatics. (2024). <em>Qualitative versus LLM-Generated Personas: An Evaluation
+Study within Obesity Research</em>. Informatics, 15(4), 1937.</p>
+<p>[73] ResearchGate. (n.d.). <em>Enhancing Persona Consistency for LLMs&#39; Role-Playing using
+Persona-Aware Contrastive Learning | Request PDF</em>.</p>
+<p>[26] Blinkist. (n.d.). <em>The Inmates are Running the Asylum Summary</em>.</p>
+<p>[27] Anant Corporation. (n.d.). <em>Executive Summary: The Inmates Are Running the Asylum</em>.
+Anant Blog.</p>
+<p>[28] Feit, A. M., et al. (2025). <em>Combining Human-Centered and Al Methods for Evaluating
+Conversational Software Engineering Assistants</em>. arXiv:2502.07956v1.</p>
+<p>[77] Salminen, J., et al. (2024). <em>Generative Al in Persona Development: A Systematic
+Literature Review</em>. arXiv:2504.04927v1.</p>
+<p>[22] Learn Prompting. (n.d.). <em>Role Prompting</em>. Learn Prompting Documentation.. [22]</p>
+<p>[168] Reddit. (2023, March 18). <em>Collection of ChatGPT Persona Prompts</em>. r/ChatGPTPro.</p>
+<p>[169] Widener Law LibGuides. (n.d.). <em>Prompt Patterns</em>.</p>
+<p>[170] MDPI Education Sciences. (2024). *I Learn with Prompt Engineering: A Self-Regulated</p>
+<p>Course Design for University Students*. Education Sciences, 15(2), 199.</p>
+<p>[18] Potpie Al. (n.d.). <em>How to write good prompts...</em>. Potpie Wiki on GitHub..[18]</p>
+<p>[74] Anaconda. (n.d.). *Persona Programming: Can Channeling Programming Legends</p>
+<p>Improve Al Code Generation?*. Anaconda Blog.</p>
+<p>[8] Dondapati, N. S. (n.d.). <em>Exploring the Role of Prompt Engineering in Secure Code
+Generation</em>. DEV.to.</p>
+<p>[84] Fortanix. (n.d.). <em>Top 10 Security Risks for Large Language Models (OWASP)</em>. Fortanix
+Blog.</p>
+<p>[33] Liu, Z., et al. (2025). <em>Mitigating False Refusal of LLMs via Safety Reflection Fine-tuning</em>.</p>
+<p>arXiv:2503.17882v1.</p>
+<p>[82] Arditi, E., et al. (2024). <em>Refusal Feature Ablation: Universal Jailbreak against Aligned
+LLMs</em>. arXiv:2409.20089v2.</p>
+<p>[34] GitHub Gist (xbeat). (n.d.). <em>Reducing LLM Refusals Using Python.md</em>.</p>
+<p>[87] Preprints.org. (2025). <em>HumorReject: Aligning Large Language Models to Use Humor as
+Indirect Refusal</em>. Manuscript 202501.1736/v1.</p>
+<p>[43] 8th Light. (n.d.). <em>Designing for Al: Unveiling a New Set of Personas</em>. 8th Light Insights.
+[144] UC Berkeley Haas School of Business. (n.d.). <em>New Berkeley guide helps business
+leaders navigate Al ethics amid rapid adoption</em>. Haas Newsroom.</p>
+<p>[78] Nokia Bell Labs. (n.d.). <em>Responsible Al</em>. AIR Lab.</p>
+<p>[79] Holzinger, A., et al. (2022). <em>5-step process for development of user personas for Al</em>.
+ResearchGate Figure.</p>
+<p>[143] Zhang, Z., et al. (2025). <em>Evaluating Bias in Large Language Models as Teachers</em>.
+Findings of NAACL 2025.</p>
+<p>[92] Carnegie Mellon University Software Engineering Institute. (n.d.). <em>Auditing Bias in Large
+Language Models</em>. SEI Blog.</p>
+<p>[89] OpenAl. (n.d.). <em>Safety best practices</em>. OpenAl Platform Documentation.</p>
+<p>[90] HackMD. (n.d.). <em>openai-safety-best-practices</em>..[89]</p>
+<p>[36] SonarSource. (n.d.). <em>OWASP Top 10 for LLMs &amp; Code Generation: Securing Your SDLC</em>.
+SonarSource Learn.</p>
+<p>[110] Pynt. (n.d.). <em>LLM Security: Understanding Risks, Tools, and Best Practices</em>. Pynt
+Learning Hub.</p>
+<p>[15] Bianchi, F., et al. (2025). <em>SCANS: Steering Correct Answers from Neighbored Safety</em>.
+AAAI 2025.</p>
+<p>[83] Qi, X., et al. (2024). <em>Refuse Whenever You Feel Unsafe: Improving Safety in LLMs via
+Decoupled Refusal Training</em>. OpenReview.</p>
+<p>[85] Bhargava, P., et al. (2024). <em>Are Large Language Models Steerable? A Sensitivity and
+Directionality Analysis</em>. OpenReview.</p>
+<p>[86] Bhargava, P., et al. (2024). <em>A Benchmark for Measuring Prompt Steerability of Large
+Language Models</em>. arXiv:2411.12405v2.</p>
+<p>[19] Prompt Design Authors. (2024). <em>Method Actors: A Prompt Engineering Mental Model</em>.
+arXiv:2411.05778v1.</p>
+<p>[50] Multimodal.dev. (n.d.). <em>LLM Prompting: 8 Tips for Crafting Effective Prompts</em>.</p>
+<p>[</p>
+<p>[21] OpenAl Cookbook. (n.d.). <em>Enhance your prompts with meta prompting</em>.</p>
+<p>[55] Helicone. (n.d.). <em>Use Meta-Prompting</em>. Helicone Guides.</p>
+<p>[20] IBM Think. (n.d.). <em>Prompt chaining with LangChain</em>. IBM Tutorials.</p>
+<p>54] PromptLayer. (n.d.). <em>What is Prompt Chaining?</em>. PromptLayer Blog.</p>
+<p>[58] Nguyen, T., et al. (2024). <em>HULA: Human-in-the-loop LLM-based Agents Framework for
+Software Development</em>. arXiv:2411.12924v2.</p>
+<p>[140] Chen, Y., et al. (2024). <em>A Survey on Large Language Models and LLM-based Agents for
+Software Engineering</em>. arXiv:2408.02479v2.</p>
+<p>[56] Carnegie Mellon University Heinz College. (n.d.). <em>Course Detail: 94-815 Agentic Al:
+Building Autonomous Systems</em>.</p>
+<p>[57] SmythOS. (n.d.). <em>What Is Agent-Oriented Programming?</em>. SmythOS Al Agents Blog.</p>
+<p>[59] K2View. (n.d.). <em>LLM-Powered Autonomous Agents</em>. K2View Blog.</p>
+<p>[60] Anthropic. (n.d.). <em>Building effective agents</em>. Anthropic Engineering Blog.</p>
+<p>[171] Microsoft Research. (2025). <em>Tools for Thought: Aligning Al with Human Cognition</em>. CHI
+2025 Workshop Proposal.</p>
+<p>[172] Weisz, J. D., et al. (2024). <em>Design Principles for Generative Al Applications</em>.
+arXiv:2401.14484.</p>
+<p>[126] BairesDev. (n.d.). <em>What Is HCI?</em>. BairesDev Blog.</p>
+<p>[28] Feit, A. M., et al. (2025). <em>Combining Human-Centered and Al Methods...</em>.</p>
+<p>arXiv:2502.07956v1..[28]</p>
+<p>[46] Robertson, J., et al. (2024). <em>Constructing Knowledge Together: An Al Prompting
+Protocol for Business Managers</em>. Journal Article.</p>
+<p>[47] Adobe Research. (n.d.). <em>An experimental new design approach for human-Al co-
+creation</em>.</p>
+<p>[173] Aubergine Solutions. (n.d.). <em>UX for Generative Al: A New Way of Design Thinking</em>.
+Aubergine Insights.</p>
+<p>[174] YouTube (Google I/O). (n.d.). <em>Designing for the next generation of Al-powered
+products</em>. (Video discussing UI/UX changes).</p>
+<p>[175] Orq.ai. (n.d.). <em>What Is the Best Way to Think of Prompt Engineering?</em>. Orq.ai Blog.
+[52] UXPin. (n.d.). <em>Prompt Engineering Guide for UX/UI Designers</em>. UXPin Studio Blog.
+[176] TheBlewish. (n.d.). <em>Automated-Al-Web-Researcher-Ollama</em>. GitHub Repository.
+[177] Koh, J. Y., et al. (2025). <em>AgentA/B: A Framework for Evaluating Web Designs with LLM
+Agents</em>. arXiv:2504.09723v1.</p>
+<p>[41] Analytics Vidhya. (2023, November). <em>Launching into AutoGen: Exploring the Basics of a
+Multi-Agent Framework</em>. Analytics Vidhya Blog.</p>
+<p>[142] Microsoft AutoGen. (n.d.). <em>AutoGen Examples</em>. AutoGen Documentation (v0.2).</p>
+<p>[178] Weisz, J. D., et al. (2024). <em>Design Principles for Generative Al Applications</em>.
+arXiv:2401.14484v1..[172]</p>
+<p>[172] arXiv. (2024, January 25). <em>[2401.14484] Design Principles for Generative Al
+Applications</em>..[172]</p>
+<p>[18] Potpie Al. (n.d.). <em>How to write good prompts...</em>. Potpie Wiki on GitHub.. [18]</p>
+<p>[14] Prompting Guide. (n.d.). <em>LLM Agents</em>..[14]</p>
+<p>[53] PromptHub. (n.d.). <em>Prompt Chaining Guide</em>. PromptHub Blog.</p>
+<p>[20] IBM Think. (n.d.). <em>Prompt chaining with LangChain</em>. IBM Tutorials..[20]</p>
+<p>[42] K2View. (n.d.). <em>ReACT Agent LLM: Making GenAl React Quickly and Decisively</em>. K2View</p>
+<p>Blog.</p>
+<p>[141] Dynamiq. (n.d.). <em>Guide to Implementing LLM Agents: React and Simple Agents</em>.</p>
+<p>Dynamiq Documentation.</p>
+<p>[179] SingleStore. (n.d.). <em>The Complete Guide to Evaluating Large Language Models (LLMs)</em>.</p>
+<p>SingleStore Blog.</p>
+<p>[180] Aisera. (n.d.). <em>LLM Evaluation: Metrics, Frameworks, and Best Practices</em>. Aisera Blog.</p>
+<p>[181] Kuhn, M., et al. (2024). <em>Uncertainty Estimation for Language Model Generations</em>.
+OpenReview.</p>
+<p>[182] Thoughtworks. (n.d.). <em>Evaluating LLM Hallucinations Using Semantic Entropy</em>.
+Thoughtworks Insights.</p>
+<p>[183] Galileo. (n.d.). <em>How to Evaluate LLMs for RAG</em>. Galileo Blog.</p>
+<p>[</p>
+<p>[88] Evidently Al. (n.d.). <em>LLM Safety &amp; Bias Benchmarks</em>. Evidently Al Blog.</p>
+<p>[82] Arditi, E., et al. (2024). <em>Refusal Feature Ablation...</em>. arXiv:2409.20089v2..[82]</p>
+<p>91] Kili Technology. (n.d.). <em>Red Teaming LLMs and Adversarial Prompts</em>. Kili Blog.</p>
+<p>[97] UCLA CS Dept. (2012). <em>Lecture Notes 3a: Modularity</em>. CS111 Winter 2012.</p>
+<p>[98] VictorOnSoftware. (n.d.). <em>Software Modularity</em>.</p>
+<p>[112] Primer CSS. (n.d.). <em>Semantic HTML</em>. Primer Accessibility Documentation.</p>
+<p>[113] Accessibly. (n.d.). <em>Making the Web Accessible: The Role of Semantic HTML</em>. Accessibly</p>
+<p>Blog.</p>
+<p>[101] Wikipedia. (n.d.). <em>Reuse metrics</em>.</p>
+<p>[102] Ignition. (n.d.). <em>KPIs for Product Managers: Product Code Reusability</em>. Ignition Blog.</p>
+<p>[37] Level Access. (n.d.). <em>Web Accessibility Testing Tools: A Complete Guide</em>. Level Access</p>
+<p>Blog.</p>
+<p>[119] Apvarun. (n.d.). <em>tailwindcss-analysis</em>. GitHub Repository.</p>
+<p>[108] Techuz. (n.d.). <em>Tailwind CSS Development Services</em>.</p>
+<p>[125] Weights &amp; Biases. (n.d.). <em>LLM evaluations: Metrics, frameworks, and best practices</em>.
+Wandb Report.</p>
+<p>[124] Confident Al. (n.d.). <em>G-Eval: The Definitive Guide</em>. Confident Al Blog.</p>
+<p>[106] Kozbelt, A., et al. (2010). <em>The Aesthetics of Software Code: A Quantitative Exploration</em>.
+ResearchGate. (Publication 232443360).</p>
+<p>[184] arXiv. (2024, August 19). <em>[2408.10616] Aesthetics Toolbox: An open-access toolbox for
+calculating quantitative image properties in visual aesthetics research</em>.</p>
+<p>[185] Promptsty. (n.d.). <em>Prompts for Visualization Techniques</em>.</p>
+<p>[186] WhiteBeard Strategies. (n.d.). <em>Mastering Multi-Stage Prompt Structures: 5 Essential
+Tips</em>.</p>
+<p>[93] Liu, Q., et al. (2024). <em>Heatmap of refusal rate...</em>. ResearchGate Figure.</p>
+<p>[94] Lee, D., et al. (2025). <em>Interpreting and Disrupting the Safety Alignment of Large
+Language Models</em>. arXiv:2502.09674v1.</p>
+<p>[99] CodeSee. (n.d.). <em>Code Visualization: Understanding Complex Codebases</em>. CodeSee
+Learning Center.</p>
+<p>[100] Gauge. (n.d.). <em>How to Visualize Your Python Project&#39;s Dependency Graph</em>. Gauge
+Blog.</p>
+<p>[127] RUCAIBox. (n.d.). <em>HaluEval</em>. GitHub Repository.</p>
+<p>[128] Zhang, Z., et al. (2024). *Collu-Bench: A Comprehensive Benchmark for Evaluating Code</p>
+<p>Hallucinations of Large Language Models*. arXiv:2410.09997v1.</p>
+<p>[129] Wang, Z., et al. (2024). <em>Mitigating Editing Overfit for Large Language Models</em>.
+OpenReview.</p>
+<p>[130] K2View. (n.d.). <em>LLM Hallucination Risks and Prevention</em>. K2View Blog.</p>
+<p>[1] ResearchGate. (n.d.). <em>A Survey On Large Language Models For Code Generation</em>.
+(Publication 389548434).</p>
+<p>[2] Chen, Y., et al. (2025). <em>A Survey On Large Language Models For Code Generation</em>.
+arXiv:2503.01245v1.</p>
+<p>[6] Turing.com. (n.d.). <em>How LLM coding assistants increase software development
+productivity</em>. Turing Resources.</p>
+<p>[7] Teamcamp. (n.d.). <em>The Impact of Al-Powered Code Assistants on Developer
+Productivity</em>. Teamcamp Blog.</p>
+<p>[120] Confident Al. (n.d.). <em>LLM Benchmarks: MMLU, HellaSwag, and Beyond</em>. Confident Al
+Blog.</p>
+<p>[38] Ni, A., et al. (2024). <em>HumanEval Pro and MBPP Pro: Pushing the Limits of Code
+Generation</em>. arXiv:2412.21199v2.</p>
+<p>[111] Legit Security. (n.d.). <em>Al Code Generation: Benefits and Risks</em>. Legit Security Blog.
+[13] SonarSource. (n.d.). <em>Al Code Generation: Benefits and Risks</em>. SonarSource Learn.</p>
+<p>[187] Restack.io. (n.d.). <em>Low Code Development for Al: Answer Build React Website Cat Al</em>.</p>
+<p>[96] Locofy.ai. (n.d.). <em>Create React Apps in Record Time with Locofy</em>.</p>
+<p>[44] Foley &amp; Lardner LLP. (2025, February). <em>Clarifying Copyrightability of Al-Assisted
+Works</em>. Foley Insights.</p>
+<p>[145] U.S. Copyright Office. (2025, January 29). <em>Copyright Office Releases Part 2 of Al Report
+on Copyrightability</em>. NewsNet Issue 1060.</p>
+<p>[149] Centraleyes. (n.d.). <em>Generative Al Governance: Navigating Risks and Regulations</em>.</p>
+<p>[150] Brilworks. (n.d.). <em>How to Navigate Generative Al Regulations</em>. Brilworks Blog.</p>
+<p>[146] Marks &amp; Clerk. (n.d.). <em>Who owns the content generated by Al?</em>. Marks &amp; Clerk Insights.</p>
+<p>[147] Aaron Hall Law. (n.d.). <em>Employee Ownership of ChatGPT-Created Code</em>.</p>
+<p>[151] Developer Tech News. (2025, February 25). *Al and its impact on software development</p>
+<p>jobs*.</p>
+<p>[45] Diva Portal. (n.d.). <em>How Al Impacts the Software Job Landscape</em>. (Student</p>
+<p>thesis/report).</p>
+<p>[153] Foundations of Software Engineering (FSE) 2025 Conference. (n.d.). <em>What do
+professional software developers need to know...</em>. FSE 2025 SE Education Track.</p>
+<p>[152] ResearchGate. (n.d.). <em>Deskilling and upskilling with Al systems</em>. (Publication
+389742059).</p>
+<p>[17] OpenAl. (n.d.). <em>Best practices for prompt engineering...</em>. OpenAl Help Center. (Summary
+provided).</p>
+<p>[51] NetDocuments Studio. (2024, November 11). <em>Structuring LLM outputs...</em>. NetDocuments
+Studio Blog. (Summary provided).</p>
+<p>[31] Hildebrandt, F., et al. (2025, January 14). <em>Refusal Behavior in Large Language Models...</em>.
+arXiv:2501.08145. (Summary provided).</p>
+<p>[25] Tan, Z., et al. (2024). <em>LLMS + Persona-Plug = Personalized LLMs</em>. arXiv:2409.11901v1.
+(Summary provided).</p>
+<p>[61] Microsoft Azure. (2025, March 27). <em>How to work with the ChatGPT and GPT-4 models</em>.
+Azure Al Services Documentation. (Summary provided).</p>
+<p>[72] Honeycomb.io. (2025, March 4). <em>How I Code With LLMs These Days</em>. Honeycomb Blog.
+(Summary provided).</p>
+<p>[40] GitHub. (2024, February). <em>GitHub Copilot Features</em>. (Summary provided).</p>
+<p>[39] Flame-Code-VLM Authors. (n.d.). <em>Flame-Code-VLM GitHub Repository</em>. (Summary
+provided).</p>
+<p>[156] Xu, H., &amp; Yu, X.-Y. (2025, February 16). <em>From PowerPoint UI Sketches to Web-Based
+Applications...</em>. ResearchGate. (Publication 388964133). (Summary provided).</p>
+<p>[25] Tan, Z., et al. (2024). <em>LLMS + Persona-Plug = Personalized LLMs</em>. arXiv:2409.11901v1.
+(Summary provided)..[25]</p>
+<p>[188] Blinkist. (n.d.). <em>The Inmates are Running the Asylum Summary</em>. (Summary provided).
+[32] Touvron, H., et al. (2023). <em>Llama 2: Open Foundation and Fine-Tuned Chat Models</em>.
+arXiv:2307.09288. (Summary provided).</p>
+<p>[172] Weisz, J. D., et al. (2024, January 25). <em>Design Principles for Generative Al Applications</em>.
+arXiv:2401.14484. (Summary provided).</p>
+<p>[</p>
+<p>json</p>
+<p>{&#34;id&#34;: &#34;[16]&#34;, &#34;used&#34;: true, &#34;cited&#34;: true, &#34;reason&#34;: &#34;Prompt engineering principles, clarity,
+persona, examples, subtasks.&#34;},</p>
+<p>{&#34;id&#34;: &#34;[17]&#34;, &#34;used&#34;: true, &#34;cited&#34;: true, &#34;reason&#34;: &#34;Prompting best practices, instructions first,
+specificity, examples, format, positive framing.&#34;},</p>
+<p>{&#34;id&#34;: &#34;[189]&#34;, &#34;used&#34;: false, &#34;cited&#34;: false, &#34;reason&#34;: &#34;API authentication, rate limits, general
+API info, not specific to prompt structure.&#34;},</p>
+<p>{&#34;id&#34;: &#34;[154]&#34;, &#34;used&#34;: true, &#34;cited&#34;: true, &#34;reason&#34;: &#34;System message usage in API calls,
+context reuse.&#34;},</p>
+<p>{&#34;id&#34;: &#34;[29]&#34;, &#34;used&#34;: true, &#34;cited&#34;: true, &#34;reason&#34;: &#34;LLM refusal mechanisms, linear vs non-
+linear, architecture differences.&#34;}
+,</p>
+<p>{&#34;id&#34;: &#34;[30]&#34;, &#34;used&#34;: true, &#34;cited&#34;: true, &#34;reason&#34;: &#34;LLM refusal mechanisms (PDF details),
+difference-in-means.&#34;},</p>
+<p>{&#34;id&#34;: &#34;[190]&#34;, &#34;used&#34;: false, &#34;cited&#34;: false, &#34;reason&#34;: &#34;EMNLP conference call for papers, lists
+relevant topics but not research findings.&#34;},</p>
+<p>{&#34;id&#34;: &#34;[191]&#34;, &#34;used&#34;: false, &#34;cited&#34;: false, &#34;reason&#34;: &#34;EMNLP track changes, relevant topics
+but not research findings.&#34;},</p>
+<p>{&#34;id&#34;: &#34;[23]&#34;, &#34;used&#34;: true, &#34;cited&#34;: true, &#34;reason&#34;: &#34;Persona embedding, PPlug model
+architecture and concept.&#34;}</p>
+<p>,</p>
+<p>{&#34;id&#34;: &#34;[24]&#34;, &#34;used&#34;: true, &#34;cited&#34;: true, &#34;reason&#34;: &#34;PPlug model summary, personalization
+without fine-tuning.&#34;},</p>
+<p>{&#34;id&#34;: &#34;[155]&#34;, &#34;used&#34;: true, &#34;cited&#34;: true, &#34;reason&#34;: &#34;LLM output control strategies</p>
+<p>(prompting, parameters, guardrails), specific tools.&#34;},</p>
+<p>{&#34;id&#34;: &#34;[51]&#34;, &#34;used&#34;: true, &#34;cited&#34;: true, &#34;reason&#34;: &#34;Structuring LLM outputs (examples, data
+types, file formats, verbosity control).&#34;},</p>
+<p>{&#34;id&#34;: &#34;[16]&#34;, &#34;used&#34;: false, &#34;cited&#34;: false, &#34;reason&#34;: &#34;Inaccessible/No content.&#34;},</p>
+<p>{&#34;id&#34;: &#34;[17]&#34;, &#34;used&#34;: true, &#34;cited&#34;: true, &#34;reason&#34;: &#34;Summary of OpenAl best practices.[17]&#34;},</p>
+<p>{&#34;id&#34;:</p>
+<p>&#34;</p>
+<p>[189]&#34;, &#34;used&#34;: false, &#34;cited&#34;: false, &#34;reason&#34;: &#34;Inaccessible/No content.&#34;},</p>
+<p>{&#34;id&#34;:</p>
+<p>&#34;</p>
+<p>[29]&#34;,</p>
+<p>&#34;used&#34;: false, &#34;cited&#34;: false, &#34;reason&#34;: &#34;Inaccessible/No content.&#34;},</p>
+<p>{&#34;id&#34;:</p>
+<p>&#34;</p>
+<p>[23]&#34;</p>
+<p>,</p>
+<p>{&#34;id&#34;:</p>
+<p>&#34;</p>
+<p>&#34;used&#34;: true, &#34;cited&#34;: true, &#34;reason&#34;: &#34;Summary of PPlug model.[23, 24]&#34;},
+[155]&#34;, &#34;used&#34;: true, &#34;cited&#34;: true, &#34;reason&#34;: &#34;Summary of LLM control strategies.</p>
+<p>[155]&#34;}</p>
+<p>,</p>
+<p>{&#34;id&#34;: &#34;[51]&#34;, &#34;used&#34;: true, &#34;cited&#34;: true, &#34;reason&#34;: &#34;Summary of structuring LLM outputs.</p>
+<p>[51]&#34;},</p>
+<p>{&#34;id&#34;: &#34;[61]&#34;, &#34;used&#34;: true, &#34;cited&#34;: true, &#34;reason&#34;: &#34;Chat completion API, system message role
+and purpose (persona, instructions).&#34;},</p>
+<p>{&#34;id&#34;: &#34;[62]&#34;, &#34;used&#34;: true, &#34;cited&#34;: true, &#34;reason&#34;: &#34;API reference, system message parameter
+(&#39;instructions ).&#34;},</p>
+<p>{&#34;id&#34;: &#34;[62]&#34;, &#34;used&#34;: true, &#34;cited&#34;: true, &#34;reason&#34;: &#34;API reference, system message parameter
+(&#39;instructions ).&#34;},</p>
+<p>{&#34;id&#34;: &#34;[48]&#34;, &#34;used&#34;: true, &#34;cited&#34;: true, &#34;reason&#34;: &#34;Text generation guide, developer vs user
+messages, prompt organization.&#34;},</p>
+<p>{&#34;id&#34;: &#34;[80]&#34;, &#34;used&#34;: true, &#34;cited&#34;: true, &#34;reason&#34;: &#34;Refusal behavior study details. [29, 30]&#34;},</p>
+<p>{&#34;id&#34;: &#34;[81]&#34;, &#34;used&#34;: true, &#34;cited&#34;: true, &#34;reason&#34;: &#34;Refusal behavior study abstract page.</p>
+<p>[80]&#34;},</p>
+<p>{&#34;id&#34;: &#34;[23]&#34;, &#34;used&#34;: true, &#34;cited&#34;: false, &#34;reason&#34;: &#34;PPlug paper details.[23]&#34;},</p>
+<p>{&#34;id&#34;: &#34;[192]&#34;, &#34;used&#34;: true, &#34;cited&#34;: false, &#34;reason&#34;: &#34;PPlug paper details (ResearchGate
+version).&#34;},</p>
+<p>{&#34;id&#34;: &#34;[193]&#34;, &#34;used&#34;: false, &#34;cited&#34;: false, &#34;reason&#34;: &#34;Inaccessible/No content.&#34;},</p>
+<p>{&#34;id&#34;: &#34;[194]&#34;, &#34;used&#34;: false, &#34;cited&#34;: false, &#34;reason&#34;: &#34;Inaccessible/No content.&#34;},</p>
+<p>{&#34;id&#34;: &#34;[31]&#34;, &#34;used&#34;: true, &#34;cited&#34;: true, &#34;reason&#34;: &#34;Summary of refusal mechanisms study. [30,</p>
+<p>80]&#34;},</p>
+<p>{&#34;id&#34;: &#34;[25]&#34;, &#34;used&#34;: true, &#34;cited&#34;: true, &#34;reason&#34;: &#34;Summary of PPlug model.[23, 24]&#34;},</p>
+<p>{&#34;id&#34;: &#34;[193]&#34;, &#34;used&#34;: false, &#34;cited&#34;: false, &#34;reason&#34;: &#34;Inaccessible/No content.&#34;}</p>
+<p>,</p>
+<p>{&#34;id&#34;: &#34;[194]&#34;, &#34;used&#34;: false, &#34;cited&#34;: false, &#34;reason&#34;: &#34;Inaccessible/No content.&#34;},</p>
+<p>{&#34;id&#34;: &#34;[195]&#34;, &#34;used&#34;: false, &#34;cited&#34;: false, &#34;reason&#34;: &#34;Inaccessible/No content.&#34;},</p>
+<p>{&#34;id&#34;: &#34;[196]&#34;, &#34;used&#34;: false, &#34;cited&#34;: false, &#34;reason&#34;: &#34;Inaccessible/No content.&#34;},</p>
+<p>{&#34;id&#34;: &#34;[61]&#34;, &#34;used&#34;: true, &#34;cited&#34;: true, &#34;reason&#34;: &#34;Summary of system message usage from
+Azure docs.[61]&#34;},</p>
+<p>{&#34;id&#34;: &#34;[115]&#34;, &#34;used&#34;: true, &#34;cited&#34;: true, &#34;reason&#34;: &#34;Al code generator case study using React,
+Tailwind, Framer Motion, Gemini API.&#34;},</p>
+<p>{&#34;id&#34;: &#34;[197]&#34;, &#34;used&#34;: false, &#34;cited&#34;: false, &#34;reason&#34;: &#34;Reddit discussion, anecdotal, lacks</p>
+<p>benchmarks.&#34;},</p>
+<p>{&#34;id&#34;: &#34;[9]&#34;, &#34;used&#34;: true, &#34;cited&#34;: true, &#34;reason&#34;: &#34;Knowledge-augmented framework for
+React code gen from wireframes.&#34;},</p>
+<p>{&#34;id&#34;: &#34;[109]&#34;, &#34;used&#34;: true, &#34;cited&#34;: true, &#34;reason&#34;: &#34;LLM code gen trends, challenges
+(accuracy, security), predictions.&#34;}
+,</p>
+<p>{&#34;id&#34;: &#34;[198]&#34;, &#34;used&#34;: true, &#34;cited&#34;: false, &#34;reason&#34;: &#34;LLM evaluation framework best practices
+(general, not code-specific).&#34;},</p>
+<p>{&#34;id&#34;: &#34;[199]&#34;, &#34;used&#34;: true, &#34;cited&#34;: false, &#34;reason&#34;: &#34;LLM performance evaluation (latency,
+throughput), not code quality.&#34;},</p>
+<p>{&#34;id&#34;: &#34;[200]&#34;, &#34;used&#34;: false, &#34;cited&#34;: false, &#34;reason&#34;: &#34;LLM evaluating software architecture
+knowledge (VIPER), not generation quality.&#34;},</p>
+<p>{&#34;id&#34;: &#34;[72]&#34;, &#34;used&#34;: true, &#34;cited&#34;: true, &#34;reason&#34;: &#34;Practical LLM coding advice, context
+building (&#39;Ilms.txt ), small changes, frontend relevance.&#34;},</p>
+<p>{&#34;id&#34;: &#34;[64]&#34;, &#34;used&#34;: true, &#34;cited&#34;: true, &#34;reason&#34;: &#34;Tailwind CSS + Framer Motion plugin</p>
+<p>(`tailwindcss-motion ).&#34;},</p>
+<p>{&#34;id&#34;: &#34;[201]&#34;, &#34;used&#34;: false, &#34;cited&#34;: false, &#34;reason&#34;: &#34;Ollama Ul project using
+Next.js/TypeScript, not generation benchmark.&#34;},</p>
+<p>{&#34;id&#34;: &#34;[3]&#34;, &#34;used&#34;: true, &#34;cited&#34;: true, &#34;reason&#34;: &#34;List of Al code generation tools (Copilot,
+GPT-4, etc.).&#34;},</p>
+<p>{&#34;id&#34;: &#34;[133]&#34;, &#34;used&#34;: true, &#34;cited&#34;: true, &#34;reason&#34;: &#34;LLM integration with GitHub (Copilot),
+security vulnerabilities discussion.&#34;},</p>
+<p>{&#34;id&#34;: &#34;[131]&#34;, &#34;used&#34;: true, &#34;cited&#34;: true, &#34;reason&#34;: &#34;LLM codegen workflow using
+Claude/Aider, repo context.&#34;},</p>
+<p>{&#34;id&#34;: &#34;[139]&#34;, &#34;used&#34;: true, &#34;cited&#34;: true, &#34;reason&#34;: &#34;LLM code gen issues (context, errors),
+HumanEval benchmark, prompt length impact. No Lexsync.&#34;},</p>
+<p>{&#34;id&#34;: &#34;[136]&#34;, &#34;used&#34;: true, &#34;cited&#34;: true, &#34;reason&#34;: &#34;Combining formal methods (TSL) with
+LLM code gen. No Lexsync.&#34;},</p>
+<p>{&#34;id&#34;: &#34;[202]&#34;, &#34;used&#34;: false, &#34;cited&#34;: false, &#34;reason&#34;: &#34;General Al trends 2025 (agents,
+optimization), not specific to frontend dev.&#34;},</p>
+<p>{&#34;id&#34;: &#34;[203]&#34;, &#34;used&#34;: false, &#34;cited&#34;: false, &#34;reason&#34;: &#34;State of Al adoption in organizations,
+workflow redesign, risk management.&#34;},</p>
+<p>{&#34;id&#34;: &#34;[204]&#34;, &#34;used&#34;: false, &#34;cited&#34;: false, &#34;reason&#34;: &#34;Example Next.js project using
+Trigger.dev, Vercel AI SDK, not generation benchmark.&#34;},</p>
+<p>{&#34;id&#34;: &#34;[205]&#34;, &#34;used&#34;: false, &#34;cited&#34;: false, &#34;reason&#34;: &#34;Building Al agent in Next.js using BaseAl
+framework.&#34;},</p>
+<p>{&#34;id&#34;: &#34;[137]&#34;, &#34;used&#34;: true, &#34;cited&#34;: true, &#34;reason&#34;: &#34;Definition of code generation task. No
+Lexsync.&#34;},</p>
+<p>{&#34;id&#34;: &#34;[138]&#34;, &#34;used&#34;: true, &#34;cited&#34;: true, &#34;reason&#34;: &#34;Definition of code generator. No
+Lexsync.&#34;},</p>
+<p>{&#34;id&#34;: &#34;[134]&#34;, &#34;used&#34;: true, &#34;cited&#34;: true, &#34;reason&#34;: &#34;Lex writing tool features. No Lexsync for
+code.&#34;},</p>
+<p>{&#34;id&#34;: &#34;[135]&#34;, &#34;used&#34;: true, &#34;cited&#34;: true, &#34;reason&#34;: &#34;Lex writing tool review. No Lexsync for
+code.&#34;},</p>
+<p>{&#34;id&#34;: &#34;S_</p>
+<p>Works cited</p>
+<ol>
+<li>A Survey On Large Language Models For Code Generation - ResearchGate,
+accessed May 8, 2025,</li>
+</ol>
+<p><a href="https://www.researchgate.net/publication/389548434_A_Survey_On_Large_Lang">https://www.researchgate.net/publication/389548434_A_Survey_On_Large_Lang</a>
+uage Models For Code Generation</p>
+<ol start="2">
+<li>
+<p>A Survey On Large Language Models For Code Generation - arXiv, accessed May
+8, 2025, <a href="https://arxiv.org/html/2503.01245v1">https://arxiv.org/html/2503.01245v1</a></p>
+</li>
+<li>
+<p>Al Code Tools: The Ultimate Guide in 2025 - CodeSubmit, accessed May 8, 2025,
+<a href="https://codesubmit.io/blog/ai-code-tools/">https://codesubmit.io/blog/ai-code-tools/</a></p>
+</li>
+<li>
+<p>Best Tools for Coding With Al in 2025 - Metaschool, accessed May 8, 2025,</p>
+</li>
+</ol>
+<p><a href="https://metaschool.so/articles/coding-with-ai/">https://metaschool.so/articles/coding-with-ai/</a></p>
+<ol start="5">
+<li>
+<p>29 Top Al Websites You Need to Try in 2025 - 10Web, accessed May 8, 2025,
+<a href="https://10web.io/blog/ai-websites/">https://10web.io/blog/ai-websites/</a></p>
+</li>
+<li>
+<p>Using LLM Coding Assistants to Increase Software Development Productivity by
+33%, accessed May 8, 2025, <a href="https://www.turing.com/resources/llm-coding-">https://www.turing.com/resources/llm-coding-</a>
+assistants-increase-software-development-productivity</p>
+</li>
+<li>
+<p>The Impact of Al-Powered Code Assistants on Developer Productivity - DEV
+Community, accessed May 8, 2025, <a href="https://dev.to/teamcamp/the-impact-of-ai-">https://dev.to/teamcamp/the-impact-of-ai-</a>
+powered-code-assistants-on-developer-productivity-10f0</p>
+</li>
+<li>
+<p>Exploring The Role Of Prompt Engineering In Secure Code Generation - DEV
+Community, accessed May 8, 2025,
+<a href="https://dev.to/nagasuresh_dondapati_d5df/exploring-the-role-of-prompt-">https://dev.to/nagasuresh_dondapati_d5df/exploring-the-role-of-prompt-</a>
+engineering-in-secure-code-generation-3ahb</p>
+</li>
+<li>
+<p>From PowerPoint UI Sketches to Web-Based Applications: Pattern-Driven Code
+Generation for GIS Dashboard Development Using Knowledge-Augmented
+LLMs, Context-Aware Visual Prompting, and the React Framework - arXiv,
+accessed May 8, 2025, <a href="https://arxiv.org/html/2502.08756v1">https://arxiv.org/html/2502.08756v1</a></p>
+</li>
+<li>
+<p>Advancing vision-language models in front-end development via data synthesis -
+arXiv, accessed May 8, 2025, <a href="https://arxiv.org/html/2503.01619v1">https://arxiv.org/html/2503.01619v1</a></p>
+</li>
+<li>
+<p>Unveiling Inefficiencies in LLM-Generated Code: Toward a Comprehensive
+Taxonomy, accessed May 8, 2025, <a href="https://arxiv.org/html/2503.06327v2">https://arxiv.org/html/2503.06327v2</a></p>
+</li>
+<li>
+<p>Unveiling Inefficiencies in LLM-Generated Code: Toward a Comprehensive
+Taxonomy, accessed May 8, 2025, <a href="https://arxiv.org/html/2503.06327v1">https://arxiv.org/html/2503.06327v1</a></p>
+</li>
+<li>
+<p>Al Code Generation Benefits &amp; Risks | Learn - Sonar, accessed May 8, 2025,
+<a href="https://www.sonarsource.com/learn/ai-code-generation-benefits-risks/">https://www.sonarsource.com/learn/ai-code-generation-benefits-risks/</a></p>
+</li>
+<li>
+<p>LLM Agents - Prompt Engineering Guide, accessed May 8, 2025,
+<a href="https://www.promptingguide.ai/research/llm-agents">https://www.promptingguide.ai/research/llm-agents</a></p>
+</li>
+<li>
+<p>SCANS: Mitigating the Exaggerated Safety for LLMs via Safety-Conscious</p>
+</li>
+<li></li>
+</ol>
+<p>Activation Steering, accessed May 8, 2025,</p>
+<p><a href="https://ojs.aaai.org/index.php/AAAl/article/view/34521/36676">https://ojs.aaai.org/index.php/AAAl/article/view/34521/36676</a></p>
+<p>OpenAl Platform, accessed May 8, 2025,</p>
+<p><a href="https://platform.openai.com/docs/guides/prompt-engineering/prompt-">https://platform.openai.com/docs/guides/prompt-engineering/prompt-</a>
+engineering</p>
+<ol start="17">
+<li>
+<p>Best practices for prompt engineering with the OpenAl API | OpenAl ..., accessed
+May 8, 2025, <a href="https://help.openai.com/en/articles/6654000-best-practices-for-">https://help.openai.com/en/articles/6654000-best-practices-for-</a>
+prompt-engineering-with-the-openai-api</p>
+</li>
+<li>
+<p>How to write good prompts for generating code from LLMs - GitHub, accessed
+May 8, 2025, <a href="https://github.com/potpie-ai/potpie/wiki/How-to-write-good-">https://github.com/potpie-ai/potpie/wiki/How-to-write-good-</a>
+prompts-for-generating-code-from-LLMs</p>
+</li>
+<li>
+<p>LLMs as Method Actors: A Model for Prompt Engineering and Architecture -
+arXiv, accessed May 8, 2025, <a href="https://arxiv.org/html/2411.05778v1">https://arxiv.org/html/2411.05778v1</a></p>
+</li>
+<li>
+<p>Prompt Chaining Langchain - IBM, accessed May 8, 2025,</p>
+</li>
+</ol>
+<p><a href="https://www.ibm.com/think/tutorials/prompt-chaining-langchain">https://www.ibm.com/think/tutorials/prompt-chaining-langchain</a></p>
+<ol start="21">
+<li>Enhance your prompts with meta prompting - OpenAl Cookbook, accessed May
+8, 2025,</li>
+</ol>
+<p><a href="https://cookbook.openai.com/examples/enhance_your_prompts_with_meta_pro">https://cookbook.openai.com/examples/enhance_your_prompts_with_meta_pro</a>
+mpting</p>
+<ol start="22">
+<li>Role Prompting: Guide LLMs with Persona-Based Tasks - Learn Prompting,</li>
+</ol>
+<p>accessed May 8, 2025,</p>
+<p><a href="https://learnprompting.org/docs/advanced/zero_shot/role_prompting">https://learnprompting.org/docs/advanced/zero_shot/role_prompting</a></p>
+<ol start="23">
+<li>
+<p>LLMs + Persona-Plug = Personalized LLMs - arXiv, accessed May 8, 2025,
+<a href="https://arxiv.org/html/2409.11901v1">https://arxiv.org/html/2409.11901v1</a></p>
+</li>
+<li>
+<p>LLMs + Persona-Plug = Personalized LLMs - Paper Details - ChatPaper.ai,</p>
+</li>
+</ol>
+<p>accessed May 8, 2025, <a href="https://www.chatpaper.ai/dashboard/paper/a96b5bba-">https://www.chatpaper.ai/dashboard/paper/a96b5bba-</a>
+c1b1-4c70-b7cb-bbf196b09d35</p>
+<ol start="25">
+<li>
+<p>arxiv.org, accessed May 8, 2025, <a href="https://arxiv.org/pdf/2409.11901">https://arxiv.org/pdf/2409.11901</a></p>
+</li>
+<li>
+<p>The Inmates are Running the Asylum Summary of Key Ideas and Review | Alan
+Cooper, accessed May 8, 2025, <a href="https://www.blinkist.com/en/books/the-inmates-">https://www.blinkist.com/en/books/the-inmates-</a>
+are-running-the-asylum-en</p>
+</li>
+<li>
+<p>Executive Summary: The Inmates are Running the Asylum - Anant.us, accessed
+May 8, 2025, <a href="https://anant.us/blog/team-blog/sales-marketing/executive-">https://anant.us/blog/team-blog/sales-marketing/executive-</a>
+summary-the-inmates-are-running-the-asylum/</p>
+</li>
+<li>
+<p>Bridging HCI and Al Research for the Evaluation of Conversational SE Assistants -
+arXiv, accessed May 8, 2025, <a href="https://arxiv.org/html/2502.07956v1">https://arxiv.org/html/2502.07956v1</a></p>
+</li>
+<li>
+<p>Refusal Behavior in Large Language Models: A Nonlinear Perspective - arXiv,
+accessed May 8, 2025, <a href="https://arxiv.org/html/2501.08145v1">https://arxiv.org/html/2501.08145v1</a></p>
+</li>
+<li>
+<p>Refusal Behavior in Large Language Models: A Nonlinear Perspective - arXiv,
+accessed May 8, 2025, <a href="https://arxiv.org/pdf/2501.08145">https://arxiv.org/pdf/2501.08145</a>?</p>
+</li>
+<li>
+<p>arxiv.org, accessed May 8, 2025, <a href="https://arxiv.org/pdf/2501.08145">https://arxiv.org/pdf/2501.08145</a></p>
+</li>
+<li>
+<p>Llama 2: Open Foundation and Fine-Tuned Chat Models, accessed May 8, 2025,
+<a href="https://arxiv.org/abs/2307.09288">https://arxiv.org/abs/2307.09288</a></p>
+</li>
+<li>
+<p>Triggering Safety Reflection in LLMs to Mitigate False Refusal Behavior - arXiv,
+accessed May 8, 2025, <a href="https://arxiv.org/html/2503.17882v1">https://arxiv.org/html/2503.17882v1</a></p>
+</li>
+<li>
+<p>Machine-Learning/Reducing LLM Refusals Using Python.md at main - GitHub,
+accessed May 8, 2025,</p>
+</li>
+</ol>
+<p><a href="https://github.com/xbeat/Machine-Learning/blob/main/Reducing%20LLM">https://github.com/xbeat/Machine-Learning/blob/main/Reducing%20LLM</a>
+%20Refusals%20Using%20Python.md</p>
+<ol start="35">
+<li>
+<p>Developing Scalable ReactJS Applications: A Straightforward Guide - Brilworks,
+accessed May 8, 2025, <a href="https://www.brilworks.com/blog/scaling-reactjs-">https://www.brilworks.com/blog/scaling-reactjs-</a>
+applications/</p>
+</li>
+<li>
+<p>OWASP LLM Top 10: How it Applies to Code Generation | Learn Article - Sonar,
+accessed May 8, 2025, <a href="https://www.sonarsource.com/learn/owasp-llm-code-">https://www.sonarsource.com/learn/owasp-llm-code-</a>
+generation/</p>
+</li>
+<li>
+<p>Accessibility Testing Tools: Useful, When Used Properly - Level Access, accessed
+May 8, 2025, <a href="https://www.levelaccess.com/blog/accessibility-testing-tools/">https://www.levelaccess.com/blog/accessibility-testing-tools/</a></p>
+</li>
+<li>
+<p>HumanEval Pro and MBPP Pro: Evaluating Large Language Models on Self-
+invoking Code Generation - arXiv, accessed May 8, 2025,</p>
+</li>
+</ol>
+<p><a href="https://arxiv.org/html/2412.21199v2">https://arxiv.org/html/2412.21199v2</a></p>
+<ol start="39">
+<li>
+<p>GitHub - Flame-Code-VLM/Flame-Code-VLM: Flame is an open ..., accessed May
+8, 2025, <a href="https://github.com/Flame-Code-VLM/Flame-Code-VLM">https://github.com/Flame-Code-VLM/Flame-Code-VLM</a></p>
+</li>
+<li>
+<p>GitHub Copilot Your Al pair programmer GitHub, accessed May 8, 2025,
+<a href="https://github.com/features/copilot">https://github.com/features/copilot</a></p>
+</li>
+<li>
+<p>Building Multi Agent Framework with AutoGen - Analytics Vidhya, accessed May</p>
+</li>
+</ol>
+<p>8, 2025, <a href="https://www.analyticsvidhya.com/blog/2023/11/launching-into-autogen-">https://www.analyticsvidhya.com/blog/2023/11/launching-into-autogen-</a>
+exploring-the-basics-of-a-multi-agent-framework/</p>
+<ol start="42">
+<li>
+<p>ReACT Agent LLM: Making GenAl React Quickly and Decisively - K2view,
+accessed May 8, 2025, <a href="https://www.k2view.com/blog/react-agent-llm/">https://www.k2view.com/blog/react-agent-llm/</a></p>
+</li>
+<li>
+<p>Designing for Al: Unveiling a New Set of Personas | 8th Light, accessed May 8,
+2025, <a href="https://8thlight.com/insights/designing-for-ai-unveiling-a-new-set-of-">https://8thlight.com/insights/designing-for-ai-unveiling-a-new-set-of-</a>
+personas</p>
+</li>
+<li>
+<p>Clarifying the Copyrightability of Al-Assisted Works | Foley &amp; Lardner LLP,
+accessed May 8, 2025,
+<a href="https://www.foley.com/insights/publications/2025/02/clarifying-copyrightability-">https://www.foley.com/insights/publications/2025/02/clarifying-copyrightability-</a>
+ai-assisted-works/</p>
+</li>
+<li>
+<p>Impact of Artificial Intelligence (AI) on Software Job Landscape - DiVA portal,</p>
+</li>
+</ol>
+<p>accessed May 8, 2025,</p>
+<p><a href="http://www.diva-portal.org/smash/get/diva2:1883321/FULLTEXT01.pdf">http://www.diva-portal.org/smash/get/diva2:1883321/FULLTEXT01.pdf</a></p>
+<ol start="46">
+<li>
+<p>A generative Al prompt protocol to enhance human-Al knowledge co-
+construction - DiVA portal, accessed May 8, 2025,
+<a href="https://www.diva-portal.org/smash/get/diva2:1858159/FULLTEXTO2">https://www.diva-portal.org/smash/get/diva2:1858159/FULLTEXTO2</a></p>
+</li>
+<li>
+<p>Adobe Research at CHI: An experimental new design approach for human-Al co-
+creation, accessed May 8, 2025, <a href="https://research.adobe.com/news/an-">https://research.adobe.com/news/an-</a>
+experimental-new-design-approach-for-human-ai-co-creation/</p>
+</li>
+<li>
+<p>Text generation and prompting - OpenAI API, accessed May 8, 2025,</p>
+</li>
+</ol>
+<p><a href="https://platform.openai.com/docs/guides/text">https://platform.openai.com/docs/guides/text</a></p>
+<ol start="49">
+<li>Master the Art of Prompt Engineering - Crafting Al Prompts Framework,
+accessed May 8, 2025, <a href="https://craftingaiprompts.org/documentation/framework">https://craftingaiprompts.org/documentation/framework</a></li>
+<li>LLM Prompting: How to Prompt LLMs for Best Results - Multimodal.dev,
+accessed May 8, 2025, <a href="https://www.multimodal.dev/post/llm-prompting">https://www.multimodal.dev/post/llm-prompting</a></li>
+<li>Structuring LLM outputs | Best practices for legal prompt engineering, accessed</li>
+</ol>
+<p>May 8, 2025, <a href="https://studio.netdocuments.com/post/structuring-Ilm-outputs">https://studio.netdocuments.com/post/structuring-Ilm-outputs</a>
+52. Prompt Engineering Guide for UX/UI Designers - UXPin, accessed May 8, 2025,
+<a href="https://www.uxpin.com/studio/blog/prompt-engineering-for-designers/">https://www.uxpin.com/studio/blog/prompt-engineering-for-designers/</a></p>
+<ol start="53">
+<li>
+<p>Prompt Chaining Guide - PromptHub, accessed May 8, 2025,
+<a href="https://www.prompthub.us/blog/prompt-chaining-guide">https://www.prompthub.us/blog/prompt-chaining-guide</a></p>
+</li>
+<li>
+<p>What is Prompt Chaining? A Guide to Thinking With LLMs - PromptLayer,</p>
+</li>
+</ol>
+<p>accessed May 8, 2025, <a href="https://blog.promptlayer.com/what-is-prompt-chaining/">https://blog.promptlayer.com/what-is-prompt-chaining/</a>
+55. Use Meta-Prompting - Introduction - Helicone OSS LLM Observability, accessed
+May 8, 2025, <a href="https://docs.helicone.ai/guides/prompt-engineering/use-meta-">https://docs.helicone.ai/guides/prompt-engineering/use-meta-</a>
+prompting</p>
+<ol start="56">
+<li>
+<p>Agent-based Modeling and Agentic Technology - Course Catalog | Carnegie
+Mellon University&#39;s Heinz College, accessed May 8, 2025,
+<a href="https://api.heinz.cmu.edu/courses_api/course_detail/94-815/">https://api.heinz.cmu.edu/courses_api/course_detail/94-815/</a></p>
+</li>
+<li>
+<p>What is Agent-Oriented Programming? - SmythOS, accessed May 8, 2025,</p>
+</li>
+</ol>
+<p><a href="https://smythos.com/ai-agents/agent-architectures/what-is-agent-oriented-">https://smythos.com/ai-agents/agent-architectures/what-is-agent-oriented-</a>
+programming/</p>
+<ol start="58">
+<li>
+<p>Human-In-the-Loop Software Development Agents - arXiv, accessed May 8,
+2025, <a href="https://arxiv.org/html/2411.12924v2">https://arxiv.org/html/2411.12924v2</a></p>
+</li>
+<li>
+<p>LLM Powered Autonomous Agents Drive GenAl Productivity and Efficiency -
+K2view, accessed May 8, 2025, <a href="https://www.k2view.com/blog/llm-powered-">https://www.k2view.com/blog/llm-powered-</a>
+autonomous-agents/</p>
+</li>
+<li>
+<p>Building Effective Al Agents - Anthropic, accessed May 8, 2025,
+<a href="https://www.anthropic.com/engineering/building-effective-agents">https://www.anthropic.com/engineering/building-effective-agents</a></p>
+</li>
+<li>
+<p>Work with chat completion models - Azure OpenAl Service ..., accessed May 8,</p>
+</li>
+</ol>
+<p>2025, <a href="https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/">https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/</a>
+chatgpt</p>
+<ol start="62">
+<li>
+<p>API Reference - OpenAl Platform, accessed May 8, 2025,
+<a href="https://platform.openai.com/docs/api-reference/chat/create">https://platform.openai.com/docs/api-reference/chat/create</a></p>
+</li>
+<li>
+<p>WebGen-Bench: Evaluating LLMs on Generating Interactive and Functional</p>
+</li>
+</ol>
+<p>Websites from Scratch - arXiv, accessed May 8, 2025,
+<a href="https://arxiv.org/html/2505.03733v1">https://arxiv.org/html/2505.03733v1</a></p>
+<ol start="64">
+<li>
+<p>tailwindcss-motion is a Tailwind CSS Plugin made at RomboHQ. It&#39;s a simple, yet
+powerful, animation library with a simple syntax. - GitHub, accessed May 8, 2025,
+<a href="https://github.com/romboHQ/tailwindcss-motion">https://github.com/romboHQ/tailwindcss-motion</a></p>
+</li>
+<li>
+<p>React Framer Motion Animation Review - Al Prompt, accessed May 8, 2025,
+<a href="https://docsbot.ai/prompts/technical/react-framer-motion-animation-review">https://docsbot.ai/prompts/technical/react-framer-motion-animation-review</a></p>
+</li>
+<li>
+<p>8 Ways to Improve Your Framer Website Speed, accessed May 8, 2025,</p>
+</li>
+</ol>
+<p><a href="https://allaboutframer.com/8-ways-to-improve-your-framer-website-speed">https://allaboutframer.com/8-ways-to-improve-your-framer-website-speed</a>
+67. 11 Strategic Animation Techniques to Enhance UX Engagement | Framer,</p>
+<p>accessed May 8, 2025, <a href="https://www.framer.com/blog/website-animation-">https://www.framer.com/blog/website-animation-</a>
+examples/</p>
+<ol start="68">
+<li>
+<p>Motion for React (prev Framer Motion), accessed May 8, 2025,
+<a href="https://motion.dev/docs/react-motion-component">https://motion.dev/docs/react-motion-component</a></p>
+</li>
+<li>
+<p>Creating React animations in Motion (formerly Framer Motion) - LogRocket Blog,
+accessed May 8, 2025, <a href="https://blog.logrocket.com/creating-react-animations-">https://blog.logrocket.com/creating-react-animations-</a>
+with-motion/</p>
+</li>
+<li>
+<p>[Literature Review] Enhancing Persona Consistency for LLMs&#39; Role-Playing using
+Persona-Aware Contrastive Learning - Moonlight, accessed May 8, 2025,
+<a href="https://www.themoonlight.io/en/review/enhancing-persona-consistency-for-">https://www.themoonlight.io/en/review/enhancing-persona-consistency-for-</a>
+Ilms-role-playing-using-persona-aware-contrastive-learning</p>
+</li>
+<li>
+<p>Know Thyself: Validating Knowledge Awareness of LLM-based Persona Agents
+ACL Anthology, accessed May 8, 2025, <a href="https://aclanthology.org/2025.trustnlp-">https://aclanthology.org/2025.trustnlp-</a>
+main.22.pdf</p>
+</li>
+<li>
+<p>How I Code With LLMs These Days - Honeycomb, accessed May 8, 2025,
+<a href="https://www.honeycomb.io/blog/how-i-code-with-llms-these-days">https://www.honeycomb.io/blog/how-i-code-with-llms-these-days</a></p>
+</li>
+<li>
+<p>Enhancing Persona Consistency for LLMs&#39; Role-Playing using Persona-Aware
+Contrastive Learning | Request PDF - ResearchGate, accessed May 8, 2025,
+<a href="https://www.researchgate.net/publication/390248467_Enhancing_Persona_Consi">https://www.researchgate.net/publication/390248467_Enhancing_Persona_Consi</a>
+stency_for_LLMs&#39;_Role-Playing_using_Persona-Aware_Contrastive_Learning</p>
+</li>
+<li>
+<p>Exploring the Latent Space of Programming Styles: How Persona Prompting</p>
+</li>
+</ol>
+<p>Unlocks Hidden Al Capabilities | Anaconda, accessed May 8, 2025,
+<a href="https://www.anaconda.com/blog/persona-programming-ai">https://www.anaconda.com/blog/persona-programming-ai</a></p>
+<ol start="75">
+<li>
+<p>LLMs&#39; ways of seeing User Personas - arXiv, accessed May 8, 2025,
+<a href="https://arxiv.org/html/2409.14858v1">https://arxiv.org/html/2409.14858v1</a></p>
+</li>
+<li>
+<p>Towards Al-Powered Applications: The Development of a Personalised LLM for</p>
+</li>
+</ol>
+<p>HRI and HCI - MDPI, accessed May 8, 2025, <a href="https://www.mdpi.com/1424-">https://www.mdpi.com/1424-</a>
+8220/25/7/2024</p>
+<ol start="77">
+<li>How Is Generative Al Used for Persona Development?: A Systematic Review of 52
+Research Articles - arXiv, accessed May 8, 2025,</li>
+</ol>
+<p><a href="https://arxiv.org/html/2504.04927v1">https://arxiv.org/html/2504.04927v1</a></p>
+<ol start="78">
+<li>Responsible Al | Nokia.com, accessed May 8, 2025, <a href="https://www.nokia.com/bell-">https://www.nokia.com/bell-</a></li>
+</ol>
+<p>labs/research/air-lab/responsible-ai/</p>
+<ol start="79">
+<li>
+<p>5-step process for development of user personas for Al. - ResearchGate,
+accessed May 8, 2025, <a href="https://www.researchgate.net/figure/step-process-for-">https://www.researchgate.net/figure/step-process-for-</a>
+development-of-user-personas-for-Al fig1 358874525</p>
+</li>
+<li>
+<p>(PDF) Refusal Behavior in Large Language Models: A Nonlinear Perspective,
+accessed May 8, 2025,
+<a href="https://www.researchgate.net/publication/388029466_Refusal_Behavior_in_Larg">https://www.researchgate.net/publication/388029466_Refusal_Behavior_in_Larg</a>
+e_Language Models A Nonlinear Perspective</p>
+</li>
+<li>
+<p>[2501.08145] Refusal Behavior in Large Language Models: A Nonlinear</p>
+</li>
+</ol>
+<p>Perspective - arXiv, accessed May 8, 2025, <a href="https://arxiv.org/abs/2501.08145">https://arxiv.org/abs/2501.08145</a></p>
+<ol start="82">
+<li>
+<p>Robust LLM safeguarding via refusal feature adversarial training - arXiv, accessed
+May 8, 2025, <a href="https://arxiv.org/html/2409.20089v2">https://arxiv.org/html/2409.20089v2</a></p>
+</li>
+<li>
+<p>Refuse Whenever You Feel Unsafe: Improving Safety in LLMs via... - OpenReview,
+accessed May 8, 2025, <a href="https://openreview.net/forum?id=3ZNTi0iNjy">https://openreview.net/forum?id=3ZNTi0iNjy</a></p>
+</li>
+<li>
+<p>Top 10 Security Risks for Large Language Models OWASP - Fortanix, accessed
+May 8, 2025, <a href="https://www.fortanix.com/blog/top-10-security-risks-for-large-">https://www.fortanix.com/blog/top-10-security-risks-for-large-</a>
+language-models-owasp</p>
+</li>
+<li>
+<p>Measuring Steerability in Large Language Models - OpenReview, accessed May
+8, 2025, <a href="https://openreview.net/forum?id=y2J5dAqcJW">https://openreview.net/forum?id=y2J5dAqcJW</a></p>
+</li>
+<li>
+<p>Evaluating the Prompt Steerability of Large Language Models - arXiv, accessed
+May 8, 2025, <a href="https://arxiv.org/html/2411.12405v2">https://arxiv.org/html/2411.12405v2</a></p>
+</li>
+<li>
+<p>HumorReject: Decoupling LLM Safety from Refusal Prefix via A Little Humor -</p>
+</li>
+</ol>
+<p>Preprints.org, accessed May 8, 2025,</p>
+<p><a href="https://www.preprints.org/manuscript/202501.1736/v1">https://www.preprints.org/manuscript/202501.1736/v1</a></p>
+<ol start="88">
+<li>
+<p>10 LLM safety and bias benchmarks - Evidently Al, accessed May 8, 2025,
+<a href="https://www.evidentlyai.com/blog/llm-safety-bias-benchmarks">https://www.evidentlyai.com/blog/llm-safety-bias-benchmarks</a></p>
+</li>
+<li>
+<p>Safety best practices - OpenAI API, accessed May 8, 2025,</p>
+</li>
+</ol>
+<p><a href="https://platform.openai.com/docs/guides/safety-best-practices">https://platform.openai.com/docs/guides/safety-best-practices</a>
+90. openai-safety-best-practices - HackMD, accessed May 8, 2025,</p>
+<p><a href="https://hackmd.io/@ll-24-25/r1RSCmxJxl/%2FBOZ-DeAYQtaSj3K1FILzLg">https://hackmd.io/@ll-24-25/r1RSCmxJxl/%2FBOZ-DeAYQtaSj3K1FILzLg</a></p>
+<ol start="91">
+<li>The Ultimate Guide to Red Teaming LLMs and Adversarial Prompts (Examples and</li>
+</ol>
+<p>Steps), accessed May 8, 2025, <a href="https://kili-technology.com/large-language-">https://kili-technology.com/large-language-</a>
+models-llms/red-teaming-llms-and-adversarial-prompts</p>
+<ol start="92">
+<li>
+<p>Auditing Bias in Large Language Models - SEI CMU, accessed May 8, 2025,
+<a href="https://insights.sei.cmu.edu/blog/auditing-bias-in-large-language-models/">https://insights.sei.cmu.edu/blog/auditing-bias-in-large-language-models/</a></p>
+</li>
+<li>
+<p>Heatmap of refusal rate for both non-structured and structured prompt... -</p>
+</li>
+</ol>
+<p>ResearchGate, accessed May 8, 2025,
+<a href="https://www.researchgate.net/figure/Heatmap-of-refusal-rate-for-both-non-">https://www.researchgate.net/figure/Heatmap-of-refusal-rate-for-both-non-</a>
+structured-and-structured-prompt-on-GPT-40-across_fig1_389274583</p>
+<ol start="94">
+<li>
+<p>The Hidden Dimensions of LLM Alignment: A Multi-Dimensional Safety Analysis -
+arXiv, accessed May 8, 2025, <a href="https://arxiv.org/html/2502.09674v1">https://arxiv.org/html/2502.09674v1</a></p>
+</li>
+<li>
+<p>React Components with Al Animation-to-Code Tools - UXPin, accessed May 8,
+2025, <a href="https://www.uxpin.com/studio/blog/react-components-with-ai-animation-">https://www.uxpin.com/studio/blog/react-components-with-ai-animation-</a>
+to-code-tools/</p>
+</li>
+<li>
+<p>Create React Apps in Record Time with Locofy - Get Started., accessed May 8,
+2025, <a href="https://www.locofy.ai/create-react-apps">https://www.locofy.ai/create-react-apps</a></p>
+</li>
+<li>
+<p>CS 111 Scribe Notes, Lecture 3: Abstraction and Modularity, accessed May 8,
+2025, <a href="https://web.cs.ucla.edu/classes/winter12/cs111/scribe/3a/">https://web.cs.ucla.edu/classes/winter12/cs111/scribe/3a/</a></p>
+</li>
+<li>
+<p>6 business benefits of software modularity and cohesion, accessed May 8, 2025,</p>
+</li>
+</ol>
+<p><a href="https://victoronsoftware.com/posts/software-modularity/">https://victoronsoftware.com/posts/software-modularity/</a></p>
+<ol start="99">
+<li>
+<p>Code Visualization: 4 Types of Diagrams and 5 Useful Tools - CodeSee, accessed
+May 8, 2025, <a href="https://www.codesee.io/learning-center/code-visualization">https://www.codesee.io/learning-center/code-visualization</a></p>
+</li>
+<li>
+<p>How to Visualize your Python Project&#39;s Dependency Graph - Gauge - Solving the
+monolith/microservices dilemma, accessed May 8, 2025,
+<a href="https://www.gauge.sh/blog/how-to-visualize-your-python-projects-">https://www.gauge.sh/blog/how-to-visualize-your-python-projects-</a>
+dependency-graph</p>
+</li>
+<li>
+<p>Reuse metrics - Wikipedia, accessed May 8, 2025,
+<a href="https://en.wikipedia.org/wiki/Reuse_metrics">https://en.wikipedia.org/wiki/Reuse_metrics</a></p>
+</li>
+<li>
+<p>KPIs for Product Managers: product code reusability - Ignition, accessed May 8,
+2025, <a href="https://www.haveignition.com/kpis-for-product-managers/kpis-for-">https://www.haveignition.com/kpis-for-product-managers/kpis-for-</a>
+product-managers-product-code-reusability</p>
+</li>
+<li>
+<p>Best Practices for Using Al in Software Development 2025 - Leanware, accessed
+May 8, 2025, <a href="https://www.leanware.co/insights/best-practices-ai-software-">https://www.leanware.co/insights/best-practices-ai-software-</a>
+development</p>
+</li>
+<li>
+<p>Tailwind CSS Best Practices for Performance Optimization - TailGrids, accessed
+May 8, 2025, <a href="https://tailgrids.com/blog/tailwind-css-best-practices-and-">https://tailgrids.com/blog/tailwind-css-best-practices-and-</a>
+performance-optimization</p>
+</li>
+<li>
+<p>Tailwind Best Practices to Follow in 2024 - UXPin, accessed May 8, 2025,
+<a href="https://www.uxpin.com/studio/blog/tailwind-best-practices/">https://www.uxpin.com/studio/blog/tailwind-best-practices/</a></p>
+</li>
+<li>
+<p>The Aesthetics of Software Code: A Quantitative Exploration - ResearchGate,</p>
+</li>
+</ol>
+<p>accessed May 8, 2025,</p>
+<p><a href="https://www.researchgate.net/publication/232443360">https://www.researchgate.net/publication/232443360</a> The Aesthetics of Softwa
+re Code A Quantitative Exploration</p>
+<ol start="107">
+<li>
+<p>React Al Stack for 2025 - Angular Minds, accessed May 8, 2025,
+<a href="https://www.angularminds.com/blog/react-ai-stack-for-2025">https://www.angularminds.com/blog/react-ai-stack-for-2025</a></p>
+</li>
+<li>
+<p>Tailwind CSS Development Services | Fast &amp; Efficient Styling - Techuz Infoweb,
+accessed May 8, 2025, <a href="https://www.techuz.com/tailwind-css-development-">https://www.techuz.com/tailwind-css-development-</a>
+services/</p>
+</li>
+<li>
+<p>LLM-Generated Code in 2025: Trends and Predictions - Revelo, accessed May
+8, 2025, <a href="https://www.revelo.com/blog/llm-code-generation-2025-trends-">https://www.revelo.com/blog/llm-code-generation-2025-trends-</a></p>
+</li>
+</ol>
+<p>predictions-human-data</p>
+<ol start="110">
+<li>LLM Security: Understanding Risks, Tools, and Best Practices - Pynt, accessed
+May 8, 2025, <a href="https://www.pynt.io/learning-hub/llm-security/llm-security-">https://www.pynt.io/learning-hub/llm-security/llm-security-</a></li>
+</ol>
+<p>understanding-risks-tools-and-best-practices</p>
+<ol start="111">
+<li>
+<p>Al Code Generation: The Risks and Benefits of Al in Software - Legit Security,
+accessed May 8, 2025, <a href="https://www.legitsecurity.com/blog/ai-code-generation-">https://www.legitsecurity.com/blog/ai-code-generation-</a>
+benefits-and-risks</p>
+</li>
+<li>
+<p>Semantic HTML - Primer, accessed May 8, 2025,
+<a href="https://primer.style/accessibility/semantic-html/">https://primer.style/accessibility/semantic-html/</a></p>
+</li>
+<li>
+<p>Enhancing Accessibility with Semantic HTML, accessed May 8, 2025,
+<a href="https://accessiblyapp.com/blog/semantic-html/">https://accessiblyapp.com/blog/semantic-html/</a></p>
+</li>
+<li>
+<p>[2502.08756] From PowerPoint UI Sketches to Web-Based Applications:
+Pattern-Driven Code Generation for GIS Dashboard Development Using
+Knowledge-Augmented LLMs, Context-Aware Visual Prompting, and the React
+Framework - arXiv, accessed May 8, 2025, <a href="https://arxiv.org/abs/2502.08756">https://arxiv.org/abs/2502.08756</a></p>
+</li>
+<li>
+<p>Al-Powered Web Code Generator Using Project History - YMER, accessed May</p>
+</li>
+</ol>
+<p>8, 2025, <a href="https://ymerdigital.com/uploads/YMER240534.pdf">https://ymerdigital.com/uploads/YMER240534.pdf</a></p>
+<ol start="116">
+<li>
+<p>Best Practices for Using Tailwind CSS in Large Projects - Wisp CMS, accessed
+May 8, 2025, <a href="https://www.wisp.blog/blog/best-practices-for-using-tailwind-css-">https://www.wisp.blog/blog/best-practices-for-using-tailwind-css-</a>
+in-large-projects</p>
+</li>
+<li>
+<p>How I code with LLMs these days - Phillip Carter, accessed May 8, 2025,
+<a href="https://www.phillipcarter.dev/posts/coding-with-llms">https://www.phillipcarter.dev/posts/coding-with-llms</a></p>
+</li>
+<li>
+<p>Al UI Generator How Businesses Can Leverage Vercel&#39;s v0.dev - Baytech
+Consulting, accessed May 8, 2025, <a href="https://www.baytechconsulting.com/blog/ai-">https://www.baytechconsulting.com/blog/ai-</a>
+ui-generator-how-businesses-can-leverage-vercels-v0-dev</p>
+</li>
+<li>
+<p>Analyse the TailwindCSS classes used in your application - GitHub, accessed
+May 8, 2025, <a href="https://github.com/apvarun/tailwindcss-analysis">https://github.com/apvarun/tailwindcss-analysis</a></p>
+</li>
+<li>
+<p>Top LLM Benchmarks Explained: MMLU, HellaSwag, BBH, and Beyond</p>
+</li>
+</ol>
+<p>Confident Al, accessed May 8, 2025, <a href="https://www.confident-ai.com/blog/llm-">https://www.confident-ai.com/blog/llm-</a>
+benchmarks-mmlu-hellaswag-and-beyond</p>
+<ol start="121">
+<li>
+<p>The best LLMs for content marketing, websites, and spreadsheets | Whalesync,
+accessed May 8, 2025, <a href="https://www.whalesync.com/blog/the-best-llms-for-">https://www.whalesync.com/blog/the-best-llms-for-</a>
+content-marketing-websites-and-spreadsheets</p>
+</li>
+<li>
+<p>Review | Tabnine Docs, accessed May 8, 2025,
+<a href="https://docs.tabnine.com/main/software-development-with-tabnine/review">https://docs.tabnine.com/main/software-development-with-tabnine/review</a></p>
+</li>
+<li>
+<p>Al Code Generation: Top Tools &amp; Best Practice for Developers - Mbloging,
+accessed May 8, 2025, <a href="https://www.mbloging.com/post/ai-code-generation-">https://www.mbloging.com/post/ai-code-generation-</a>
+tools-best-practices</p>
+</li>
+<li>
+<p>The G-Eval Guide to LLM Evaluation: Simply Explained - Confident Al, accessed
+May 8, 2025, <a href="https://www.confident-ai.com/blog/g-eval-the-definitive-guide">https://www.confident-ai.com/blog/g-eval-the-definitive-guide</a></p>
+</li>
+<li>
+<p>LLM evaluation: Metrics, frameworks, and best practices | genai-research -
+Wandb, accessed May 8, 2025,
+<a href="https://wandb.ai/onlineinference/genai-research/reports/LLM-evaluations-">https://wandb.ai/onlineinference/genai-research/reports/LLM-evaluations-</a>
+Metrics-frameworks-and-best-practices--VmlldzoxMTMxNjQ4NA</p>
+</li>
+<li>
+<p>What is HCI? A Complete Guide to Human-Computer Interaction - BairesDev,
+accessed May 8, 2025, <a href="https://www.bairesdev.com/blog/what-is-hci/">https://www.bairesdev.com/blog/what-is-hci/</a></p>
+</li>
+<li>
+<p>HaluEval: A Hallucination Evaluation Benchmark for LLMs - GitHub, accessed
+May 8, 2025, <a href="https://github.com/RUCAIBox/HaluEval">https://github.com/RUCAIBox/HaluEval</a></p>
+</li>
+<li>
+<p>Collu-Bench: A Benchmark for Predicting Language Model Hallucinations in
+Code - arXiv, accessed May 8, 2025, <a href="https://arxiv.org/html/2410.09997v1">https://arxiv.org/html/2410.09997v1</a></p>
+</li>
+<li>
+<p>Uncovering Overfitting in Large Language Model Editing - OpenReview,
+accessed May 8, 2025, <a href="https://openreview.net/forum?id=t8qcGXaepr">https://openreview.net/forum?id=t8qcGXaepr</a></p>
+</li>
+<li>
+<p>LLM Hallucination Risks and Prevention - K2view, accessed May 8, 2025,
+<a href="https://www.k2view.com/blog/llm-hallucination/">https://www.k2view.com/blog/llm-hallucination/</a></p>
+</li>
+<li>
+<p>My LLM codegen workflow atm | Harper Reed&#39;s Blog, accessed May 8, 2025,
+<a href="https://harper.blog/2025/02/16/my-llm-codegen-workflow-atm/">https://harper.blog/2025/02/16/my-llm-codegen-workflow-atm/</a></p>
+</li>
+<li>
+<p>My LLM Code Generation Workflow (for now) - DEV Community, accessed May
+8, 2025, <a href="https://dev.to/simbo1905/my-llm-code-generation-workflow-for-now-">https://dev.to/simbo1905/my-llm-code-generation-workflow-for-now-</a></p>
+</li>
+</ol>
+<p>1ahj</p>
+<ol start="133">
+<li>Llm For Code Generation Github - Restack, accessed May 8, 2025,</li>
+</ol>
+<p><a href="https://www.restack.io/p/understanding-ai-concepts-for-developers-answer-">https://www.restack.io/p/understanding-ai-concepts-for-developers-answer-</a>
+Ilm-code-generation-github</p>
+<ol start="134">
+<li>
+<p>Lex, accessed May 8, 2025, <a href="https://lex.page/">https://lex.page/</a></p>
+</li>
+<li>
+<p>LEX AI: The Best Al Writing Tool? - YouTube, accessed May 8, 2025,</p>
+</li>
+</ol>
+<p><a href="https://www.youtube.com/watch?v=X8Skp6IR13Q">https://www.youtube.com/watch?v=X8Skp6IR13Q</a></p>
+<ol start="136">
+<li>Combining LLM Code Generation with Formal Specifications and Reactive</li>
+</ol>
+<p>Program Synthesis - arXiv, accessed May 8, 2025,</p>
+<p><a href="https://arxiv.org/html/2410.19736v1">https://arxiv.org/html/2410.19736v1</a></p>
+<ol start="137">
+<li>
+<p>Code Generation | Papers With Code, accessed May 8, 2025,
+<a href="https://paperswithcode.com/task/code-generation">https://paperswithcode.com/task/code-generation</a></p>
+</li>
+<li>
+<p>What is a Code Generator? | IBM, accessed May 8, 2025,
+<a href="https://www.ibm.com/think/topics/code-generator">https://www.ibm.com/think/topics/code-generator</a></p>
+</li>
+<li>
+<p>Using LLMs for Code Generation: A Guide to Improving Accuracy and</p>
+</li>
+</ol>
+<p>Addressing Common Issues - PromptHub, accessed May 8, 2025,
+<a href="https://www.prompthub.us/blog/using-llms-for-code-generation-a-guide-to-">https://www.prompthub.us/blog/using-llms-for-code-generation-a-guide-to-</a>
+improving-accuracy-and-addressing-common-issues</p>
+<ol start="140">
+<li>From LLMs to LLM-based Agents for Software Engineering: A Survey of Current,</li>
+</ol>
+<p>Challenges and Future - arXiv, accessed May 8, 2025,</p>
+<p><a href="https://arxiv.org/html/2408.02479v2">https://arxiv.org/html/2408.02479v2</a></p>
+<ol start="141">
+<li>
+<p>Guide to Implementing LLM Agents: ReAct and Simple Agents | Dynamiq Docs,
+accessed May 8, 2025, <a href="https://docs.getdynamiq.ai/low-code-builder/llm-">https://docs.getdynamiq.ai/low-code-builder/llm-</a>
+agents/guide-to-implementing-llm-agents-react-and-simple-agents</p>
+</li>
+<li>
+<p>Examples | AutoGen 0.2 - Microsoft Open Source, accessed May 8, 2025,
+<a href="https://microsoft.github.io/autogen/0.2/docs/Examples/">https://microsoft.github.io/autogen/0.2/docs/Examples/</a></p>
+</li>
+<li>
+<p>LLMs are Biased Teachers: Evaluating LLM Bias in Personalized Education - ACL
+Anthology, accessed May 8, 2025, <a href="https://aclanthology.org/2025.findings-">https://aclanthology.org/2025.findings-</a>
+naacl.314.pdf</p>
+</li>
+<li>
+<p>New UC Berkeley guide helps business leaders navigate Al ethics amid rapid
+adoption, accessed May 8, 2025, <a href="https://newsroom.haas.berkeley.edu/news-">https://newsroom.haas.berkeley.edu/news-</a>
+release/new-berkeley-guide-helps-business-leaders-navigate-ai-ethics-amid-
+rapid-adoption/</p>
+</li>
+<li>
+<p>Copyright Office Releases Part 2 of Artificial Intelligence Report, accessed May
+8, 2025, <a href="https://www.copyright.gov/newsnet/2025/1060.html">https://www.copyright.gov/newsnet/2025/1060.html</a></p>
+</li>
+<li>
+<p>Who owns the content generated by AI? - Marks &amp; Clerk, accessed May 8, 2025,
+<a href="https://www.marks-clerk.com/insights/articles/who-owns-the-content-">https://www.marks-clerk.com/insights/articles/who-owns-the-content-</a>
+generated-by-ai/</p>
+</li>
+<li>
+<p>Employee Ownership of ChatGPT-Created Code - Attorney Aaron Hall,</p>
+</li>
+</ol>
+<p>accessed May 8, 2025, <a href="https://aaronhall.com/employee-ownership-of-chatgpt-">https://aaronhall.com/employee-ownership-of-chatgpt-</a>
+created-code/</p>
+<ol start="148">
+<li>
+<p>accessed December 31, 1969, <a href="https://www.brookings.edu/articles/the-legal-">https://www.brookings.edu/articles/the-legal-</a>
+implications-of-ai-code-generation/</p>
+</li>
+<li>
+<p>Generative Al Governance in 2024: An Overview - Centraleyes, accessed May 8,
+2025, <a href="https://www.centraleyes.com/generative-ai-governance/">https://www.centraleyes.com/generative-ai-governance/</a></p>
+</li>
+<li>
+<p>How to Navigate Generative Al Regulations Effectively - Brilworks, accessed
+May 8, 2025, <a href="https://www.brilworks.com/blog/how-to-navigate-generative-ai-">https://www.brilworks.com/blog/how-to-navigate-generative-ai-</a>
+regulations/</p>
+</li>
+<li>
+<p>Al and its impact on software development jobs, accessed May 8, 2025,</p>
+</li>
+</ol>
+<p><a href="https://www.developer-tech.com/news/ai-impact-on-software-development-">https://www.developer-tech.com/news/ai-impact-on-software-development-</a>
+jobs/</p>
+<ol start="152">
+<li>(PDF) Deskilling and upskilling with Al systems - ResearchGate, accessed May 8,
+2025,</li>
+</ol>
+<p><a href="https://www.researchgate.net/publication/389742059_Deskilling_and_upskilling">https://www.researchgate.net/publication/389742059_Deskilling_and_upskilling</a>_
+with_Al_systems</p>
+<ol start="153">
+<li>
+<p>What do professional software developers need to know to succeed in an age
+of Artificial Intelligence? (FSE 2025 - Conferences, accessed May 8, 2025,
+<a href="https://conf.researchr.org/details/fse-2025/fse-2025-software-engineering-">https://conf.researchr.org/details/fse-2025/fse-2025-software-engineering-</a>
+education/24/What-do-professional-software-developers-need-to-know-to-
+succeed-in-an-age-of-Artific</p>
+</li>
+<li>
+<p>Common system message for multiple API requests - OpenAl Developer Forum,
+accessed May 8, 2025, <a href="https://community.openai.com/t/common-system-">https://community.openai.com/t/common-system-</a>
+message-for-multiple-api-requests/622650</p>
+</li>
+<li>
+<p>Taming LLMs: strategies and tools for controlling responses | Tryolabs, accessed
+May 8, 2025, <a href="https://tryolabs.com/blog/strategies-and-tools-for-controlling-">https://tryolabs.com/blog/strategies-and-tools-for-controlling-</a>
+responses</p>
+</li>
+<li>
+<p>(PDF) From PowerPoint Ul Sketches to Web-Based Applications ..., accessed
+May 8, 2025,</p>
+</li>
+</ol>
+<p><a href="https://www.researchgate.net/publication/388964133_From_PowerPoint_UI_Sket">https://www.researchgate.net/publication/388964133_From_PowerPoint_UI_Sket</a>
+ches to Web-Based</p>
+<p>Applications Pattern-</p>
+<p>Driven_Code_Generation_for_GIS_Dashboard_Development_Using_Knowledge-</p>
+<p>Augmented LLMs Context-</p>
+<p>Aware Visual Prompting and the React_Framework</p>
+<ol start="157">
+<li>
+<p>GitHub - sushant707/Todo-app-using-react-js-and-Framer-motion, accessed
+May 8, 2025, <a href="https://github.com/sushant707/Todo-app-using-react-js-and-">https://github.com/sushant707/Todo-app-using-react-js-and-</a>
+Framer-motion</p>
+</li>
+<li>
+<p>News from IT world by fireup.pro, accessed May 8, 2025, <a href="https://fireup.pro/news">https://fireup.pro/news</a></p>
+</li>
+<li>
+<p>LLM Evaluation: Metrics, Frameworks, and Best Practices | SuperAnnotate,</p>
+</li>
+</ol>
+<p>accessed May 8, 2025, <a href="https://www.superannotate.com/blog/llm-evaluation-">https://www.superannotate.com/blog/llm-evaluation-</a>
+guide</p>
+<ol start="160">
+<li>Evaluating - Llamalndex, accessed May 8, 2025,</li>
+</ol>
+<p><a href="https://docs.llamaindex.ai/en/stable/module_guides/evaluating/">https://docs.llamaindex.ai/en/stable/module_guides/evaluating/</a></p>
+<ol start="161">
+<li>
+<p>Motion Examples - Official Motion and Framer Motion components &amp; examples,
+accessed May 8, 2025, <a href="https://examples.motion.dev/">https://examples.motion.dev/</a></p>
+</li>
+<li>
+<p>Keyframer: Empowering Animation Design using Large Language Models -</p>
+</li>
+</ol>
+<p>arXiv, accessed May 8, 2025, <a href="https://arxiv.org/html/2402.06071v1">https://arxiv.org/html/2402.06071v1</a></p>
+<ol start="163">
+<li>React animation | Motion for React (prev Framer Motion), accessed May 8, 2025,</li>
+</ol>
+<p><a href="https://motion.dev/docs/react-animation">https://motion.dev/docs/react-animation</a></p>
+<ol start="164">
+<li>
+<p>Daily Papers - Hugging Face, accessed May 8, 2025,
+<a href="https://huggingface.co/papers?q=novel%20thoughts">https://huggingface.co/papers?q=novel%20thoughts</a></p>
+</li>
+<li>
+<p>UXAgent: An LLM-Agent-Based Usability Testing Framework for Web Design -</p>
+</li>
+</ol>
+<p>Amazon Science, accessed May 8, 2025,
+<a href="https://assets.amazon.science/ce/a8/3e0f868d478cac3d07b9ee8c2804/uxagent">https://assets.amazon.science/ce/a8/3e0f868d478cac3d07b9ee8c2804/uxagent</a>
+-an-llm-agent-based-usability-testing-framework-for-web-design.pdf</p>
+<ol start="166">
+<li>
+<p>Argumentative Experience: Reducing Confirmation Bias on Controversial Issues
+through LLM-Generated Multi-Persona Debates - arXiv, accessed May 8, 2025,
+<a href="https://arxiv.org/html/2412.04629v3">https://arxiv.org/html/2412.04629v3</a></p>
+</li>
+<li>
+<p>Exploring the Feasibility of Generative Al in Persona Research: A Comparative
+Analysis of Large Language Model-Generated and Human-Crafted Personas in
+Obesity Research - MDPI, accessed May 8, 2025, <a href="https://www.mdpi.com/2076-">https://www.mdpi.com/2076-</a>
+3417/15/4/1937</p>
+</li>
+<li>
+<p>Collection of ChatGPT persona prompts : r/ChatGPTPro - Reddit, accessed May
+8, 2025,
+<a href="https://www.reddit.com/r/ChatGPTPro/comments/11v04tw/collection_of_chatgp">https://www.reddit.com/r/ChatGPTPro/comments/11v04tw/collection_of_chatgp</a>
+t_persona_prompts/</p>
+</li>
+<li>
+<p>Generative Al &amp; Legal Research: Legal Prompt Patterns - LibGuides at Widener
+Law Library, accessed May 8, 2025, <a href="https://libguides.law.widener.edu/c.php">https://libguides.law.widener.edu/c.php</a>?
+g=1342893&amp;p=10038411</p>
+</li>
+<li>
+<p>The Impact of Prompt Engineering and a Generative Al-Driven Tool on
+Autonomous Learning: A Case Study - MDPI, accessed May 8, 2025,
+<a href="https://www.mdpi.com/2227-7102/15/2/199">https://www.mdpi.com/2227-7102/15/2/199</a></p>
+</li>
+<li>
+<p>Tools for Thought: Research and Design for Understanding, Protecting, and
+Augmenting Human Cognition with Generative Al - Microsoft, accessed May 8,
+2025,</p>
+</li>
+</ol>
+<p><a href="https://www.microsoft.com/en-us/research/wp-content/uploads/2025/04/">https://www.microsoft.com/en-us/research/wp-content/uploads/2025/04/</a>
+CHI2025 Workshop Tools for Thought.pdf</p>
+<ol start="172">
+<li>
+<p>[2401.14484] Design Principles for Generative Al Applications - arXiv, accessed
+May 8, 2025, <a href="https://arxiv.org/abs/2401.14484">https://arxiv.org/abs/2401.14484</a></p>
+</li>
+<li>
+<p>UX for Generative Al: a new way of design thinking - Aubergine Solutions,
+accessed May 8, 2025, <a href="https://www.aubergine.co/insights/ux-for-generative-ai-">https://www.aubergine.co/insights/ux-for-generative-ai-</a>
+a-new-way-of-design-thinking</p>
+</li>
+<li>
+<p>How are LLMs revolutionizing UX design? | One Dev Question with Rachel
+Shepard, accessed May 8, 2025, <a href="https://www.youtube.com/watch">https://www.youtube.com/watch</a>?
+v=hib1R3blvCw</p>
+</li>
+<li>
+<p>orq.ai, accessed May 8, 2025, <a href="https://orq.ai/blog/what-is-the-best-way-to-">https://orq.ai/blog/what-is-the-best-way-to-</a>
+think-of-prompt-engineering#:~:text=An%20effective%20Al%20prompt
+%20engineering,comprehensive%20decision%2Dmaking%20or%20analysis.</p>
+</li>
+<li>
+<p>TheBlewish/Automated-Al-Web-Researcher-Ollama - GitHub, accessed May 8,
+2025, <a href="https://github.com/TheBlewish/Automated-Al-Web-Researcher-Ollama">https://github.com/TheBlewish/Automated-Al-Web-Researcher-Ollama</a></p>
+</li>
+<li>
+<p>AgentA/B: Automated and Scalable Web A/B Testing with Interactive LLM
+Agents - arXiv, accessed May 8, 2025, <a href="https://arxiv.org/html/2504.09723v1">https://arxiv.org/html/2504.09723v1</a></p>
+</li>
+<li>
+<p>Design Principles for Generative Al Applications - arXiv, accessed May 8, 2025,
+<a href="https://arxiv.org/html/2401.14484v1">https://arxiv.org/html/2401.14484v1</a></p>
+</li>
+<li>
+<p>Evaluating Large Language Models: A Complete Guide | Build Intelligent
+Applications on SingleStore, accessed May 8, 2025,</p>
+</li>
+</ol>
+<p><a href="https://www.singlestore.com/blog/complete-guide-to-evaluating-large-">https://www.singlestore.com/blog/complete-guide-to-evaluating-large-</a>
+language-models/</p>
+<ol start="180">
+<li>LLM Evaluation: Key Metrics, Best Practices and Frameworks - Aisera, accessed</li>
+</ol>
+<p>May 8, 2025, <a href="https://aisera.com/blog/llm-evaluation/">https://aisera.com/blog/llm-evaluation/</a></p>
+<ol start="181">
+<li>
+<p>Rethinking Uncertainty Estimation in Natural Language Generation -
+OpenReview, accessed May 8, 2025, <a href="https://openreview.net/forum">https://openreview.net/forum</a>?
+id=xeP03R58RH</p>
+</li>
+<li>
+<p>Evaluating LLMs using semantic entropy | Thoughtworks United States,</p>
+</li>
+</ol>
+<p>accessed May 8, 2025,
+<a href="https://www.thoughtworks.com/en-us/insights/blog/generative-ai/Evaluating-">https://www.thoughtworks.com/en-us/insights/blog/generative-ai/Evaluating-</a>
+LLM-using-semantic-entropy</p>
+<ol start="183">
+<li>
+<p>Mastering RAG: How To Evaluate LLMs For RAG - Galileo Al, accessed May 8,
+2025, <a href="https://www.galileo.ai/blog/how-to-evaluate-llms-for-rag">https://www.galileo.ai/blog/how-to-evaluate-llms-for-rag</a></p>
+</li>
+<li>
+<p>A toolbox for calculating objective image properties in aesthetics research -
+arXiv, accessed May 8, 2025, <a href="https://arxiv.org/abs/2408.10616">https://arxiv.org/abs/2408.10616</a></p>
+</li>
+<li>
+<p>Prompts For Visualization Techniques: Unlocking Creative Insights - PromptsTY,
+accessed May 8, 2025, <a href="https://promptsty.com/prompts-for-visualization-">https://promptsty.com/prompts-for-visualization-</a>
+techniques/</p>
+</li>
+<li>
+<p>Mastering Multi-Stage Prompt Structures: 5 Essential Tips | White Beard</p>
+</li>
+</ol>
+<p>Strategies, accessed May 8, 2025,
+<a href="https://whitebeardstrategies.com/blog/mastering-multi-stage-prompt-">https://whitebeardstrategies.com/blog/mastering-multi-stage-prompt-</a>
+structures-5-essential-tips/</p>
+<ol start="187">
+<li>Build React Website With Al - Restack, accessed May 8, 2025,</li>
+</ol>
+<p><a href="https://www.restack.io/p/low-code-development-for-ai-answer-build-react-">https://www.restack.io/p/low-code-development-for-ai-answer-build-react-</a>
+website-cat-ai</p>
+<ol start="188">
+<li>accessed December 31, 1969,</li>
+</ol>
+<p><a href="https://www.interaction-design.org/literature/book/the-interaction-design-">https://www.interaction-design.org/literature/book/the-interaction-design-</a>
+foundation-encyclopedia-of-human-computer-interaction-2nd-ed/personas</p>
+<ol start="189">
+<li>OpenAl API Reference Docs - OpenAl Platform, accessed May 8, 2025,</li>
+</ol>
+<p><a href="https://platform.openai.com/docs/api-reference">https://platform.openai.com/docs/api-reference</a></p>
+<ol start="190">
+<li>
+<p>Call for Main Conference Papers - EMNLP 2025, accessed May 8, 2025,
+<a href="https://2025.emnlp.org/calls/main-conference-papers/">https://2025.emnlp.org/calls/main-conference-papers/</a></p>
+</li>
+<li>
+<p>New Tracks at EMNLP 2025 and Their Relationship to ARR Tracks, accessed May</p>
+</li>
+</ol>
+<p>8, 2025, <a href="https://2025.emnlp.org/track-changes">https://2025.emnlp.org/track-changes</a></p>
+<ol start="192">
+<li>
+<p>(PDF) LLMs + Persona-Plug = Personalized LLMs - ResearchGate, accessed May
+8, 2025, <a href="https://www.researchgate.net/publication/384115590_LLMs_Persona-">https://www.researchgate.net/publication/384115590_LLMs_Persona-</a>
+Plug Personalized LLMs</p>
+</li>
+<li>
+<p>OpenAl Platform, accessed May 8, 2025,
+<a href="https://platform.openai.com/docs/guides/gpt/chat-completions-api">https://platform.openai.com/docs/guides/gpt/chat-completions-api</a></p>
+</li>
+<li>
+<p>Prompt Engineering for ChatGPT - OpenAI - OpenAl Platform, accessed May 8,</p>
+</li>
+</ol>
+<p>2025, <a href="https://platform.openai.com/docs/guides/prompt-engineering">https://platform.openai.com/docs/guides/prompt-engineering</a></p>
+<ol start="195">
+<li>OpenAl Platform, accessed May 8, 2025,</li>
+</ol>
+<p><a href="https://platform.openai.com/docs/guides/gpt">https://platform.openai.com/docs/guides/gpt</a></p>
+<ol start="196">
+<li>OpenAl Platform, accessed May 8, 2025,</li>
+</ol>
+<p><a href="https://platform.openai.com/docs/guides/prompt-engineering/six-strategies-for-">https://platform.openai.com/docs/guides/prompt-engineering/six-strategies-for-</a>
+getting-better-results</p>
+<ol start="197">
+<li>What frameworks do LLMs code best in? Next.js? React? html css? Tailwind? -</li>
+</ol>
+<p>Reddit, accessed May 8, 2025,</p>
+<p><a href="https://www.reddit.com/r/ChatGPTCoding/comments/1k2im4n/what_framework">https://www.reddit.com/r/ChatGPTCoding/comments/1k2im4n/what_framework</a>
+s do Ilms code best in nextjs react/</p>
+<ol start="198">
+<li>Building an LLM evaluation framework: best practices - Datadog, accessed May</li>
+</ol>
+<p>8, 2025, <a href="https://www.datadoghq.com/blog/llm-evaluation-framework-best-">https://www.datadoghq.com/blog/llm-evaluation-framework-best-</a>
+practices/</p>
+<ol start="199">
+<li>
+<p>Performance Evaluation | LLMOPs Workshop - Microsoft Open Source,
+accessed May 8, 2025,
+<a href="https://microsoft.github.io/llmops-workshop/labs/performance/docs/">https://microsoft.github.io/llmops-workshop/labs/performance/docs/</a>
+PERFTEST CONCEPTS.html</p>
+</li>
+<li>
+<p>Accessing LLMs for Front-end Software Architecture Knowledge - arXiv,
+accessed May 8, 2025, <a href="https://arxiv.org/html/2502.19518v1">https://arxiv.org/html/2502.19518v1</a></p>
+</li>
+<li>
+<p>jakobhoeg/nextjs-ollama-llm-ui: Fully-featured web interface for Ollama LLMs -
+GitHub, accessed May 8, 2025, <a href="https://github.com/jakobhoeg/nextjs-ollama-llm-">https://github.com/jakobhoeg/nextjs-ollama-llm-</a>
+ui</p>
+</li>
+<li>
+<p>2025 and the Next Chapter(s) of Al | Google Cloud Blog, accessed May 8, 2025,
+<a href="https://cloud.google.com/transform/2025-and-the-next-chapters-of-ai">https://cloud.google.com/transform/2025-and-the-next-chapters-of-ai</a></p>
+</li>
+<li>
+<p>The state of Al: How organizations are rewiring to capture value - McKinsey &amp;
+Company, accessed May 8, 2025,</p>
+</li>
+</ol>
+<p><a href="https://www.mckinsey.com/capabilities/quantumblack/our-insights/the-state-of-">https://www.mckinsey.com/capabilities/quantumblack/our-insights/the-state-of-</a>
+ai</p>
+<ol start="204">
+<li>Next.js Batch LLM Evaluator - Trigger.dev, accessed May 8, 2025,</li>
+</ol>
+<p><a href="https://trigger.dev/docs/guides/example-projects/batch-llm-evaluator">https://trigger.dev/docs/guides/example-projects/batch-llm-evaluator</a></p>
+<ol start="205">
+<li>Build an Al Agent in a Next.js app using Web Al Framework - DEV Community,</li>
+</ol>
+<p>accessed May 8, 2025, <a href="https://dev.to/mahamdev/build-an-ai-agent-in-a-nextjs-">https://dev.to/mahamdev/build-an-ai-agent-in-a-nextjs-</a>
+app-using-web-ai-framework-31fo</p>
