@@ -43,6 +43,8 @@
     <main id="content" tabindex="-1">
       <h1>Welcome</h1>
       <p>Use the left menu to open pages. This index automatically picks up the list from files.json (preferred) or the embedded JSON block inside this file.</p>
+      <!-- viewer iframe - pages load here so the menu stays -->
+      <iframe id="viewer" title="Page viewer" style="width:100%;height:calc(100vh - 120px);border:0;margin-top:1rem;"></iframe>
     </main>
   </div>
 
@@ -53,23 +55,23 @@
   <script>
     const menuToggle = document.getElementById('menuToggle');
     const siteNav = document.getElementById('site-nav');
+    const viewer = document.getElementById('viewer');
+    const search = document.getElementById('search');
+    const fileList = document.getElementById('file-list');
+
     menuToggle.addEventListener('click', () => {
       const open = siteNav.classList.toggle('open');
       menuToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
     });
 
     async function getFiles() {
-      // Try files.json first (generated automatically)
       try {
         const r = await fetch('./files.json', {cache: 'no-cache'});
         if (r.ok) {
           const arr = await r.json();
           return sanitize(arr);
         }
-      } catch (e) {
-        // ignore fetch errors, fall back to embedded list
-      }
-      // Fallback to embedded JSON block
+      } catch (e) {}
       try {
         const embedded = JSON.parse(document.getElementById('embedded-files').textContent || '[]');
         return sanitize(embedded);
@@ -81,37 +83,67 @@
     function sanitize(list) {
       if (!Array.isArray(list)) return [];
       return list
-        .map(s => String(s).trim())
-        .filter(s => s.length && !/index\.html$/i.test(s))
-        .sort((a,b) => a.localeCompare(b, undefined, {numeric:true, sensitivity:'base'}));
+        .map(item => {
+          if (typeof item === 'string') return { path: item, title: item.replace(/^\.\/?/,'') };
+          if (item && typeof item === 'object' && item.path) return { path: String(item.path), title: item.title || String(item.path).replace(/^\.\/?/,'') };
+          return null;
+        })
+        .filter(Boolean)
+        .filter(s => s.path && !/index\.html$/i.test(s.path))
+        .sort((a,b) => (a.title || a.path).localeCompare(b.title || b.path, undefined, {numeric:true, sensitivity:'base'}));
     }
 
     function buildMenu(files) {
-      const ul = document.getElementById('file-list');
-      ul.innerHTML = '';
+      fileList.innerHTML = '';
       if (!files.length) {
         const li = document.createElement('li');
         li.innerHTML = '<em>No HTML files found.</em>';
-        ul.appendChild(li);
+        fileList.appendChild(li);
         return;
       }
       for (const f of files) {
         const li = document.createElement('li');
         const a = document.createElement('a');
-        a.href = f;
-        a.textContent = f.replace(/^\.\/?/,'');
-        a.addEventListener('click', () => {
+        a.href = '#'+encodeURIComponent(f.path);
+        a.textContent = f.title;
+        a.addEventListener('click', (e) => {
+          e.preventDefault();
+          const navScroll = siteNav.scrollTop;
+          loadInViewer(f.path).then(() => { siteNav.scrollTop = navScroll; });
           if (window.innerWidth <= 800) {
             siteNav.classList.remove('open');
             menuToggle.setAttribute('aria-expanded','false');
           }
+          try { history.pushState({path: f.path}, f.title, '#'+encodeURIComponent(f.path)); } catch (e) {}
         });
         li.appendChild(a);
-        ul.appendChild(li);
+        fileList.appendChild(li);
       }
     }
 
-    document.getElementById('search').addEventListener('input', (e) => {
+    async function loadInViewer(path) {
+      try {
+        viewer.src = path;
+        viewer.focus();
+      } catch (e) {
+        try {
+          const res = await fetch(path, {cache:'no-cache'});
+          if (!res.ok) throw new Error('Fetch failed');
+          const text = await res.text();
+          const m = text.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+          document.getElementById('content').innerHTML = m ? m[1] : text;
+        } catch (err) {
+          document.getElementById('content').innerHTML = '<p>Unable to load page.</p>';
+        }
+      }
+    }
+
+    window.addEventListener('popstate', (e) => {
+      const p = (e.state && e.state.path) || (location.hash ? decodeURIComponent(location.hash.slice(1)) : null);
+      if (p) loadInViewer(p);
+    });
+
+    search.addEventListener('input', (e) => {
       const q = e.target.value.toLowerCase();
       document.querySelectorAll('#file-list li').forEach(li => {
         li.style.display = li.textContent.toLowerCase().includes(q) ? '' : 'none';
@@ -121,6 +153,11 @@
     (async () => {
       const files = await getFiles();
       buildMenu(files);
+      if (location.hash) {
+        const p = decodeURIComponent(location.hash.slice(1));
+        const filesPaths = files.map(f => f.path);
+        if (filesPaths.includes(p)) loadInViewer(p);
+      }
     })();
   </script>
 </body>
