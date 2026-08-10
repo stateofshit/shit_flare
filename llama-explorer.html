@@ -1,0 +1,1610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Llama Model Explorer — Cloudflare Workers AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #080c10;
+    --bg2: #0d1219;
+    --bg3: #121921;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.14);
+    --text: #e8edf2;
+    --muted: #6b7a8d;
+    --accent: #00e5a0;
+    --accent2: #0099ff;
+    --accent3: #ff6b35;
+    --warn: #ffb347;
+    --danger: #ff4d4d;
+    --mono: 'Space Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid bg */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,160,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,160,0.025) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: relative;
+    z-index: 10;
+    padding: 48px 40px 40px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .logo-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .cf-badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 3px 8px;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    letter-spacing: .1em;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    font-family: var(--mono);
+    font-size: clamp(22px, 4vw, 36px);
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  h1 span { color: var(--accent); }
+
+  .subtitle {
+    font-size: 14px;
+    color: var(--muted);
+    margin-top: 6px;
+    max-width: 480px;
+  }
+
+  .header-stats {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .hstat {
+    text-align: right;
+  }
+
+  .hstat-val {
+    font-family: var(--mono);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .hstat-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin-top: 3px;
+  }
+
+  /* ── MAIN LAYOUT ── */
+  .layout {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: calc(100vh - 160px);
+  }
+
+  /* ── SIDEBAR ── */
+  aside {
+    border-right: 1px solid var(--border);
+    padding: 24px 20px;
+    position: sticky;
+    top: 0;
+    height: calc(100vh - 160px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border2) transparent;
+  }
+
+  .sidebar-section { margin-bottom: 28px; }
+
+  .sidebar-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  input[type=search] {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 8px 12px;
+    outline: none;
+    transition: border-color .2s;
+  }
+
+  input[type=search]:focus { border-color: var(--accent); }
+  input[type=search]::placeholder { color: var(--muted); }
+
+  .filter-group { display: flex; flex-direction: column; gap: 6px; }
+
+  .filter-chip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all .15s;
+    text-align: left;
+    letter-spacing: .04em;
+  }
+
+  .filter-chip:hover { border-color: var(--border2); color: var(--text); }
+  .filter-chip.active { border-color: var(--accent); color: var(--accent); background: rgba(0,229,160,0.06); }
+
+  .chip-count {
+    font-size: 10px;
+    padding: 1px 6px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    min-width: 22px;
+    text-align: center;
+  }
+
+  .filter-chip.active .chip-count { background: rgba(0,229,160,0.1); border-color: var(--accent); color: var(--accent); }
+
+  .view-toggle { display: flex; gap: 0; }
+
+  .view-btn {
+    flex: 1;
+    padding: 7px;
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 11px;
+    transition: all .15s;
+    letter-spacing: .04em;
+  }
+
+  .view-btn:first-child { border-right: none; }
+  .view-btn.active { background: var(--bg3); color: var(--accent); border-color: var(--accent); }
+
+  .sort-select {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 7px 10px;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+  }
+
+  /* ── MAIN CONTENT ── */
+  main {
+    padding: 24px 28px;
+    overflow: hidden;
+  }
+
+  .result-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .result-count {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .result-count span { color: var(--accent); }
+
+  /* ── GRID VIEW ── */
+  .model-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+  }
+
+  .model-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 20px;
+    cursor: pointer;
+    transition: border-color .2s, transform .15s;
+    position: relative;
+    overflow: hidden;
+    animation: fadeUp .3s ease both;
+  }
+
+  .model-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform .25s ease;
+  }
+
+  .model-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+  .model-card:hover::before { transform: scaleX(1); }
+  .model-card.deprecated { opacity: .45; }
+  .model-card.deprecated::before { background: var(--danger); }
+
+  .card-version {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: .1em;
+    margin-bottom: 6px;
+  }
+
+  .card-name {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 10px;
+    line-height: 1.3;
+    word-break: break-all;
+  }
+
+  .card-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.55;
+    margin-bottom: 14px;
+  }
+
+  .card-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+
+  .tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 2px 8px;
+    letter-spacing: .04em;
+    border: 1px solid;
+    white-space: nowrap;
+  }
+
+  .tag-gen { border-color: rgba(0,229,160,.3); color: var(--accent); background: rgba(0,229,160,.06); }
+  .tag-vis { border-color: rgba(0,153,255,.3); color: var(--accent2); background: rgba(0,153,255,.06); }
+  .tag-fn  { border-color: rgba(255,107,53,.3); color: var(--accent3); background: rgba(255,107,53,.06); }
+  .tag-lora{ border-color: rgba(200,150,255,.3); color: #c896ff; background: rgba(200,150,255,.06); }
+  .tag-batch{ border-color: rgba(255,179,71,.3); color: var(--warn); background: rgba(255,179,71,.06); }
+  .tag-dep { border-color: rgba(255,77,77,.3); color: var(--danger); background: rgba(255,77,77,.06); }
+  .tag-beta{ border-color: rgba(107,122,141,.3); color: var(--muted); background: rgba(107,122,141,.06); }
+
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  .ctx-display {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .ctx-label { font-size: 10px; color: var(--muted); font-family: var(--mono); }
+  .ctx-val { font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--text); }
+
+  .ctx-bar {
+    width: 80px;
+    height: 3px;
+    background: var(--border2);
+    overflow: hidden;
+  }
+
+  .ctx-fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width .5s ease;
+  }
+
+  .card-size {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* ── LIST VIEW ── */
+  .model-list { display: flex; flex-direction: column; gap: 0; }
+
+  .model-row {
+    display: grid;
+    grid-template-columns: 260px 60px 80px 80px 1fr auto;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background .15s;
+    animation: fadeUp .3s ease both;
+  }
+
+  .model-row:hover { background: var(--bg3); }
+  .model-row.deprecated { opacity: .45; }
+
+  .list-name {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text);
+    word-break: break-all;
+  }
+
+  .list-ver {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  .list-ctx {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text);
+    text-align: right;
+  }
+
+  .list-size {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    text-align: center;
+  }
+
+  .list-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+  .list-actions { display: flex; gap: 8px; align-items: center; }
+
+  /* ── DETAIL PANEL ── */
+  .detail-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 100;
+    display: flex;
+    align-items: stretch;
+    justify-content: flex-end;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s;
+  }
+
+  .detail-overlay.open { opacity: 1; pointer-events: all; }
+
+  .detail-panel {
+    width: min(560px, 100vw);
+    background: var(--bg2);
+    border-left: 1px solid var(--border2);
+    overflow-y: auto;
+    transform: translateX(100%);
+    transition: transform .3s cubic-bezier(.4,0,.2,1);
+    scrollbar-width: thin;
+    scrollbar-color: var(--border2) transparent;
+  }
+
+  .detail-overlay.open .detail-panel { transform: translateX(0); }
+
+  .detail-header {
+    padding: 24px 28px 20px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--bg2);
+    z-index: 2;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .detail-close {
+    background: none;
+    border: 1px solid var(--border2);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 18px;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .15s;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  .detail-close:hover { border-color: var(--danger); color: var(--danger); }
+
+  .detail-title {
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    word-break: break-all;
+  }
+
+  .detail-subtitle { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  .detail-body { padding: 24px 28px; }
+
+  .detail-section { margin-bottom: 28px; }
+
+  .detail-section-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .detail-section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 0;
+  }
+
+  .stat-box {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 14px 16px;
+  }
+
+  .stat-box-label { font-size: 11px; color: var(--muted); font-family: var(--mono); margin-bottom: 4px; }
+  .stat-box-val { font-family: var(--mono); font-size: 20px; font-weight: 700; color: var(--accent); }
+  .stat-box-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  .feat-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .feat-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 14px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+  }
+
+  .feat-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+
+  .feat-dot.off { background: var(--border2); }
+
+  .feat-row-name { font-family: var(--mono); font-size: 12px; color: var(--text); margin-bottom: 2px; }
+  .feat-row-desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
+
+  .code-block {
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    padding: 16px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: #a8d8a8;
+    line-height: 1.7;
+    overflow-x: auto;
+    position: relative;
+  }
+
+  .code-comment { color: var(--muted); }
+  .code-string { color: #ffcc80; }
+  .code-key { color: #80d8ff; }
+  .code-val { color: #a8d8a8; }
+
+  .copy-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 4px 8px;
+    cursor: pointer;
+    letter-spacing: .04em;
+    transition: all .15s;
+  }
+
+  .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .use-case-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+
+  .use-case-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--muted);
+    padding: 8px 12px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+  }
+
+  .use-case-list li::before {
+    content: '→';
+    color: var(--accent);
+    font-family: var(--mono);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .ctx-compare {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .ctx-row-d {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 11px;
+  }
+
+  .ctx-row-d .lbl { font-family: var(--mono); color: var(--muted); width: 50px; text-align: right; flex-shrink: 0; }
+  .ctx-row-d .track { flex: 1; height: 6px; background: var(--border2); overflow: hidden; }
+  .ctx-row-d .fill { height: 100%; background: var(--accent); opacity: .35; }
+  .ctx-row-d .fill.highlight { opacity: 1; }
+  .ctx-row-d .num { font-family: var(--mono); color: var(--muted); width: 36px; font-size: 10px; }
+
+  .dep-warning {
+    background: rgba(255,77,77,0.08);
+    border: 1px solid rgba(255,77,77,0.25);
+    padding: 12px 14px;
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .dep-warning-icon { color: var(--danger); font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .dep-warning-text { font-size: 12px; color: #ff9999; line-height: 1.5; }
+
+  .docs-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    text-decoration: none;
+    border: 1px solid rgba(0,229,160,.3);
+    padding: 7px 14px;
+    transition: all .15s;
+    letter-spacing: .04em;
+  }
+
+  .docs-link:hover { background: rgba(0,229,160,.06); border-color: var(--accent); }
+
+  /* ── COMPARE BAR ── */
+  .compare-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--bg2);
+    border-top: 1px solid var(--accent);
+    padding: 12px 28px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    z-index: 50;
+    transform: translateY(100%);
+    transition: transform .25s;
+  }
+
+  .compare-bar.visible { transform: translateY(0); }
+
+  .compare-items { display: flex; gap: 8px; flex: 1; flex-wrap: wrap; }
+
+  .compare-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    padding: 4px 10px 4px 12px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text);
+  }
+
+  .compare-chip-remove {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    padding: 0 2px;
+    transition: color .15s;
+  }
+
+  .compare-chip-remove:hover { color: var(--danger); }
+
+  .compare-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+  .btn {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 8px 16px;
+    cursor: pointer;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    border: 1px solid;
+    transition: all .15s;
+    background: none;
+  }
+
+  .btn-primary { border-color: var(--accent); color: var(--accent); }
+  .btn-primary:hover { background: var(--accent); color: var(--bg); }
+  .btn-ghost { border-color: var(--border2); color: var(--muted); }
+  .btn-ghost:hover { border-color: var(--border2); color: var(--text); }
+
+  .compare-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+
+  /* ── COMPARE MODAL ── */
+  .compare-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s;
+  }
+
+  .compare-modal-overlay.open { opacity: 1; pointer-events: all; }
+
+  .compare-modal {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    width: 100%;
+    max-width: 900px;
+    max-height: 90vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border2) transparent;
+    transform: scale(.95);
+    transition: transform .25s;
+  }
+
+  .compare-modal-overlay.open .compare-modal { transform: scale(1); }
+
+  .compare-modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    background: var(--bg2);
+    z-index: 2;
+  }
+
+  .compare-modal-title {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: .04em;
+  }
+
+  .compare-table-wrap { padding: 20px 24px; overflow-x: auto; }
+
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  .compare-table th {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border2);
+  }
+
+  .compare-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    vertical-align: middle;
+  }
+
+  .compare-table tr:hover td { background: var(--bg3); }
+
+  .compare-table .row-label {
+    color: var(--muted);
+    font-size: 11px;
+    width: 130px;
+  }
+
+  .check { color: var(--accent); }
+  .cross { color: var(--border2); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── EMPTY STATE ── */
+  .empty {
+    grid-column: 1/-1;
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+
+  .empty-big { font-size: 40px; margin-bottom: 12px; opacity: .3; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    header { padding: 24px 20px; }
+    .layout { grid-template-columns: 1fr; }
+    aside { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
+    main { padding: 16px; }
+    .model-row { grid-template-columns: 1fr auto; }
+    .list-ver, .list-ctx, .list-size { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo-row">
+      <span class="cf-badge">Cloudflare Workers AI</span>
+    </div>
+    <h1>Llama <span>Model</span> Explorer</h1>
+    <p class="subtitle">Browse, compare, and pick the right Llama model for your use case.</p>
+  </div>
+  <div class="header-stats">
+    <div class="hstat">
+      <div class="hstat-val" id="total-count">14</div>
+      <div class="hstat-label">Total models</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val">5</div>
+      <div class="hstat-label">Active (non-deprecated)</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val">131k</div>
+      <div class="hstat-label">Max context</div>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <aside>
+    <div class="sidebar-section">
+      <span class="sidebar-label">Search</span>
+      <input type="search" id="search-input" placeholder="llama-3.2..." autocomplete="off">
+    </div>
+
+    <div class="sidebar-section">
+      <span class="sidebar-label">Filter by version</span>
+      <div class="filter-group" id="version-filters">
+        <button class="filter-chip active" data-v="all">All versions <span class="chip-count" id="v-all-count">14</span></button>
+        <button class="filter-chip" data-v="4">Llama 4 <span class="chip-count" id="v-4-count">1</span></button>
+        <button class="filter-chip" data-v="3.3">Llama 3.3 <span class="chip-count" id="v-3.3-count">1</span></button>
+        <button class="filter-chip" data-v="3.2">Llama 3.2 <span class="chip-count" id="v-3.2-count">4</span></button>
+        <button class="filter-chip" data-v="3.1">Llama 3.1 <span class="chip-count" id="v-3.1-count">2</span></button>
+        <button class="filter-chip" data-v="3">Llama 3 <span class="chip-count" id="v-3-count">2</span></button>
+        <button class="filter-chip" data-v="2">Llama 2 <span class="chip-count" id="v-2-count">3</span></button>
+        <button class="filter-chip" data-v="guard">Guard <span class="chip-count">1</span></button>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <span class="sidebar-label">Capabilities</span>
+      <div class="filter-group">
+        <button class="filter-chip" data-cap="fn">Function calling <span class="chip-count">3</span></button>
+        <button class="filter-chip" data-cap="lora">LoRA <span class="chip-count">4</span></button>
+        <button class="filter-chip" data-cap="vision">Vision/multimodal <span class="chip-count">3</span></button>
+        <button class="filter-chip" data-cap="batch">Batch <span class="chip-count">2</span></button>
+        <button class="filter-chip" data-cap="dep">Deprecating only <span class="chip-count">5</span></button>
+        <button class="filter-chip" data-cap="active">Active only <span class="chip-count">9</span></button>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <span class="sidebar-label">View</span>
+      <div class="view-toggle">
+        <button class="view-btn active" id="btn-grid">Grid</button>
+        <button class="view-btn" id="btn-list">List</button>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <span class="sidebar-label">Sort by</span>
+      <select class="sort-select" id="sort-select">
+        <option value="ctx-desc">Context: high → low</option>
+        <option value="ctx-asc">Context: low → high</option>
+        <option value="size-desc">Size: large → small</option>
+        <option value="size-asc">Size: small → large</option>
+        <option value="version-desc">Version: newest first</option>
+        <option value="name">Name A → Z</option>
+      </select>
+    </div>
+  </aside>
+
+  <main>
+    <div class="result-bar">
+      <div class="result-count"><span id="shown-count">14</span> models shown</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.06em">CLICK TO INSPECT · CHECKBOX TO COMPARE</div>
+    </div>
+    <div id="model-container" class="model-grid"></div>
+  </main>
+</div>
+
+<!-- Detail panel -->
+<div class="detail-overlay" id="detail-overlay">
+  <div class="detail-panel" id="detail-panel">
+    <div class="detail-header">
+      <div>
+        <div class="detail-title" id="dp-title">—</div>
+        <div class="detail-subtitle" id="dp-subtitle">—</div>
+      </div>
+      <button class="detail-close" id="detail-close" aria-label="Close">✕</button>
+    </div>
+    <div class="detail-body" id="detail-body"></div>
+  </div>
+</div>
+
+<!-- Compare bar -->
+<div class="compare-bar" id="compare-bar">
+  <span class="compare-label">Compare</span>
+  <div class="compare-items" id="compare-items"></div>
+  <div class="compare-actions">
+    <button class="btn btn-ghost" id="compare-clear">Clear</button>
+    <button class="btn btn-primary" id="compare-go">Compare ↗</button>
+  </div>
+</div>
+
+<!-- Compare modal -->
+<div class="compare-modal-overlay" id="compare-modal">
+  <div class="compare-modal">
+    <div class="compare-modal-header">
+      <span class="compare-modal-title">Model comparison</span>
+      <button class="detail-close" id="compare-modal-close">✕</button>
+    </div>
+    <div class="compare-table-wrap" id="compare-table-wrap"></div>
+  </div>
+</div>
+
+<script>
+const MODELS = [
+  {
+    id:'llama-4-scout-17b-16e-instruct',
+    version:'4',versionLabel:'Llama 4',
+    author:'Meta',
+    task:'Text Generation',
+    multimodal:true,
+    params:17,paramLabel:'17B',
+    ctx:131000,ctxLabel:'131,000',
+    quant:null,
+    features:['fn','batch','vision'],
+    deprecated:false,
+    beta:false,
+    desc:'Meta\'s Llama 4 Scout is a 17B parameter model with 16 experts that is natively multimodal. Leverages a mixture-of-experts (MoE) architecture to offer industry-leading performance in text and image understanding.',
+    useCases:['Agentic workflows requiring tool use','Long-document analysis (legal, research)','Multimodal apps combining text + image','High-throughput batch processing','RAG with large retrieval windows'],
+    url:'https://developers.cloudflare.com/workers-ai/models/llama-4-scout-17b-16e-instruct',
+  },
+  {
+    id:'llama-guard-3-8b',
+    version:'guard',versionLabel:'Guard',
+    author:'Meta',
+    task:'Safety Classification',
+    multimodal:false,
+    params:8,paramLabel:'8B',
+    ctx:131072,ctxLabel:'131,072',
+    quant:null,
+    features:['lora'],
+    deprecated:false,
+    beta:false,
+    desc:'Llama Guard 3 is a Llama-3.1-8B model fine-tuned for content safety classification. It classifies both LLM inputs (prompt) and LLM responses against safety categories, outputting safe/unsafe and violated categories.',
+    useCases:['Moderation pipeline for LLM inputs/outputs','Safety guardrail layer in production systems','Automated content policy enforcement','Classifying user-generated content'],
+    url:'https://developers.cloudflare.com/workers-ai/models/llama-guard-3-8b',
+  },
+  {
+    id:'llama-3.3-70b-instruct-fp8-fast',
+    version:'3.3',versionLabel:'Llama 3.3',
+    author:'Meta',
+    task:'Text Generation',
+    multimodal:false,
+    params:70,paramLabel:'70B',
+    ctx:24000,ctxLabel:'24,000',
+    quant:'fp8',
+    features:['fn','batch'],
+    deprecated:false,
+    beta:false,
+    desc:'Llama 3.3 70B quantized to fp8 precision, optimized for faster inference. The largest and most capable text-only model in the Llama 3 family on Cloudflare. Best reasoning and instruction-following quality.',
+    useCases:['Complex reasoning and analysis','Code generation and review','Long-form writing and summarization','Multi-step instruction following','Production chatbots requiring high quality'],
+    url:'https://developers.cloudflare.com/workers-ai/models/llama-3.3-70b-instruct-fp8-fast',
+  },
+  {
+    id:'llama-3.2-11b-vision-instruct',
+    version:'3.2',versionLabel:'Llama 3.2',
+    author:'Meta',
+    task:'Text + Vision',
+    multimodal:true,
+    params:11,paramLabel:'11B',
+    ctx:128000,ctxLabel:'128,000',
+    quant:null,
+    features:['lora','vision'],
+    deprecated:false,
+    beta:false,
+    desc:'The Llama 3.2 Vision instruction-tuned model optimized for visual recognition, image reasoning, captioning, and answering general questions about an image. Also supports LoRA fine-tuning.',
+    useCases:['Image captioning and description','Visual Q&A (charts, screenshots, photos)','Document understanding with images','Fine-tuned visual classification'],
+    url:'https://developers.cloudflare.com/workers-ai/models/llama-3.2-11b-vision-instruct',
+  },
+  {
+    id:'llama-3.2-3b-instruct',
+    version:'3.2',versionLabel:'Llama 3.2',
+    author:'Meta',
+    task:'Text Generation',
+    multimodal:false,
+    params:3,paramLabel:'3B',
+    ctx:80000,ctxLabel:'80,000',
+    quant:null,
+    features:['lora'],
+    deprecated:false,
+    beta:false,
+    desc:'3B instruction-tuned model optimized for multilingual dialogue, agentic retrieval, and summarization. Supports LoRA fine-tuning — ideal for custom domain adaptation on a small footprint.',
+    useCases:['Custom fine-tuned chatbots','Multilingual dialogue systems','Summarization at scale','Edge/latency-sensitive deployments','Low-cost first draft generation'],
+    url:'https://developers.cloudflare.com/workers-ai/models/llama-3.2-3b-instruct',
+  },
+  {
+    id:'llama-3.2-1b-instruct',
+    version:'3.2',versionLabel:'Llama 3.2',
+    author:'Meta',
+    task:'Text Generation',
+    multimodal:false,
+    params:1,paramLabel:'1B',
+    ctx:60000,ctxLabel:'60,000',
+    quant:null,
+    features:[],
+    deprecated:false,
+    beta:false,
+    desc:'The lightest Llama 3.2 instruction-tuned model. Optimized for speed and efficiency on simple dialogue tasks, retrieval, and summarization. Best pick when cost and latency are the primary concern.',
+    useCases:['Ultra-low-latency autocomplete','Simple classification or extraction','High-volume cheap inference','On-device or embedded scenarios'],
+    url:'https://developers.cloudflare.com/workers-ai/models/llama-3.2-1b-instruct',
+  },
+  {
+    id:'llama-3.1-8b-instruct-fp8',
+    version:'3.1',versionLabel:'Llama 3.1',
+    author:'Meta',
+    task:'Text Generation',
+    multimodal:false,
+    params:8,paramLabel:'8B',
+    ctx:32000,ctxLabel:'32,000',
+    quant:'fp8',
+    features:[],
+    deprecated:false,
+    beta:false,
+    desc:'Llama 3.1 8B quantized to FP8 precision. A solid general-purpose model with a good balance of quality, speed, and context length. The go-to 8B choice over the deprecated AWQ variant.',
+    useCases:['General-purpose chatbots','Summarization and drafting','Basic reasoning tasks','Mid-tier production inference'],
+    url:'https://developers.cloudflare.com/workers-ai/models/llama-3.1-8b-instruct-fp8',
+  },
+  {
+    id:'llama-3.1-8b-instruct-awq',
+    version:'3.1',versionLabel:'Llama 3.1',
+    author:'Meta',
+    task:'Text Generation',
+    multimodal:false,
+    params:8,paramLabel:'8B',
+    ctx:8192,ctxLabel:'8,192',
+    quant:'awq (int4)',
+    features:[],
+    deprecated:true,
+    beta:false,
+    desc:'Quantized (int4/AWQ) version of Llama 3.1 8B. Deprecated May 30. Use llama-3.1-8b-instruct-fp8 instead — it has 4x the context window and better quality.',
+    useCases:['Migrate to llama-3.1-8b-instruct-fp8'],
+    url:'https://developers.cloudflare.com/workers-ai/models/llama-3.1-8b-instruct-awq',
+  },
+  {
+    id:'llama-3-8b-instruct-awq',
+    version:'3',versionLabel:'Llama 3',
+    author:'Meta',
+    task:'Text Generation',
+    multimodal:false,
+    params:8,paramLabel:'8B',
+    ctx:8192,ctxLabel:'8,192',
+    quant:'awq (int4)',
+    features:[],
+    deprecated:true,
+    beta:false,
+    desc:'Quantized (int4/AWQ) Llama 3 8B. Deprecated May 30. Superseded by Llama 3.1 and 3.2 variants with larger context windows and better quality.',
+    useCases:['Migrate to llama-3.2-3b or llama-3.1-8b-fp8'],
+    url:'https://developers.cloudflare.com/workers-ai/models/llama-3-8b-instruct-awq',
+  },
+  {
+    id:'llava-1.5-7b-hf',
+    version:'llava',versionLabel:'LLaVA',
+    author:'llava-hf',
+    task:'Image-to-Text',
+    multimodal:true,
+    params:7,paramLabel:'7B',
+    ctx:null,ctxLabel:'—',
+    quant:null,
+    features:['vision','beta'],
+    deprecated:false,
+    beta:true,
+    desc:'LLaVA is an open-source chatbot trained by fine-tuning LLaMA/Vicuna on GPT-generated multimodal instruction-following data. Auto-regressive transformer for vision-language tasks. Currently in Beta.',
+    useCases:['Visual instruction following','Image Q&A and captioning','Multimodal prototyping (beta)'],
+    url:'https://developers.cloudflare.com/workers-ai/models/llava-1.5-7b-hf',
+  },
+  {
+    id:'llama-3-8b-instruct',
+    version:'3',versionLabel:'Llama 3',
+    author:'Meta',
+    task:'Text Generation',
+    multimodal:false,
+    params:8,paramLabel:'8B',
+    ctx:7968,ctxLabel:'7,968',
+    quant:null,
+    features:[],
+    deprecated:true,
+    beta:false,
+    desc:'Original Llama 3 8B instruction-tuned model. Deprecated May 30. Strictly superseded by Llama 3.1 and 3.2 in every dimension.',
+    useCases:['Migrate to llama-3.3-70b or llama-3.1-8b-fp8'],
+    url:'https://developers.cloudflare.com/workers-ai/models/llama-3-8b-instruct',
+  },
+  {
+    id:'llama-2-7b-chat-hf-lora',
+    version:'2',versionLabel:'Llama 2',
+    author:'meta-llama',
+    task:'Text Generation',
+    multimodal:false,
+    params:7,paramLabel:'7B',
+    ctx:8192,ctxLabel:'8,192',
+    quant:null,
+    features:['lora','beta'],
+    deprecated:false,
+    beta:true,
+    desc:'Llama 2 7B base model dedicated for inference with LoRA adapters. Fine-tuned for dialogue and converted to HuggingFace Transformers format. In Beta — primarily useful if you have existing Llama 2 LoRA adapters.',
+    useCases:['Inference with existing Llama 2 LoRA adapters','Legacy system compatibility'],
+    url:'https://developers.cloudflare.com/workers-ai/models/llama-2-7b-chat-hf-lora',
+  },
+  {
+    id:'llama-2-7b-chat-fp16',
+    version:'2',versionLabel:'Llama 2',
+    author:'Meta',
+    task:'Text Generation',
+    multimodal:false,
+    params:7,paramLabel:'7B',
+    ctx:4096,ctxLabel:'4,096',
+    quant:'fp16',
+    features:[],
+    deprecated:true,
+    beta:false,
+    desc:'Full precision (fp16) Llama 2 7B. Deprecated May 30. Replaced by all Llama 3+ models.',
+    useCases:['Migrate to llama-3.2-1b or llama-3.2-3b'],
+    url:'https://developers.cloudflare.com/workers-ai/models/llama-2-7b-chat-fp16',
+  },
+  {
+    id:'llama-2-7b-chat-int8',
+    version:'2',versionLabel:'Llama 2',
+    author:'Meta',
+    task:'Text Generation',
+    multimodal:false,
+    params:7,paramLabel:'7B',
+    ctx:8192,ctxLabel:'8,192',
+    quant:'int8',
+    features:[],
+    deprecated:true,
+    beta:false,
+    desc:'Quantized (int8) Llama 2 7B. Deprecated May 30. Replaced by all Llama 3+ models.',
+    useCases:['Migrate to llama-3.2-1b or llama-3.2-3b'],
+    url:'https://developers.cloudflare.com/workers-ai/models/llama-2-7b-chat-int8',
+  },
+];
+
+const MAX_CTX = 131072;
+
+let versionFilter = 'all';
+let capFilter = null;
+let searchVal = '';
+let sortVal = 'ctx-desc';
+let viewMode = 'grid';
+let compareSet = new Set();
+let detailModel = null;
+
+function getFiltered() {
+  let list = [...MODELS];
+
+  if (searchVal) {
+    const q = searchVal.toLowerCase();
+    list = list.filter(m => m.id.toLowerCase().includes(q) || m.desc.toLowerCase().includes(q) || m.task.toLowerCase().includes(q));
+  }
+
+  if (versionFilter !== 'all') {
+    list = list.filter(m => m.version === versionFilter);
+  }
+
+  if (capFilter) {
+    if (capFilter === 'dep') list = list.filter(m => m.deprecated);
+    else if (capFilter === 'active') list = list.filter(m => !m.deprecated);
+    else list = list.filter(m => m.features.includes(capFilter));
+  }
+
+  list.sort((a, b) => {
+    if (sortVal === 'ctx-desc') return (b.ctx||0) - (a.ctx||0);
+    if (sortVal === 'ctx-asc') return (a.ctx||0) - (b.ctx||0);
+    if (sortVal === 'size-desc') return b.params - a.params;
+    if (sortVal === 'size-asc') return a.params - b.params;
+    if (sortVal === 'version-desc') {
+      const order = ['4','3.3','3.2','3.1','3','2','guard','llava'];
+      return order.indexOf(a.version) - order.indexOf(b.version);
+    }
+    if (sortVal === 'name') return a.id.localeCompare(b.id);
+    return 0;
+  });
+
+  return list;
+}
+
+function tagHTML(f) {
+  const map = {
+    fn: ['tag-fn','fn-call'],
+    lora: ['tag-lora','LoRA'],
+    vision: ['tag-vis','vision'],
+    batch: ['tag-batch','batch'],
+    beta: ['tag-beta','beta'],
+  };
+  if (!map[f]) return '';
+  return `<span class="tag ${map[f][0]}">${map[f][1]}</span>`;
+}
+
+function render() {
+  const list = getFiltered();
+  document.getElementById('shown-count').textContent = list.length;
+  const container = document.getElementById('model-container');
+  container.className = viewMode === 'grid' ? 'model-grid' : 'model-list';
+
+  if (!list.length) {
+    container.innerHTML = '<div class="empty"><div class="empty-big">∅</div>No models match.</div>';
+    return;
+  }
+
+  if (viewMode === 'grid') {
+    container.innerHTML = list.map((m, i) => `
+      <div class="model-card${m.deprecated ? ' deprecated' : ''}" data-id="${m.id}" style="animation-delay:${i * 30}ms">
+        <div class="card-version">${m.versionLabel} · ${m.author}</div>
+        <div class="card-name">${m.id}</div>
+        <div class="card-desc">${m.desc.slice(0, 110)}${m.desc.length > 110 ? '…' : ''}</div>
+        <div class="card-meta">
+          <span class="tag ${m.task.includes('Vision')||m.task.includes('Image') ? 'tag-vis' : 'tag-gen'}">${m.task}</span>
+          ${m.features.filter(f=>f!=='vision').map(tagHTML).join('')}
+          ${m.deprecated ? '<span class="tag tag-dep">deprecating</span>' : ''}
+          ${m.beta ? '<span class="tag tag-beta">beta</span>' : ''}
+        </div>
+        <div class="card-footer">
+          <div class="ctx-display">
+            <div>
+              <div class="ctx-label">context</div>
+              <div class="ctx-val">${m.ctxLabel}</div>
+            </div>
+            <div class="ctx-bar" style="margin-left:8px">
+              <div class="ctx-fill" style="width:${m.ctx ? Math.round(m.ctx/MAX_CTX*100) : 0}%"></div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="card-size">${m.paramLabel}</span>
+            <label style="display:flex;align-items:center;gap:4px;cursor:pointer" title="Add to compare" onclick="event.stopPropagation()">
+              <input type="checkbox" ${compareSet.has(m.id)?'checked':''} onchange="toggleCompare('${m.id}',this.checked)" style="accent-color:var(--accent);cursor:pointer">
+            </label>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  } else {
+    container.innerHTML = `
+      <div class="model-row" style="border-top:1px solid var(--border2);background:var(--bg3);pointer-events:none">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase">Model</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;text-align:center">Ver</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;text-align:right">Context</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;text-align:center">Size</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase">Capabilities</div>
+        <div></div>
+      </div>
+      ` + list.map((m,i) => `
+      <div class="model-row${m.deprecated?' deprecated':''}" data-id="${m.id}" style="animation-delay:${i*20}ms">
+        <div class="list-name">${m.id}</div>
+        <div class="list-ver">${m.versionLabel}</div>
+        <div class="list-ctx">${m.ctxLabel}</div>
+        <div class="list-size">${m.paramLabel}</div>
+        <div class="list-tags">
+          ${m.features.map(tagHTML).join('')}
+          ${m.deprecated?'<span class="tag tag-dep">dep</span>':''}
+          ${m.beta?'<span class="tag tag-beta">beta</span>':''}
+        </div>
+        <div class="list-actions">
+          <input type="checkbox" ${compareSet.has(m.id)?'checked':''} onchange="toggleCompare('${m.id}',this.checked)" onclick="event.stopPropagation()" style="accent-color:var(--accent);cursor:pointer" title="Compare">
+        </div>
+      </div>
+    `).join('');
+  }
+
+  document.querySelectorAll('[data-id]').forEach(el => {
+    el.addEventListener('click', () => openDetail(el.dataset.id));
+  });
+}
+
+function toggleCompare(id, checked) {
+  if (checked) {
+    if (compareSet.size >= 4) { alert('Max 4 models to compare.'); return; }
+    compareSet.add(id);
+  } else {
+    compareSet.delete(id);
+  }
+  updateCompareBar();
+  render();
+}
+
+function updateCompareBar() {
+  const bar = document.getElementById('compare-bar');
+  const items = document.getElementById('compare-items');
+  if (compareSet.size === 0) {
+    bar.classList.remove('visible');
+    return;
+  }
+  bar.classList.add('visible');
+  items.innerHTML = [...compareSet].map(id => `
+    <div class="compare-chip">
+      <span style="font-size:11px">${id.replace('llama-','').replace('-instruct','')}</span>
+      <button class="compare-chip-remove" onclick="toggleCompare('${id}',false)">✕</button>
+    </div>
+  `).join('');
+}
+
+function openDetail(id) {
+  const m = MODELS.find(x => x.id === id);
+  if (!m) return;
+  detailModel = m;
+  document.getElementById('dp-title').textContent = m.id;
+  document.getElementById('dp-subtitle').textContent = `${m.versionLabel} · ${m.author} · ${m.task}`;
+
+  const body = document.getElementById('detail-body');
+  body.innerHTML = `
+    ${m.deprecated ? `<div class="dep-warning"><span class="dep-warning-icon">⚠</span><div class="dep-warning-text">This model is <strong>deprecating May 30</strong>. Migrate to a current model before then to avoid service interruption.</div></div>` : ''}
+
+    <div class="detail-section">
+      <div class="detail-section-title">Overview</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.65">${m.desc}</div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title">Specs</div>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-box-label">Parameters</div>
+          <div class="stat-box-val">${m.paramLabel}</div>
+          ${m.id.includes('scout') ? '<div class="stat-box-sub">16-expert MoE</div>' : '<div class="stat-box-sub">dense model</div>'}
+        </div>
+        <div class="stat-box">
+          <div class="stat-box-label">Context window</div>
+          <div class="stat-box-val">${m.ctxLabel}</div>
+          <div class="stat-box-sub">tokens</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-box-label">Quantization</div>
+          <div class="stat-box-val" style="font-size:15px">${m.quant || 'full'}</div>
+          <div class="stat-box-sub">${m.quant === 'fp8' ? '8-bit float' : m.quant === 'awq (int4)' ? '4-bit int' : m.quant === 'int8' ? '8-bit int' : m.quant === 'fp16' ? '16-bit float' : 'no compression'}</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-box-label">Modalities</div>
+          <div class="stat-box-val" style="font-size:15px">${m.multimodal ? 'Text + Image' : 'Text only'}</div>
+          <div class="stat-box-sub">${m.task}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title">Capabilities</div>
+      <div class="feat-list">
+        ${[
+          {key:'fn', name:'Function calling', desc:'Model can invoke tools/functions you define and return structured arguments.'},
+          {key:'lora', name:'LoRA fine-tuning', desc:'Cloudflare supports custom LoRA adapter inference on top of the base model.'},
+          {key:'vision', name:'Vision / image input', desc:'Model can process images alongside text in the same prompt.'},
+          {key:'batch', name:'Batch inference', desc:'Supports Cloudflare\'s batch API for high-volume async processing.'},
+        ].map(f => `
+          <div class="feat-row">
+            <div class="feat-dot${m.features.includes(f.key) ? '' : ' off'}"></div>
+            <div>
+              <div class="feat-row-name">${f.name}</div>
+              <div class="feat-row-desc" style="color:${m.features.includes(f.key) ? 'var(--muted)' : 'var(--border2)'}">${f.desc}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title">Context vs other models</div>
+      <div class="ctx-compare">
+        ${[...MODELS].filter(x=>!x.deprecated).sort((a,b)=>(b.ctx||0)-(a.ctx||0)).map(x => `
+          <div class="ctx-row-d">
+            <span class="lbl">${x.ctx ? (x.ctx >= 1000 ? Math.round(x.ctx/1000)+'k' : x.ctx) : '—'}</span>
+            <div class="track"><div class="fill${x.id===m.id?' highlight':''}" style="width:${x.ctx?Math.round(x.ctx/MAX_CTX*100):0}%"></div></div>
+            <span class="num" style="color:${x.id===m.id?'var(--accent)':'var(--muted)'};">${x.id===m.id?'← you':''}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title">Use cases</div>
+      <ul class="use-case-list">
+        ${m.useCases.map(u => `<li>${u}</li>`).join('')}
+      </ul>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title">Quick start</div>
+      <div class="code-block" id="code-block-${m.id}">
+        <button class="copy-btn" onclick="copyCode('${m.id}')">copy</button>
+<span class="code-comment">// Cloudflare Workers AI</span>
+<span class="code-key">const</span> response = <span class="code-key">await</span> env.AI.run(
+  <span class="code-string">"@cf/meta/${m.id}"</span>,
+  {
+    <span class="code-key">messages</span>: [
+      { <span class="code-key">role</span>: <span class="code-string">"system"</span>, <span class="code-key">content</span>: <span class="code-string">"You are a helpful assistant."</span> },
+      { <span class="code-key">role</span>: <span class="code-string">"user"</span>, <span class="code-key">content</span>: <span class="code-string">"Hello!"</span> }
+    ]${m.features.includes('fn') ? `,
+    <span class="code-key">tools</span>: [<span class="code-comment">/* your tool definitions */</span>]` : ''}
+  }
+);
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title">Resources</div>
+      <a class="docs-link" href="${m.url}" target="_blank">Cloudflare docs ↗</a>
+    </div>
+  `;
+
+  document.getElementById('detail-overlay').classList.add('open');
+}
+
+function copyCode(id) {
+  const block = document.getElementById(`code-block-${id}`);
+  const text = block.innerText.replace('copy\n','').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = block.querySelector('.copy-btn');
+    btn.textContent = 'copied!';
+    setTimeout(() => btn.textContent = 'copy', 1500);
+  });
+}
+
+function openCompare() {
+  if (compareSet.size < 2) { alert('Select at least 2 models to compare.'); return; }
+  const mods = [...compareSet].map(id => MODELS.find(m => m.id === id));
+  const rows = [
+    {label:'Version', fn: m => m.versionLabel},
+    {label:'Author', fn: m => m.author},
+    {label:'Task', fn: m => m.task},
+    {label:'Size', fn: m => m.paramLabel},
+    {label:'Context', fn: m => m.ctxLabel},
+    {label:'Quantization', fn: m => m.quant || 'full'},
+    {label:'Function calling', fn: m => m.features.includes('fn') ? '<span class="check">✓</span>' : '<span class="cross">—</span>'},
+    {label:'LoRA', fn: m => m.features.includes('lora') ? '<span class="check">✓</span>' : '<span class="cross">—</span>'},
+    {label:'Vision', fn: m => m.features.includes('vision') ? '<span class="check">✓</span>' : '<span class="cross">—</span>'},
+    {label:'Batch', fn: m => m.features.includes('batch') ? '<span class="check">✓</span>' : '<span class="cross">—</span>'},
+    {label:'Status', fn: m => m.deprecated ? '<span class="tag tag-dep">deprecating</span>' : m.beta ? '<span class="tag tag-beta">beta</span>' : '<span class="tag tag-gen">active</span>'},
+  ];
+  const wrap = document.getElementById('compare-table-wrap');
+  wrap.innerHTML = `
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th class="row-label">—</th>
+          ${mods.map(m => `<th>${m.id.replace('llama-','llama-<br>')}</th>`).join('')}
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map(r => `
+          <tr>
+            <td class="row-label">${r.label}</td>
+            ${mods.map(m => `<td>${r.fn(m)}</td>`).join('')}
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+  document.getElementById('compare-modal').classList.add('open');
+}
+
+// Event listeners
+document.getElementById('search-input').addEventListener('input', e => { searchVal = e.target.value; render(); });
+
+document.getElementById('version-filters').addEventListener('click', e => {
+  const btn = e.target.closest('[data-v]');
+  if (!btn) return;
+  versionFilter = btn.dataset.v;
+  capFilter = null;
+  document.querySelectorAll('[data-cap]').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('[data-v]').forEach(b => b.classList.toggle('active', b === btn));
+  render();
+});
+
+document.querySelectorAll('[data-cap]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const wasActive = btn.classList.contains('active');
+    document.querySelectorAll('[data-cap]').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('[data-v]').forEach(b => b.classList.remove('active'));
+    document.querySelector('[data-v="all"]').classList.add('active');
+    versionFilter = 'all';
+    if (wasActive) {
+      capFilter = null;
+    } else {
+      capFilter = btn.dataset.cap;
+      btn.classList.add('active');
+    }
+    render();
+  });
+});
+
+document.getElementById('btn-grid').addEventListener('click', () => {
+  viewMode = 'grid';
+  document.getElementById('btn-grid').classList.add('active');
+  document.getElementById('btn-list').classList.remove('active');
+  render();
+});
+
+document.getElementById('btn-list').addEventListener('click', () => {
+  viewMode = 'list';
+  document.getElementById('btn-list').classList.add('active');
+  document.getElementById('btn-grid').classList.remove('active');
+  render();
+});
+
+document.getElementById('sort-select').addEventListener('change', e => { sortVal = e.target.value; render(); });
+
+document.getElementById('detail-close').addEventListener('click', () => {
+  document.getElementById('detail-overlay').classList.remove('open');
+});
+
+document.getElementById('detail-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('detail-overlay'))
+    document.getElementById('detail-overlay').classList.remove('open');
+});
+
+document.getElementById('compare-clear').addEventListener('click', () => {
+  compareSet.clear();
+  updateCompareBar();
+  render();
+});
+
+document.getElementById('compare-go').addEventListener('click', openCompare);
+
+document.getElementById('compare-modal-close').addEventListener('click', () => {
+  document.getElementById('compare-modal').classList.remove('open');
+});
+
+document.getElementById('compare-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('compare-modal'))
+    document.getElementById('compare-modal').classList.remove('open');
+});
+
+render();
+</script>
+</body>
+</html>

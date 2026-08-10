@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Context Cheatsheet | VPS Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        slate: {
+                            50: '#F8FAFC',
+                            100: '#F1F5F9',
+                            200: '#E2E8F0',
+                            300: '#CBD5E1',
+                            400: '#94A3B8',
+                            500: '#64748B',
+                            600: '#475569',
+                            700: '#334155',
+                            800: '#1E293B',
+                            900: '#0F172A',
+                        },
+                        action: '#6366F1',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #F8FAFC;
+            color: #1E293B;
+            -webkit-font-smoothing: antialiased;
+        }
+        .glass-header {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid #E2E8F0;
+        }
+        .cheatsheet-card {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #E2E8F0;
+            border-radius: 10px;
+        }
+        .copy-feedback {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .copy-feedback.show {
+            opacity: 1;
+        }
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            background: #F1F5F9;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.875em;
+            color: #4F46E5;
+        }
+        pre code {
+            background: transparent;
+            padding: 0;
+            color: inherit;
+        }
+    </style>
+</head>
+<body class="font-sans pb-20">
+
+    <!-- Header Section -->
+    <header class="glass-header sticky top-0 z-50 px-4 py-4 mb-8">
+        <div class="max-w-[900px] mx-auto flex flex-col md:flex-row md:items-center justify-between gap-2">
+            <div>
+                <h1 class="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-action"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
+                    Processed Context File
+                </h1>
+                <p class="text-sm text-slate-500 font-medium">Refined technical summary optimized for AI interaction.</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    <span class="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5"></span> Verified Data
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-[900px] mx-auto px-4 space-y-10">
+
+        <!-- Discovery Log / Extraction Overview -->
+        <section>
+            <div class="flex items-center gap-2 mb-4">
+                <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400">Discovery Log (Extraction Overview)</h2>
+                <div class="h-[1px] flex-grow bg-slate-200"></div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <!-- Checklist Items -->
+                <div class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-lg hover:border-action/30 transition-colors">
+                    <div class="flex-shrink-0 w-5 h-5 border-2 border-action rounded flex items-center justify-center bg-action/5">
+                        <svg class="w-3.5 h-3.5 text-action" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <span class="text-sm font-mono text-slate-600 truncate">ss -tulnp / systemctl</span>
+                    <span class="ml-auto px-2 py-0.5 text-[10px] font-bold bg-slate-100 text-slate-500 rounded uppercase">Command</span>
+                </div>
+
+                <div class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-lg hover:border-action/30 transition-colors">
+                    <div class="flex-shrink-0 w-5 h-5 border-2 border-action rounded flex items-center justify-center bg-action/5">
+                        <svg class="w-3.5 h-3.5 text-action" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <span class="text-sm font-mono text-slate-600 truncate">Nginx / Reverse Proxy</span>
+                    <span class="ml-auto px-2 py-0.5 text-[10px] font-bold bg-blue-100 text-blue-600 rounded uppercase">Service</span>
+                </div>
+
+                <div class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-lg hover:border-action/30 transition-colors">
+                    <div class="flex-shrink-0 w-5 h-5 border-2 border-action rounded flex items-center justify-center bg-action/5">
+                        <svg class="w-3.5 h-3.5 text-action" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <span class="text-sm font-mono text-slate-600 truncate">SSH Hardening / UFW</span>
+                    <span class="ml-auto px-2 py-0.5 text-[10px] font-bold bg-red-100 text-red-600 rounded uppercase">Security</span>
+                </div>
+
+                <div class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-lg hover:border-action/30 transition-colors">
+                    <div class="flex-shrink-0 w-5 h-5 border-2 border-action rounded flex items-center justify-center bg-action/5">
+                        <svg class="w-3.5 h-3.5 text-action" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <span class="text-sm font-mono text-slate-600 truncate">boogertime.xyz stack</span>
+                    <span class="ml-auto px-2 py-0.5 text-[10px] font-bold bg-purple-100 text-purple-600 rounded uppercase">Project</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Primary Output (The Cheatsheet) -->
+        <section class="relative">
+            <div id="copy-notification" class="copy-feedback absolute -top-8 right-0 bg-slate-900 text-white text-xs px-3 py-1 rounded-md shadow-lg pointer-events-none">
+                Copied to clipboard!
+            </div>
+            
+            <div class="cheatsheet-card bg-white border border-slate-200 rounded-2xl overflow-hidden">
+                <!-- Card Header with Copy Utility -->
+                <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+                    <div class="flex items-center gap-2">
+                        <div class="w-2.5 h-2.5 rounded-full bg-red-400"></div>
+                        <div class="w-2.5 h-2.5 rounded-full bg-amber-400"></div>
+                        <div class="w-2.5 h-2.5 rounded-full bg-emerald-400"></div>
+                        <span class="ml-2 text-xs font-mono text-slate-400 font-medium">context_cheatsheet.md</span>
+                    </div>
+                    <button 
+                        onclick="copyContent()" 
+                        class="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-md text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-action hover:border-action/30 transition-all active:scale-95 shadow-sm"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                        Copy Context
+                    </button>
+                </div>
+
+                <!-- Main Content Area -->
+                <article id="cheatsheet-content" class="p-8 md:p-10 prose prose-slate max-w-none">
+                    <h1 class="text-2xl md:text-3xl font-bold text-slate-900 mb-8 border-b pb-4 border-slate-100">VPS Management & Application Deployment</h1>
+
+                    <div class="space-y-10 text-slate-700 leading-relaxed">
+                        
+                        <!-- System Auditing -->
+                        <div>
+                            <h2 class="flex items-center gap-2 text-lg font-bold text-slate-800 mb-4">
+                                <span class="w-8 h-8 rounded-lg bg-indigo-50 text-action flex items-center justify-center text-sm">01</span>
+                                System Auditing & Network
+                            </h2>
+                            <ul class="space-y-3 list-none pl-0">
+                                <li class="flex flex-start gap-3">
+                                    <span class="text-action mt-1.5">•</span>
+                                    <span><strong>Check Listening Ports:</strong> <code>ss -tulnp</code> (Detailed with process names) or <code>ss -tuln</code>.</span>
+                                </li>
+                                <li class="flex flex-start gap-3">
+                                    <span class="text-action mt-1.5">•</span>
+                                    <span><strong>Check Running Services:</strong> <code>systemctl list-units --type=service --state=running</code>.</span>
+                                </li>
+                                <li class="flex flex-start gap-3">
+                                    <span class="text-action mt-1.5">•</span>
+                                    <span><strong>Check Public IP:</strong> <code>curl ifconfig.me</code> or <code>curl icanhazip.com</code>.</span>
+                                </li>
+                                <li class="flex flex-start gap-3">
+                                    <span class="text-action mt-1.5">•</span>
+                                    <span><strong>Internal Network Scan:</strong> <code>nmap -sV &lt;your-public-ip&gt;</code> (Simulates external perspective).</span>
+                                </li>
+                                <li class="flex flex-start gap-3">
+                                    <span class="text-action mt-1.5">•</span>
+                                    <span><strong>Service Status:</strong> <code>systemctl status &lt;nginx|ssh|apache2&gt;</code>.</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Security -->
+                        <div>
+                            <h2 class="flex items-center gap-2 text-lg font-bold text-slate-800 mb-4">
+                                <span class="w-8 h-8 rounded-lg bg-indigo-50 text-action flex items-center justify-center text-sm">02</span>
+                                Firewall & Security
+                            </h2>
+                            <ul class="space-y-3 list-none pl-0">
+                                <li class="flex flex-start gap-3">
+                                    <span class="text-action mt-1.5">•</span>
+                                    <span><strong>Check UFW Status:</strong> <code>sudo ufw status verbose</code>.</span>
+                                </li>
+                                <li class="flex flex-start gap-3">
+                                    <span class="text-action mt-1.5">•</span>
+                                    <span><strong>Check IPTables:</strong> <code>sudo iptables -L -n -v</code>.</span>
+                                </li>
+                                <li class="flex flex-start gap-3">
+                                    <span class="text-action mt-1.5">•</span>
+                                    <span>
+                                        <strong>Hardening SSH:</strong> 
+                                        <div class="mt-2 pl-4 border-l-2 border-slate-100 space-y-1 text-sm text-slate-600">
+                                            <p>Disable password auth: Edit <code>/etc/ssh/sshd_config</code> → <code>PasswordAuthentication no</code></p>
+                                            <p>Restart SSH: <code>sudo systemctl restart ssh</code></p>
+                                        </div>
+                                    </span>
+                                </li>
+                                <li class="flex flex-start gap-3">
+                                    <span class="text-action mt-1.5">•</span>
+                                    <span><strong>Brute Force Protection:</strong> <code>sudo apt install fail2ban -y</code>.</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Nginx -->
+                        <div>
+                            <h2 class="flex items-center gap-2 text-lg font-bold text-slate-800 mb-4">
+                                <span class="w-8 h-8 rounded-lg bg-indigo-50 text-action flex items-center justify-center text-sm">03</span>
+                                Nginx & Domain Management
+                            </h2>
+                            <ul class="space-y-3 list-none pl-0">
+                                <li class="flex flex-start gap-3">
+                                    <span class="text-action mt-1.5">•</span>
+                                    <span><strong>Test Configuration:</strong> <code>sudo nginx -t</code>.</span>
+                                </li>
+                                <li class="flex flex-start gap-3">
+                                    <span class="text-action mt-1.5">•</span>
+                                    <span><strong>Reload Nginx:</strong> <code>sudo systemctl reload nginx</code>.</span>
+                                </li>
+                                <li class="flex flex-start gap-3">
+                                    <span class="text-action mt-1.5">•</span>
+                                    <div class="w-full">
+                                        <strong>Reverse Proxy Template:</strong>
+                                        <pre class="mt-3 p-4 bg-slate-900 text-slate-300 rounded-xl overflow-x-auto text-xs font-mono leading-relaxed">location / {
+    proxy_pass http://127.0.0.1:3000;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+}</pre>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- SSL & Certbot -->
+                        <div>
+                            <h2 class="flex items-center gap-2 text-lg font-bold text-slate-800 mb-4">
+                                <span class="w-8 h-8 rounded-lg bg-indigo-50 text-action flex items-center justify-center text-sm">04</span>
+                                SSL & Certbot
+                            </h2>
+                            <ul class="space-y-3 list-none pl-0">
+                                <li class="flex flex-start gap-3">
+                                    <span class="text-action mt-1.5">•</span>
+                                    <span><strong>Generate Certificate:</strong> <code>sudo certbot --nginx -d domain.com -d www.domain.com</code>.</span>
+                                </li>
+                                <li class="flex flex-start gap-3">
+                                    <span class="text-action mt-1.5">•</span>
+                                    <span><strong>Force HTTPS:</strong> Certbot handles automatic redirects and configuration.</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Server Summary Bento-style -->
+                        <div class="mt-12 pt-10 border-t border-slate-100">
+                            <h2 class="text-sm font-bold uppercase tracking-widest text-slate-400 mb-6 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+                                Server Environment Summary
+                            </h2>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                                    <span class="text-[10px] font-bold text-slate-400 uppercase block mb-1">Primary Domain</span>
+                                    <span class="text-sm font-mono font-medium text-slate-900">boogertime.xyz</span>
+                                </div>
+                                <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                                    <span class="text-[10px] font-bold text-slate-400 uppercase block mb-1">Public IP</span>
+                                    <span class="text-sm font-mono font-medium text-slate-900">3.139.96.147</span>
+                                </div>
+                                <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                                    <span class="text-[10px] font-bold text-slate-400 uppercase block mb-1">Tech Stack</span>
+                                    <span class="text-sm font-medium text-slate-900">Nginx / Node / React</span>
+                                </div>
+                                <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl col-span-1 sm:col-span-2">
+                                    <span class="text-[10px] font-bold text-slate-400 uppercase block mb-1">Project Path</span>
+                                    <span class="text-sm font-mono font-medium text-slate-900 truncate block">~/projects/introduction_to_da_world</span>
+                                </div>
+                                <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                                    <span class="text-[10px] font-bold text-slate-400 uppercase block mb-1">Firewall</span>
+                                    <span class="text-sm font-medium text-green-600 flex items-center gap-1.5">
+                                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                        Active / Default DROP
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        function copyContent() {
+            const content = document.getElementById('cheatsheet-content').innerText;
+            const notification = document.getElementById('copy-notification');
+            
+            navigator.clipboard.writeText(content).then(() => {
+                notification.classList.add('show');
+                
+                // Change button style temporarily
+                const btn = event.currentTarget;
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-500"><polyline points="20 6 9 17 4 12"/></svg>
+                    Copied!
+                `;
+                btn.classList.add('border-green-200', 'bg-green-50');
+
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    btn.innerHTML = originalHTML;
+                    btn.classList.remove('border-green-200', 'bg-green-50');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+
+        // Simple subtle animation on load
+        window.addEventListener('DOMContentLoaded', () => {
+            const elements = document.querySelectorAll('.cheatsheet-card, section');
+            elements.forEach((el, i) => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(10px)';
+                el.style.transition = 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)';
+                
+                setTimeout(() => {
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                }, i * 150);
+            });
+        });
+    </script>
+</body>
+</html>
+

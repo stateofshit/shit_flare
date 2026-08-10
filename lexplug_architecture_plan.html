@@ -1,0 +1,149 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); color: var(--color-text-primary); }
+.wrap { padding: 1rem 0; }
+.section { margin-bottom: 2rem; }
+.section-title { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: 0.75rem; padding-bottom: 0.4rem; border-bottom: 1px solid var(--color-border-tertiary); }
+.phase { margin-bottom: 1.5rem; }
+.phase-header { display: flex; align-items: center; gap: 10px; margin-bottom: 0.6rem; }
+.phase-badge { font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 99px; white-space: nowrap; }
+.p1 { background: #EEEDFE; color: #3C3489; }
+.p2 { background: #E1F5EE; color: #085041; }
+.p3 { background: #FAEEDA; color: #633806; }
+.p4 { background: #E6F1FB; color: #0C447C; }
+.phase-label { font-size: 14px; font-weight: 500; color: var(--color-text-primary); }
+.tasks { display: grid; gap: 6px; }
+.task { background: var(--color-background-secondary); border: 1px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 10px 14px; display: flex; align-items: flex-start; gap: 10px; cursor: pointer; transition: border-color 0.15s; }
+.task:hover { border-color: var(--color-border-secondary); }
+.task-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; color: var(--color-text-secondary); }
+.task-body { flex: 1; min-width: 0; }
+.task-title { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+.task-sub { font-size: 12px; color: var(--color-text-secondary); line-height: 1.5; }
+.constraint-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.constraint { background: var(--color-background-secondary); border: 1px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 10px 14px; }
+.constraint-key { font-size: 11px; font-weight: 500; color: var(--color-text-tertiary); margin-bottom: 3px; }
+.constraint-val { font-size: 13px; font-weight: 500; }
+.arch-row { display: flex; align-items: stretch; gap: 6px; margin-bottom: 6px; }
+.arch-box { flex: 1; background: var(--color-background-secondary); border: 1px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 10px 12px; text-align: center; }
+.arch-box .ab-label { font-size: 12px; font-weight: 500; margin-bottom: 3px; }
+.arch-box .ab-sub { font-size: 11px; color: var(--color-text-tertiary); }
+.arch-box.highlight { border-color: #AFA9EC; background: #EEEDFE; }
+.arch-box.highlight .ab-label { color: #3C3489; }
+.arch-box.highlight .ab-sub { color: #534AB7; }
+.arrow-down { text-align: center; color: var(--color-text-tertiary); font-size: 14px; line-height: 1; margin-bottom: 6px; }
+@media (prefers-color-scheme: dark) {
+  .p1 { background: #26215C; color: #CECBF6; }
+  .p2 { background: #04342C; color: #9FE1CB; }
+  .p3 { background: #412402; color: #FAC775; }
+  .p4 { background: #042C53; color: #B5D4F4; }
+  .arch-box.highlight { border-color: #534AB7; background: #26215C; }
+  .arch-box.highlight .ab-label { color: #CECBF6; }
+  .arch-box.highlight .ab-sub { color: #AFA9EC; }
+}
+</style>
+<div class="wrap">
+
+  <div class="section">
+    <div class="section-title">System architecture</div>
+    <div class="arch-row">
+      <div class="arch-box highlight"><div class="ab-label">Cloudflare Workers</div><div class="ab-sub">Edge runtime · TypeScript</div></div>
+      <div class="arch-box highlight"><div class="ab-label">PartyKit</div><div class="ab-sub">Real-time state coordination</div></div>
+    </div>
+    <div class="arch-row">
+      <div class="arch-box highlight"><div class="ab-label">Durable Objects + SQLite</div><div class="ab-sub">All persistent state · no file storage</div></div>
+      <div class="arch-box highlight"><div class="ab-label">Workers AI</div><div class="ab-sub">llama-3.1-8b-instruct-fast · cached</div></div>
+    </div>
+    <div class="arch-row">
+      <div class="arch-box highlight"><div class="ab-label">React + Vite SPA</div><div class="ab-sub">Command center dashboard</div></div>
+      <div class="arch-box highlight"><div class="ab-label">Edge SEO</div><div class="ab-sub">Meta/OG/JSON-LD injection</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Free-tier hard limits</div>
+    <div class="constraint-grid">
+      <div class="constraint"><div class="constraint-key">Workers requests</div><div class="constraint-val">100k / day · CPU ≤ 10ms</div></div>
+      <div class="constraint"><div class="constraint-key">Workers AI neurons</div><div class="constraint-val">10k / day · LLM output cached</div></div>
+      <div class="constraint"><div class="constraint-key">Persistence</div><div class="constraint-val">Durable Objects only · SQL tables</div></div>
+      <div class="constraint"><div class="constraint-key">Secrets</div><div class="constraint-val">wrangler.jsonc bindings only</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Build phases</div>
+
+    <div class="phase">
+      <div class="phase-header"><span class="phase-badge p1">Phase 1</span><span class="phase-label">Foundation & scaffolding</span></div>
+      <div class="tasks">
+        <div class="task" onclick="sendPrompt('Generate the wrangler.jsonc config for LexPlug with Durable Objects, AI binding, and PartyKit integration')">
+          <i class="ti ti-settings task-icon" aria-hidden="true"></i>
+          <div class="task-body"><div class="task-title">wrangler.jsonc setup</div><div class="task-sub">Bindings for AI, Durable Objects, PartyKit, KV cache — no hardcoded secrets</div></div>
+        </div>
+        <div class="task" onclick="sendPrompt('Generate the SQL schema for LexPlug Durable Objects: trends table, content cache table, and telemetry table')">
+          <i class="ti ti-database task-icon" aria-hidden="true"></i>
+          <div class="task-body"><div class="task-title">Durable Object SQL schema</div><div class="task-sub">Tables: trends, generated_content, sitemap_entries, telemetry, affiliate_slots</div></div>
+        </div>
+        <div class="task" onclick="sendPrompt('Scaffold the Cloudflare Worker TypeScript entry point for LexPlug with routing and under-10ms request handling')">
+          <i class="ti ti-code task-icon" aria-hidden="true"></i>
+          <div class="task-body"><div class="task-title">Worker entry point & router</div><div class="task-sub">TypeScript · thin request router · CPU-time budget enforced per route</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-header"><span class="phase-badge p2">Phase 2</span><span class="phase-label">Trend detection engine</span></div>
+      <div class="tasks">
+        <div class="task" onclick="sendPrompt('Build the LexPlug trend polling Worker: fetch tech/AI RSS and API sources, deduplicate with Durable Object SQLite, run on a cron trigger')">
+          <i class="ti ti-trending-up task-icon" aria-hidden="true"></i>
+          <div class="task-body"><div class="task-title">Trend poller (cron Worker)</div><div class="task-sub">Cron trigger · RSS + public APIs · dedup via SQLite · stores trend score</div></div>
+        </div>
+        <div class="task" onclick="sendPrompt('Build the LexPlug trend scoring algorithm using Durable Object state to rank trends by velocity and recency')">
+          <i class="ti ti-chart-bar task-icon" aria-hidden="true"></i>
+          <div class="task-body"><div class="task-title">Velocity scoring algorithm</div><div class="task-sub">Rank by mention frequency delta · decay factor · persist score in SQLite</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-header"><span class="phase-badge p3">Phase 3</span><span class="phase-label">AI content generation</span></div>
+      <div class="tasks">
+        <div class="task" onclick="sendPrompt('Build the LexPlug AI content pipeline: check cache first, call Workers AI llama-3.1-8b only on cache miss, store output in Durable Object')">
+          <i class="ti ti-robot task-icon" aria-hidden="true"></i>
+          <div class="task-body"><div class="task-title">LLM generation pipeline</div><div class="task-sub">Cache-first · Workers AI on miss only · output stored in DO SQLite · 10k neuron budget respected</div></div>
+        </div>
+        <div class="task" onclick="sendPrompt('Build the LexPlug SEO metadata injector: edge Worker that injects title, description, OpenGraph, and JSON-LD into every page response')">
+          <i class="ti ti-search task-icon" aria-hidden="true"></i>
+          <div class="task-body"><div class="task-title">Edge SEO injector</div><div class="task-sub">Title · description · OpenGraph · JSON-LD · injected at edge per route</div></div>
+        </div>
+        <div class="task" onclick="sendPrompt('Build the LexPlug sitemap.xml generator that reads all content entries from the Durable Object and serves a dynamic sitemap')">
+          <i class="ti ti-sitemap task-icon" aria-hidden="true"></i>
+          <div class="task-body"><div class="task-title">Dynamic sitemap generator</div><div class="task-sub">/sitemap.xml reads from DO · updated on every new content entry</div></div>
+        </div>
+        <div class="task" onclick="sendPrompt('Build the LexPlug affiliate link placeholder system: inject monetization anchors into generated content based on topic keywords')">
+          <i class="ti ti-coin task-icon" aria-hidden="true"></i>
+          <div class="task-body"><div class="task-title">Affiliate link injection</div><div class="task-sub">Keyword-matched placeholders · inserted into article HTML at generation time</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-header"><span class="phase-badge p4">Phase 4</span><span class="phase-label">Command center dashboard</span></div>
+      <div class="tasks">
+        <div class="task" onclick="sendPrompt('Build the LexPlug React + Vite dashboard that connects via PartySocket to stream real-time trend and content telemetry')">
+          <i class="ti ti-device-desktop task-icon" aria-hidden="true"></i>
+          <div class="task-body"><div class="task-title">React SPA + PartySocket</div><div class="task-sub">Vite · PartySocket client · live trend feed · content generation log · neuron usage meter</div></div>
+        </div>
+        <div class="task" onclick="sendPrompt('Build the LexPlug PartyKit server-side room that broadcasts telemetry events to connected dashboard clients')">
+          <i class="ti ti-broadcast task-icon" aria-hidden="true"></i>
+          <div class="task-body"><div class="task-title">PartyKit telemetry room</div><div class="task-sub">partyserver · broadcasts content events · Worker pushes on each generation</div></div>
+        </div>
+        <div class="task" onclick="sendPrompt('Build the LexPlug operational metrics panel: requests/day counter, AI neuron budget remaining, content items published, sitemap size')">
+          <i class="ti ti-dashboard task-icon" aria-hidden="true"></i>
+          <div class="task-body"><div class="task-title">Metrics & budget panel</div><div class="task-sub">Requests/day · neurons remaining · articles published · sitemap entry count</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

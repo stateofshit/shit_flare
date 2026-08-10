@@ -1,0 +1,120 @@
+
+<style>
+  .tbl-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+  th{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-align:left;padding:8px 10px;border-bottom:0.5px solid var(--color-border-secondary);white-space:nowrap}
+  td{padding:9px 10px;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-primary);vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:var(--color-background-secondary)}
+  .dep{color:var(--color-text-danger);font-size:11px;padding:2px 7px;border-radius:20px;background:var(--color-background-danger);white-space:nowrap}
+  .badge{font-size:11px;padding:2px 7px;border-radius:20px;white-space:nowrap}
+  .b-fn{background:#EAF3DE;color:#27500A}
+  .b-lora{background:#EEEDFE;color:#3C3489}
+  .b-vis{background:#E1F5EE;color:#085041}
+  .b-batch{background:#FBEAF0;color:#72243E}
+  @media(prefers-color-scheme:dark){
+    .b-fn{background:#27500A;color:#C0DD97}
+    .b-lora{background:#3C3489;color:#CECBF6}
+    .b-vis{background:#085041;color:#9FE1CB}
+    .b-batch{background:#72243E;color:#F4C0D1}
+  }
+  .model-name{font-weight:500;font-size:12px;color:var(--color-text-primary);word-break:break-all}
+  .size-pill{display:inline-block;font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;background:var(--color-background-info);color:var(--color-text-info)}
+  .use-case{font-size:12px;color:var(--color-text-secondary);line-height:1.4}
+  .quant{font-size:11px;color:var(--color-text-secondary)}
+  .ver{font-size:11px;font-weight:500;color:var(--color-text-secondary)}
+  .section-note{font-size:12px;color:var(--color-text-secondary);margin:12px 0 16px;padding:10px 14px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);border-left:2px solid var(--color-border-info);border-radius:0}
+</style>
+
+<h2 class="sr-only">Llama 3 family comparison table showing version, size, context, quantization, features, and use case for each model</h2>
+
+<p class="section-note"><i class="ti ti-info-circle" aria-hidden="true" style="font-size:14px;vertical-align:-2px;margin-right:5px"></i>Deprecated models included for completeness — skip them for new projects.</p>
+
+<div class="tbl-wrap">
+<table>
+  <colgroup>
+    <col style="width:28%">
+    <col style="width:9%">
+    <col style="width:9%">
+    <col style="width:10%">
+    <col style="width:12%">
+    <col style="width:32%">
+  </colgroup>
+  <thead>
+    <tr>
+      <th>Model</th>
+      <th>Version</th>
+      <th>Size</th>
+      <th>Context</th>
+      <th>Features</th>
+      <th>Best for</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><span class="model-name">llama-3.3-70b-instruct-fp8-fast</span></td>
+      <td><span class="ver">3.3</span></td>
+      <td><span class="size-pill">70B</span></td>
+      <td>24k</td>
+      <td><span class="badge b-fn">fn</span> <span class="badge b-batch">batch</span></td>
+      <td><span class="use-case">Highest quality reasoning, complex tasks, production-grade outputs</span></td>
+    </tr>
+    <tr>
+      <td><span class="model-name">llama-3.2-11b-vision-instruct</span></td>
+      <td><span class="ver">3.2</span></td>
+      <td><span class="size-pill">11B</span></td>
+      <td>128k</td>
+      <td><span class="badge b-vis">vision</span> <span class="badge b-lora">LoRA</span></td>
+      <td><span class="use-case">Image understanding, captioning, visual Q&A</span></td>
+    </tr>
+    <tr>
+      <td><span class="model-name">llama-3.2-3b-instruct</span></td>
+      <td><span class="ver">3.2</span></td>
+      <td><span class="size-pill">3B</span></td>
+      <td>80k</td>
+      <td><span class="badge b-lora">LoRA</span></td>
+      <td><span class="use-case">Lightweight tasks, fine-tuning, edge deployment</span></td>
+    </tr>
+    <tr>
+      <td><span class="model-name">llama-3.2-1b-instruct</span></td>
+      <td><span class="ver">3.2</span></td>
+      <td><span class="size-pill">1B</span></td>
+      <td>60k</td>
+      <td><span class="quant">—</span></td>
+      <td><span class="use-case">Ultra-fast, cheapest, simple classification or extraction</span></td>
+    </tr>
+    <tr>
+      <td><span class="model-name">llama-3.1-8b-instruct-fp8</span></td>
+      <td><span class="ver">3.1</span></td>
+      <td><span class="size-pill">8B</span></td>
+      <td>32k</td>
+      <td><span class="quant">—</span></td>
+      <td><span class="use-case">Solid general-purpose model, good balance of speed and quality</span></td>
+    </tr>
+    <tr style="opacity:0.45">
+      <td><span class="model-name">llama-3.1-8b-instruct-awq</span></td>
+      <td><span class="ver">3.1</span></td>
+      <td><span class="size-pill">8B</span></td>
+      <td>8k</td>
+      <td><span class="dep">Deprecating</span></td>
+      <td><span class="use-case">Same as fp8 but int4 quant, tiny ctx — replaced by fp8</span></td>
+    </tr>
+    <tr style="opacity:0.45">
+      <td><span class="model-name">llama-3-8b-instruct</span></td>
+      <td><span class="ver">3.0</span></td>
+      <td><span class="size-pill">8B</span></td>
+      <td>8k</td>
+      <td><span class="dep">Deprecating</span></td>
+      <td><span class="use-case">Original Llama 3 — superseded in every way by 3.1+</span></td>
+    </tr>
+    <tr style="opacity:0.45">
+      <td><span class="model-name">llama-3-8b-instruct-awq</span></td>
+      <td><span class="ver">3.0</span></td>
+      <td><span class="size-pill">8B</span></td>
+      <td>8k</td>
+      <td><span class="dep">Deprecating</span></td>
+      <td><span class="use-case">Quantized variant of 3.0 — no reason to pick this</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>

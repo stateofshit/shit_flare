@@ -1,0 +1,112 @@
+
+<style>
+  .search-bar{width:100%;box-sizing:border-box;padding:8px 12px;font-size:14px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);margin-bottom:16px}
+  .filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+  .tag{font-size:12px;padding:4px 10px;border-radius:20px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);color:var(--color-text-secondary);cursor:pointer;transition:all .15s}
+  .tag.active{background:var(--color-background-info);color:var(--color-text-info);border-color:transparent}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+  .card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:16px;display:flex;flex-direction:column;gap:8px}
+  .card:hover{border-color:var(--color-border-secondary)}
+  .card-title{font-size:14px;font-weight:500;color:var(--color-text-primary);text-decoration:none;word-break:break-all}
+  .card-title:hover{color:var(--color-text-info)}
+  .card-desc{font-size:12px;color:var(--color-text-secondary);line-height:1.5;flex:1}
+  .meta-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:4px}
+  .badge{font-size:11px;padding:2px 8px;border-radius:20px;white-space:nowrap}
+  .badge-gen{background:#E6F1FB;color:#0C447C}
+  .badge-vis{background:#E1F5EE;color:#085041}
+  .badge-ctx{background:var(--color-background-secondary);color:var(--color-text-secondary)}
+  .badge-dep{background:#FCEBEB;color:#A32D2D}
+  .badge-beta{background:#FAEEDA;color:#633806}
+  .badge-lora{background:#EEEDFE;color:#3C3489}
+  .badge-fn{background:#EAF3DE;color:#27500A}
+  .badge-batch{background:#FBEAF0;color:#72243E}
+  @media(prefers-color-scheme:dark){
+    .badge-gen{background:#0C447C;color:#B5D4F4}
+    .badge-vis{background:#085041;color:#9FE1CB}
+    .badge-dep{background:#791F1F;color:#F7C1C1}
+    .badge-beta{background:#633806;color:#FAC775}
+    .badge-lora{background:#3C3489;color:#CECBF6}
+    .badge-fn{background:#27500A;color:#C0DD97}
+    .badge-batch{background:#72243E;color:#F4C0D1}
+  }
+  .empty{text-align:center;color:var(--color-text-secondary);font-size:14px;padding:40px 0;grid-column:1/-1}
+  .count{font-size:13px;color:var(--color-text-secondary);margin-bottom:12px}
+</style>
+
+<h2 class="sr-only">Cloudflare Workers AI — Llama model catalog with 14 models, filterable by task type and features</h2>
+
+<input class="search-bar" type="search" placeholder="Search models…" id="search" aria-label="Search models" />
+
+<div class="filter-row" id="filters" role="group" aria-label="Filter by feature">
+  <button class="tag active" data-f="all">All</button>
+  <button class="tag" data-f="fn">Function calling</button>
+  <button class="tag" data-f="lora">LoRA</button>
+  <button class="tag" data-f="vision">Vision</button>
+  <button class="tag" data-f="dep">Deprecating</button>
+</div>
+
+<p class="count" id="count">14 models</p>
+<div class="grid" id="grid"></div>
+
+<script>
+const models = [
+  {name:"llama-4-scout-17b-16e-instruct",author:"Meta",task:"Text Generation",desc:"Meta's Llama 4 Scout — 17B parameter multimodal model with 16-expert MoE. Industry-leading performance on text and image understanding.",ctx:"131,000",features:["fn","batch"],url:"https://developers.cloudflare.com/workers-ai/models/llama-4-scout-17b-16e-instruct"},
+  {name:"llama-guard-3-8b",author:"Meta",task:"Text Generation",desc:"Llama 3.1 8B fine-tuned for content safety classification. Classifies both LLM inputs (prompt) and outputs (response) against safety categories.",ctx:"131,072",features:["lora"],url:"https://developers.cloudflare.com/workers-ai/models/llama-guard-3-8b"},
+  {name:"llama-3.3-70b-instruct-fp8-fast",author:"Meta",task:"Text Generation",desc:"Llama 3.3 70B quantized to fp8 precision, optimized for faster inference.",ctx:"24,000",features:["fn","batch"],url:"https://developers.cloudflare.com/workers-ai/models/llama-3.3-70b-instruct-fp8-fast"},
+  {name:"llama-3.2-1b-instruct",author:"Meta",task:"Text Generation",desc:"Lightweight 1B instruction-tuned model optimized for multilingual dialogue, agentic retrieval, and summarization.",ctx:"60,000",features:[],url:"https://developers.cloudflare.com/workers-ai/models/llama-3.2-1b-instruct"},
+  {name:"llama-3.2-3b-instruct",author:"Meta",task:"Text Generation",desc:"3B instruction-tuned model optimized for multilingual dialogue, agentic retrieval, and summarization.",ctx:"80,000",features:["lora"],url:"https://developers.cloudflare.com/workers-ai/models/llama-3.2-3b-instruct"},
+  {name:"llama-3.2-11b-vision-instruct",author:"Meta",task:"Text Generation",desc:"Vision-language model optimized for visual recognition, image reasoning, captioning, and general image Q&A.",ctx:"128,000",features:["lora","vision"],url:"https://developers.cloudflare.com/workers-ai/models/llama-3.2-11b-vision-instruct"},
+  {name:"llama-3.1-8b-instruct-awq",author:"Meta",task:"Text Generation",desc:"Quantized (int4) generative text model with 8B parameters.",ctx:"8,192",features:["dep"],url:"https://developers.cloudflare.com/workers-ai/models/llama-3.1-8b-instruct-awq"},
+  {name:"llama-3.1-8b-instruct-fp8",author:"Meta",task:"Text Generation",desc:"Llama 3.1 8B quantized to FP8 precision.",ctx:"32,000",features:[],url:"https://developers.cloudflare.com/workers-ai/models/llama-3.1-8b-instruct-fp8"},
+  {name:"llama-3-8b-instruct-awq",author:"Meta",task:"Text Generation",desc:"Quantized (int4) generative text model with 8B parameters from Meta.",ctx:"8,192",features:["dep"],url:"https://developers.cloudflare.com/workers-ai/models/llama-3-8b-instruct-awq"},
+  {name:"llava-1.5-7b-hf",author:"llava-hf",task:"Image-to-Text",desc:"LLaVA — open-source multimodal chatbot fine-tuned on GPT-generated instruction-following data. Auto-regressive transformer for vision-language tasks.",ctx:null,features:["beta","vision"],url:"https://developers.cloudflare.com/workers-ai/models/llava-1.5-7b-hf"},
+  {name:"llama-3-8b-instruct",author:"Meta",task:"Text Generation",desc:"Llama 3 8B with state-of-the-art performance across industry benchmarks including improved reasoning.",ctx:"7,968",features:["dep"],url:"https://developers.cloudflare.com/workers-ai/models/llama-3-8b-instruct"},
+  {name:"llama-2-7b-chat-hf-lora",author:"meta-llama",task:"Text Generation",desc:"Llama 2 7B base model dedicated for inference with LoRA adapters. Fine-tuned for dialogue, converted to HuggingFace Transformers format.",ctx:"8,192",features:["lora","beta"],url:"https://developers.cloudflare.com/workers-ai/models/llama-2-7b-chat-hf-lora"},
+  {name:"llama-2-7b-chat-fp16",author:"Meta",task:"Text Generation",desc:"Full precision (fp16) generative text model with 7B parameters.",ctx:"4,096",features:["dep"],url:"https://developers.cloudflare.com/workers-ai/models/llama-2-7b-chat-fp16"},
+  {name:"llama-2-7b-chat-int8",author:"Meta",task:"Text Generation",desc:"Quantized (int8) generative text model with 7B parameters.",ctx:"8,192",features:["dep"],url:"https://developers.cloudflare.com/workers-ai/models/llama-2-7b-chat-int8"},
+];
+
+let activeFilter="all";
+let searchVal="";
+
+function renderBadge(f){
+  const map={fn:["fn","Function calling"],lora:["lora","LoRA"],batch:["batch","Batch"],dep:["dep","Deprecating May 30"],beta:["beta","Beta"],vision:["vision","Vision"]};
+  if(!map[f])return"";
+  const[cls,label]=map[f];
+  return`<span class="badge badge-${cls}">${label}</span>`;
+}
+
+function render(){
+  const q=searchVal.toLowerCase();
+  const filtered=models.filter(m=>{
+    const matchSearch=!q||m.name.toLowerCase().includes(q)||m.desc.toLowerCase().includes(q)||m.task.toLowerCase().includes(q);
+    const matchFilter=activeFilter==="all"||(activeFilter==="dep"&&m.features.includes("dep"))||(activeFilter==="fn"&&m.features.includes("fn"))||(activeFilter==="lora"&&m.features.includes("lora"))||(activeFilter==="vision"&&m.features.includes("vision"));
+    return matchSearch&&matchFilter;
+  });
+  document.getElementById("count").textContent=`${filtered.length} model${filtered.length===1?"":"s"}`;
+  const grid=document.getElementById("grid");
+  if(!filtered.length){grid.innerHTML=`<p class="empty">No models match your filters.</p>`;return;}
+  grid.innerHTML=filtered.map(m=>`
+    <div class="card">
+      <a class="card-title" href="${m.url}" target="_blank">${m.name}</a>
+      <p class="card-desc">${m.desc}</p>
+      <div class="meta-row">
+        <span class="badge ${m.task==='Image-to-Text'?'badge-vis':'badge-gen'}">${m.task}</span>
+        ${m.ctx?`<span class="badge badge-ctx">${m.ctx} ctx</span>`:""}
+        ${m.features.map(renderBadge).join("")}
+      </div>
+    </div>
+  `).join("");
+}
+
+document.getElementById("search").addEventListener("input",e=>{searchVal=e.target.value;render();});
+document.getElementById("filters").addEventListener("click",e=>{
+  const btn=e.target.closest("[data-f]");
+  if(!btn)return;
+  activeFilter=btn.dataset.f;
+  document.querySelectorAll("[data-f]").forEach(b=>b.classList.toggle("active",b===btn));
+  render();
+});
+
+render();
+</script>

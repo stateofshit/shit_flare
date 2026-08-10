@@ -1,0 +1,2041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ClickPoint Annotator Pro - AI Dev Tool</title>
+    <style>
+        :root {
+            --bg: #1e1e2e;
+            --surface: #313244;
+            --text: #cdd6f4;
+            --subtext: #a6adc8;
+            --blue: #89b4fa;
+            --green: #a6e3a1;
+            --red: #f38ba8;
+            --yellow: #f9e2af;
+            --mauve: #cba6f7;
+            --teal: #94e2d5;
+            --border: #45475a;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow: hidden;
+        }
+
+        /* ---- Control Panel ---- */
+        #controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 2147483647;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 0;
+            box-shadow: var(--shadow);
+            width: 350px;
+            max-height: 85vh;
+            overflow-y: auto;
+            font-size: 13px;
+            user-select: none;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+
+        #controls.minimized {
+            max-height: 42px;
+            overflow: hidden;
+        }
+
+        #controls.minimized #panel-content {
+            display: none;
+        }
+
+        #drag-handle {
+            padding: 12px 16px;
+            background: var(--surface);
+            border-radius: 16px 16px 0 0;
+            cursor: grab;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.15s;
+        }
+
+        #drag-handle:active {
+            cursor: grabbing;
+        }
+
+        #drag-handle:hover {
+            background: #3a3b4d;
+        }
+
+        #drag-handle h3 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 600;
+            pointer-events: none;
+        }
+
+        .handle-buttons {
+            display: flex;
+            gap: 6px;
+        }
+
+        .handle-btn {
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            color: var(--text);
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s;
+            line-height: 1;
+        }
+
+        .handle-btn:hover {
+            background: var(--border);
+        }
+
+        #panel-content {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .section {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        .section:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .section-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--subtext);
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        label {
+            display: block;
+            margin: 4px 0 2px;
+            font-size: 11px;
+            color: var(--subtext);
+        }
+
+        select, button, input, textarea {
+            width: 100%;
+            padding: 8px 10px;
+            margin: 2px 0;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: inherit;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 40px;
+            max-height: 80px;
+            font-family: inherit;
+            cursor: text;
+        }
+
+        select:hover, button:hover {
+            border-color: var(--blue);
+        }
+
+        select:focus, input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--blue);
+            box-shadow: 0 0 0 2px rgba(137, 180, 250, 0.2);
+        }
+
+        button {
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        button.primary {
+            background: var(--blue);
+            color: var(--bg);
+            border: none;
+            font-weight: 600;
+        }
+
+        button.primary:hover {
+            background: #74c7ec;
+            border: none;
+        }
+
+        button.success {
+            background: var(--green);
+            color: var(--bg);
+            border: none;
+            font-weight: 600;
+        }
+
+        button.success:hover {
+            background: #b8ebaf;
+        }
+
+        button.warning {
+            background: var(--yellow);
+            color: var(--bg);
+            border: none;
+        }
+
+        button.danger {
+            background: var(--red);
+            color: var(--bg);
+            border: none;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 6px;
+        }
+
+        .button-row button {
+            flex: 1;
+        }
+
+        #output {
+            background: #11111b;
+            padding: 10px;
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+            font-size: 11px;
+            white-space: pre-wrap;
+            word-break: break-word;
+            max-height: 180px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            line-height: 1.5;
+        }
+
+        #status {
+            font-size: 10px;
+            color: var(--subtext);
+            text-align: center;
+            padding: 4px;
+            background: var(--bg);
+            border-radius: 6px;
+            margin-top: 4px;
+        }
+
+        /* Quick Label Input */
+        #quickLabelContainer {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        #quickLabelInput {
+            flex: 1;
+            padding: 6px 8px;
+            font-size: 12px;
+        }
+
+        #addLabelBtn {
+            width: auto;
+            padding: 6px 12px;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        /* Overlay */
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2147483646;
+            pointer-events: auto;
+            cursor: crosshair;
+        }
+
+        #overlay.delete-mode {
+            cursor: pointer;
+        }
+
+        #overlay.text-mode {
+            cursor: text;
+        }
+
+        /* ---- Shape Styles ---- */
+        .marker {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background: var(--red);
+            border: 2px solid var(--yellow);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: auto;
+            z-index: 2147483647;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        .marker:hover {
+            transform: translate(-50%, -50%) scale(1.4);
+            box-shadow: 0 0 12px var(--red);
+        }
+
+        .marker.selected {
+            transform: translate(-50%, -50%) scale(1.5);
+            box-shadow: 0 0 16px var(--blue);
+            border-color: var(--blue);
+        }
+
+        .marker.labeled {
+            border-color: var(--teal);
+            box-shadow: 0 0 8px var(--teal);
+        }
+
+        .rectangle {
+            position: absolute;
+            border: 2px dashed var(--green);
+            background: rgba(166, 227, 161, 0.12);
+            pointer-events: auto;
+            z-index: 2147483646;
+            cursor: pointer;
+            transition: border-color 0.15s, background 0.15s;
+        }
+
+        .rectangle:hover {
+            border-color: var(--yellow);
+            background: rgba(249, 226, 175, 0.2);
+        }
+
+        .rectangle.selected {
+            border-color: var(--blue);
+            border-style: solid;
+            background: rgba(137, 180, 250, 0.15);
+        }
+
+        .rectangle.labeled {
+            border-color: var(--teal);
+        }
+
+        svg.freehand-path {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: auto;
+            z-index: 2147483646;
+            cursor: pointer;
+            overflow: visible;
+        }
+
+        svg.freehand-path path {
+            fill: none;
+            stroke: var(--mauve);
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: stroke 0.15s, stroke-width 0.15s;
+        }
+
+        svg.freehand-path:hover path {
+            stroke: var(--red);
+            stroke-width: 5;
+        }
+
+        svg.freehand-path.selected path {
+            stroke: var(--blue);
+            stroke-width: 5;
+        }
+
+        svg.freehand-path.labeled path {
+            stroke: var(--teal);
+        }
+
+        /* ---- Text Labels ---- */
+        .text-label {
+            position: absolute;
+            z-index: 2147483647;
+            pointer-events: auto;
+            cursor: move;
+            font-family: system-ui, sans-serif;
+            font-size: 13px;
+            color: var(--text);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 12px;
+            max-width: 300px;
+            word-wrap: break-word;
+            box-shadow: var(--shadow);
+            transition: border-color 0.15s, box-shadow 0.15s;
+            user-select: none;
+        }
+
+        .text-label:hover {
+            border-color: var(--blue);
+            box-shadow: 0 0 16px rgba(137, 180, 250, 0.3);
+        }
+
+        .text-label.selected {
+            border-color: var(--blue);
+            box-shadow: 0 0 20px rgba(137, 180, 250, 0.5);
+        }
+
+        .text-label.editing {
+            border-color: var(--yellow);
+            box-shadow: 0 0 20px rgba(249, 226, 175, 0.5);
+            cursor: text;
+            user-select: text;
+        }
+
+        .text-label .label-content {
+            min-height: 20px;
+            line-height: 1.4;
+        }
+
+        .text-label .label-timestamp {
+            font-size: 9px;
+            color: var(--subtext);
+            margin-top: 4px;
+            font-family: monospace;
+        }
+
+        /* Connector line from label to shape */
+        .label-connector {
+            position: absolute;
+            z-index: 2147483646;
+            pointer-events: none;
+        }
+
+        .label-connector line {
+            stroke: var(--teal);
+            stroke-width: 1.5;
+            stroke-dasharray: 4 4;
+            opacity: 0.7;
+        }
+
+        /* ---- Measure Display ---- */
+        .measure-label {
+            position: fixed;
+            background: var(--surface);
+            color: var(--yellow);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            z-index: 2147483647;
+            pointer-events: none;
+            font-family: monospace;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        /* Context menu */
+        #contextMenu {
+            position: fixed;
+            z-index: 2147483647;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 6px;
+            box-shadow: var(--shadow);
+            display: none;
+            min-width: 180px;
+        }
+
+        #contextMenu button {
+            width: 100%;
+            text-align: left;
+            padding: 8px 12px;
+            border: none;
+            background: transparent;
+            color: var(--text);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #contextMenu button:hover {
+            background: var(--bg);
+        }
+
+        #contextMenu button.danger {
+            color: var(--red);
+        }
+
+        /* Minimap */
+        #minimap {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 150px;
+            height: 100px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            z-index: 2147483647;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+            cursor: pointer;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        #minimap:hover {
+            opacity: 0.9;
+        }
+
+        #minimap canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Scrollbar styling */
+        #controls::-webkit-scrollbar,
+        #output::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #controls::-webkit-scrollbar-track,
+        #output::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #controls::-webkit-scrollbar-thumb,
+        #output::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Context Menu -->
+    <div id="contextMenu">
+        <button id="ctxAddLabel">💬 Add Label</button>
+        <button id="ctxEditLabel">✏️ Edit Label</button>
+        <button id="ctxDuplicate">📋 Duplicate</button>
+        <button id="ctxDelete" class="danger">🗑️ Delete</button>
+    </div>
+
+    <div id="controls">
+        <div id="drag-handle">
+            <h3>📍 ClickPoint Pro</h3>
+            <div class="handle-buttons">
+                <button class="handle-btn" id="pinBtn" title="Pin/Unpin panel">📌</button>
+                <button class="handle-btn" id="minimizeBtn" title="Minimize">−</button>
+            </div>
+        </div>
+        <div id="panel-content">
+            <!-- Mode Section -->
+            <div class="section">
+                <div class="section-label">🎨 Drawing Mode</div>
+                <select id="mode">
+                    <option value="point">🎯 Point (1)</option>
+                    <option value="rectangle">⬜ Rectangle (2)</option>
+                    <option value="freehand">✏️ Freehand (3)</option>
+                    <option value="element">🧩 Element Picker (4)</option>
+                    <option value="label">💬 Text Label (5)</option>
+                    <option value="measure">📏 Measure (6)</option>
+                    <option value="delete">🗑️ Delete Mode (7)</option>
+                </select>
+            </div>
+
+            <!-- Quick Label Section -->
+            <div class="section">
+                <div class="section-label">💬 Quick Label (attaches to last shape)</div>
+                <div id="quickLabelContainer">
+                    <input type="text" id="quickLabelInput" placeholder="Type label text..." />
+                    <button id="addLabelBtn" class="primary" style="width:auto;">Add</button>
+                </div>
+                <div style="margin-top:4px;">
+                    <label>Or click any shape → context menu → "Add Label"</label>
+                </div>
+            </div>
+
+            <!-- Format Section -->
+            <div class="section">
+                <div class="section-label">📐 Output Format</div>
+                <select id="coords">
+                    <option value="percent">Percentage (%)</option>
+                    <option value="pixel">Pixels (px)</option>
+                    <option value="both">Both</option>
+                    <option value="css">CSS Units</option>
+                </select>
+            </div>
+
+            <!-- Visual Section -->
+            <div class="section">
+                <div class="section-label">🎨 Visuals</div>
+                <div class="button-row">
+                    <button id="gridBtn" title="Toggle grid overlay">⊞ Grid</button>
+                    <button id="rulersBtn" title="Toggle rulers">📏 Rulers</button>
+                    <button id="showLabelsBtn" title="Toggle label visibility">💬 Labels</button>
+                </div>
+                <div style="margin-top:4px;">
+                    <label>Shape Opacity</label>
+                    <input type="range" id="opacitySlider" min="20" max="100" value="100" style="width:100%;">
+                </div>
+            </div>
+
+            <!-- Actions Section -->
+            <div class="section">
+                <div class="section-label">⚡ Actions</div>
+                <div class="button-row">
+                    <button id="undoBtn" title="Undo (Ctrl+Z)">↩ Undo</button>
+                    <button id="redoBtn" title="Redo (Ctrl+Y)">↪ Redo</button>
+                    <button id="clearBtn" class="danger" title="Clear all">🗑 Clear</button>
+                </div>
+                <div class="button-row" style="margin-top:4px;">
+                    <button id="selectAllBtn">☐ Select All</button>
+                    <button id="deselectBtn">□ Deselect</button>
+                    <button id="groupBtn" style="background:var(--teal);color:var(--bg);">⊞ Group</button>
+                </div>
+            </div>
+
+            <!-- Export Section -->
+            <div class="section">
+                <div class="section-label">💾 Export</div>
+                <button id="copyBtn" class="primary">📋 Copy Text</button>
+                <div class="button-row" style="margin-top:4px;">
+                    <button id="exportJsonBtn" class="success">💾 JSON</button>
+                    <button id="exportCssBtn">🎨 CSS</button>
+                    <button id="exportSeleniumBtn">🤖 Selenium</button>
+                </div>
+                <div class="button-row" style="margin-top:4px;">
+                    <button id="exportMarkdownBtn">📝 Markdown</button>
+                    <button id="exportPromptBtn" style="background:var(--mauve);color:var(--bg);">🤖 AI Prompt</button>
+                </div>
+            </div>
+
+            <!-- Output -->
+            <div class="section">
+                <div class="section-label">📋 Annotations</div>
+                <div id="output">Ready to annotate. Click on the page to start!</div>
+            </div>
+
+            <!-- Status -->
+            <div id="status">Mode: Point | Shift+Click = quick delete | Right-click = context menu</div>
+        </div>
+    </div>
+
+    <!-- Minimap -->
+    <div id="minimap">
+        <canvas id="minimapCanvas"></canvas>
+    </div>
+
+    <div id="overlay"></div>
+
+    <script>
+        (function () {
+            // ==================== DOM ELEMENTS ====================
+            const overlay = document.getElementById('overlay');
+            const controls = document.getElementById('controls');
+            const dragHandle = document.getElementById('drag-handle');
+            const modeSelect = document.getElementById('mode');
+            const coordSelect = document.getElementById('coords');
+            const outputDiv = document.getElementById('output');
+            const statusDiv = document.getElementById('status');
+            const minimap = document.getElementById('minimap');
+            const minimapCanvas = document.getElementById('minimapCanvas');
+            const opacitySlider = document.getElementById('opacitySlider');
+            const contextMenu = document.getElementById('contextMenu');
+            const quickLabelInput = document.getElementById('quickLabelInput');
+            const addLabelBtn = document.getElementById('addLabelBtn');
+
+            // ==================== STATE ====================
+            let shapes = [];
+            let textLabels = [];
+            let shapeIdCounter = 0;
+            let labelIdCounter = 0;
+            let selectedShapes = new Set();
+            let selectedLabels = new Set();
+            let undoStack = [];
+            let redoStack = [];
+            let currentMode = 'point';
+            let deleteMode = false;
+            let isDragging = false;
+            let dragStart = null;
+            let isPanelDragging = false;
+            let panelDragOffset = { x: 0, y: 0 };
+            let currentFreehandPoints = [];
+            let currentFreehandSVG = null;
+            let gridVisible = false;
+            let rulersVisible = false;
+            let labelsVisible = true;
+            let gridLines = [];
+            let rulerElements = [];
+            let isMeasuring = false;
+            let measureStart = null;
+            let measureLine = null;
+            let measureLabel = null;
+            let contextMenuTarget = null;
+            let isLabelDragging = false;
+            let labelDragOffset = { x: 0, y: 0 };
+            let draggingLabel = null;
+            let isEditingLabel = false;
+
+            // ==================== SHAPE CLASSES ====================
+            class Shape {
+                constructor(type, data) {
+                    this.id = shapeIdCounter++;
+                    this.type = type;
+                    this.data = data;
+                    this.element = null;
+                    this.selected = false;
+                    this.labelIds = []; // Connected text labels
+                }
+            }
+
+            class TextLabel {
+                constructor(x, y, text, linkedShapeIds = []) {
+                    this.id = labelIdCounter++;
+                    this.x = x;
+                    this.y = y;
+                    this.text = text;
+                    this.linkedShapeIds = linkedShapeIds;
+                    this.element = null;
+                    this.connectorLine = null;
+                    this.selected = false;
+                    this.createdAt = new Date().toLocaleTimeString();
+                }
+            }
+
+            // ==================== SHAPE ELEMENT CREATION ====================
+            function createShapeElement(shape) {
+                const el = document.createElement('div');
+
+                switch (shape.type) {
+                    case 'point':
+                        el.className = 'marker';
+                        el.style.left = shape.data.x + 'px';
+                        el.style.top = shape.data.y + 'px';
+                        break;
+
+                    case 'rectangle':
+                        el.className = 'rectangle';
+                        el.style.left = shape.data.left + 'px';
+                        el.style.top = shape.data.top + 'px';
+                        el.style.width = shape.data.width + 'px';
+                        el.style.height = shape.data.height + 'px';
+                        break;
+
+                    case 'freehand':
+                        return createFreehandElement(shape);
+
+                    case 'element':
+                        el.className = 'marker';
+                        el.style.left = shape.data.x + 'px';
+                        el.style.top = shape.data.y + 'px';
+                        el.style.background = '#94e2d5';
+                        el.style.border = '2px solid #89b4fa';
+                        break;
+                }
+
+                // Add labeled class if has labels
+                if (shape.labelIds.length > 0) {
+                    el.classList.add('labeled');
+                }
+
+                el.addEventListener('click', (e) => handleShapeClick(shape, e));
+                el.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    showContextMenu(e, shape);
+                });
+
+                // Double-click to add label
+                el.addEventListener('dblclick', (e) => {
+                    e.stopPropagation();
+                    promptAddLabel(shape);
+                });
+
+                return el;
+            }
+
+            function createFreehandElement(shape) {
+                const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                svg.setAttribute('class', 'freehand-path');
+                svg.style.position = 'absolute';
+                svg.style.top = '0';
+                svg.style.left = '0';
+                svg.style.width = '100%';
+                svg.style.height = '100%';
+                svg.style.pointerEvents = 'auto';
+                svg.style.zIndex = '2147483646';
+
+                if (shape.labelIds.length > 0) {
+                    svg.classList.add('labeled');
+                }
+
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                const d = shape.data.points.map((p, i) =>
+                    (i === 0 ? 'M' : 'L') + p.x + ' ' + p.y
+                ).join(' ');
+                path.setAttribute('d', d);
+                svg.appendChild(path);
+
+                svg.addEventListener('click', (e) => handleShapeClick(shape, e));
+                svg.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    showContextMenu(e, shape);
+                });
+                svg.addEventListener('dblclick', (e) => {
+                    e.stopPropagation();
+                    promptAddLabel(shape);
+                });
+
+                return svg;
+            }
+
+            function createTextLabelElement(label) {
+                const el = document.createElement('div');
+                el.className = 'text-label';
+                el.style.left = label.x + 'px';
+                el.style.top = label.y + 'px';
+                el.innerHTML = `
+                    <div class="label-content">${escapeHtml(label.text)}</div>
+                    <div class="label-timestamp">${label.createdAt}</div>
+                `;
+
+                if (label.selected) {
+                    el.classList.add('selected');
+                }
+
+                // Click to select
+                el.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (deleteMode || e.shiftKey) {
+                        removeTextLabel(label);
+                        return;
+                    }
+                    if (e.ctrlKey || e.metaKey) {
+                        toggleLabelSelection(label);
+                    } else {
+                        deselectAll();
+                        selectLabel(label);
+                    }
+                });
+
+                // Double-click to edit
+                el.addEventListener('dblclick', (e) => {
+                    e.stopPropagation();
+                    startEditingLabel(label);
+                });
+
+                // Drag to move
+                el.addEventListener('mousedown', (e) => {
+                    if (label._editing) return;
+                    if (e.target.closest('.label-content') && !e.ctrlKey && !e.metaKey) {
+                        isLabelDragging = true;
+                        draggingLabel = label;
+                        labelDragOffset = {
+                            x: e.clientX - label.x,
+                            y: e.clientY - label.y
+                        };
+                        el.style.cursor = 'grabbing';
+                        e.preventDefault();
+                    }
+                });
+
+                // Right-click context menu
+                el.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    showLabelContextMenu(e, label);
+                });
+
+                return el;
+            }
+
+            function createConnectorLine(label, shape) {
+                const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                svg.setAttribute('class', 'label-connector');
+                svg.style.position = 'absolute';
+                svg.style.top = '0';
+                svg.style.left = '0';
+                svg.style.width = '100%';
+                svg.style.height = '100%';
+                svg.style.pointerEvents = 'none';
+                svg.style.zIndex = '2147483645';
+
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('stroke', '#94e2d5');
+                line.setAttribute('stroke-width', '1.5');
+                line.setAttribute('stroke-dasharray', '4 4');
+                line.setAttribute('opacity', '0.7');
+
+                // Get shape center
+                let shapeX, shapeY;
+                if (shape.type === 'point' || shape.type === 'element') {
+                    shapeX = shape.data.x;
+                    shapeY = shape.data.y;
+                } else if (shape.type === 'rectangle') {
+                    shapeX = shape.data.left + shape.data.width / 2;
+                    shapeY = shape.data.top + shape.data.height / 2;
+                } else if (shape.type === 'freehand' && shape.data.points.length > 0) {
+                    const pts = shape.data.points;
+                    shapeX = pts[Math.floor(pts.length / 2)].x;
+                    shapeY = pts[Math.floor(pts.length / 2)].y;
+                }
+
+                line.setAttribute('x1', shapeX);
+                line.setAttribute('y1', shapeY);
+                line.setAttribute('x2', label.x + 50); // Approximate center of label
+                line.setAttribute('y2', label.y + 20);
+
+                svg.appendChild(line);
+                return svg;
+            }
+
+            function updateConnectorLine(label) {
+                if (label.connectorLine && label.linkedShapeIds.length > 0) {
+                    const shape = shapes.find(s => s.id === label.linkedShapeIds[0]);
+                    if (shape) {
+                        label.connectorLine.remove();
+                        label.connectorLine = createConnectorLine(label, shape);
+                        overlay.appendChild(label.connectorLine);
+                    }
+                }
+            }
+
+            // ==================== LABEL OPERATIONS ====================
+            function addTextLabel(x, y, text, linkedShapeIds = []) {
+                const label = new TextLabel(x, y, text, linkedShapeIds);
+                label.element = createTextLabelElement(label);
+                overlay.appendChild(label.element);
+
+                // Update linked shapes
+                linkedShapeIds.forEach(shapeId => {
+                    const shape = shapes.find(s => s.id === shapeId);
+                    if (shape && !shape.labelIds.includes(label.id)) {
+                        shape.labelIds.push(label.id);
+                        if (shape.element) {
+                            shape.element.classList.add('labeled');
+                        }
+                    }
+                });
+
+                // Create connector lines
+                if (linkedShapeIds.length > 0) {
+                    const shape = shapes.find(s => s.id === linkedShapeIds[0]);
+                    if (shape) {
+                        label.connectorLine = createConnectorLine(label, shape);
+                        overlay.appendChild(label.connectorLine);
+                    }
+                }
+
+                textLabels.push(label);
+                updateOutput();
+                updateMinimap();
+                updateUndoState();
+                return label;
+            }
+
+            function removeTextLabel(label) {
+                // Remove connector
+                if (label.connectorLine) {
+                    label.connectorLine.remove();
+                }
+                // Remove element
+                if (label.element) {
+                    label.element.remove();
+                }
+                // Unlink from shapes
+                label.linkedShapeIds.forEach(shapeId => {
+                    const shape = shapes.find(s => s.id === shapeId);
+                    if (shape) {
+                        shape.labelIds = shape.labelIds.filter(id => id !== label.id);
+                        if (shape.labelIds.length === 0 && shape.element) {
+                            shape.element.classList.remove('labeled');
+                        }
+                    }
+                });
+                const idx = textLabels.indexOf(label);
+                if (idx !== -1) textLabels.splice(idx, 1);
+                selectedLabels.delete(label.id);
+                updateOutput();
+                updateMinimap();
+                updateUndoState();
+            }
+
+            function promptAddLabel(shape) {
+                const text = prompt('Enter label text for this shape:', '');
+                if (text && text.trim()) {
+                    // Position label near the shape
+                    let x, y;
+                    if (shape.type === 'point' || shape.type === 'element') {
+                        x = shape.data.x + 20;
+                        y = shape.data.y - 40;
+                    } else if (shape.type === 'rectangle') {
+                        x = shape.data.left + shape.data.width + 10;
+                        y = shape.data.top;
+                    } else if (shape.type === 'freehand' && shape.data.points.length > 0) {
+                        const lastPt = shape.data.points[shape.data.points.length - 1];
+                        x = lastPt.x + 20;
+                        y = lastPt.y - 20;
+                    }
+                    addTextLabel(x, y, text.trim(), [shape.id]);
+                }
+            }
+
+            function startEditingLabel(label) {
+                if (label._editing) return;
+                label._editing = true;
+
+                const el = label.element;
+                el.classList.add('editing');
+                el.contentEditable = true;
+                el.focus();
+
+                // Select all text
+                const range = document.createRange();
+                range.selectNodeContents(el.querySelector('.label-content'));
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+
+                const finishEditing = () => {
+                    label._editing = false;
+                    el.contentEditable = false;
+                    el.classList.remove('editing');
+                    label.text = el.querySelector('.label-content').textContent.trim();
+                    updateOutput();
+                    updateUndoState();
+                };
+
+                el.addEventListener('blur', finishEditing, { once: true });
+                el.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        el.blur();
+                    }
+                    if (e.key === 'Escape') {
+                        el.querySelector('.label-content').textContent = label.text;
+                        el.blur();
+                    }
+                });
+            }
+
+            function selectLabel(label) {
+                label.selected = true;
+                selectedLabels.add(label.id);
+                if (label.element) label.element.classList.add('selected');
+                updateOutput();
+            }
+
+            function deselectLabel(label) {
+                label.selected = false;
+                selectedLabels.delete(label.id);
+                if (label.element) label.element.classList.remove('selected');
+                updateOutput();
+            }
+
+            function toggleLabelSelection(label) {
+                if (label.selected) {
+                    deselectLabel(label);
+                } else {
+                    selectLabel(label);
+                }
+            }
+
+            // ==================== SHAPE OPERATIONS ====================
+            function addShape(shape) {
+                shape.element = createShapeElement(shape);
+                overlay.appendChild(shape.element);
+                shapes.push(shape);
+                updateOutput();
+                updateMinimap();
+                updateUndoState();
+            }
+
+            function removeShape(shape) {
+                // Remove linked labels
+                [...shape.labelIds].forEach(labelId => {
+                    const label = textLabels.find(l => l.id === labelId);
+                    if (label) removeTextLabel(label);
+                });
+
+                if (shape.element) shape.element.remove();
+                const idx = shapes.indexOf(shape);
+                if (idx !== -1) shapes.splice(idx, 1);
+                selectedShapes.delete(shape.id);
+                updateOutput();
+                updateMinimap();
+                updateUndoState();
+            }
+
+            function handleShapeClick(shape, e) {
+                e.stopPropagation();
+
+                if (deleteMode || e.shiftKey) {
+                    removeShape(shape);
+                    return;
+                }
+
+                if (e.ctrlKey || e.metaKey) {
+                    if (selectedShapes.has(shape.id)) {
+                        deselectShape(shape);
+                    } else {
+                        selectShape(shape);
+                    }
+                } else {
+                    deselectAll();
+                    selectShape(shape);
+                }
+            }
+
+            function selectShape(shape) {
+                shape.selected = true;
+                selectedShapes.add(shape.id);
+                if (shape.element) shape.element.classList.add('selected');
+                updateOutput();
+            }
+
+            function deselectShape(shape) {
+                shape.selected = false;
+                selectedShapes.delete(shape.id);
+                if (shape.element) shape.element.classList.remove('selected');
+                updateOutput();
+            }
+
+            function deselectAll() {
+                shapes.forEach(s => deselectShape(s));
+                textLabels.forEach(l => deselectLabel(l));
+            }
+
+            function selectAll() {
+                shapes.forEach(s => selectShape(s));
+                textLabels.forEach(l => selectLabel(l));
+            }
+
+            function getSelectedShapes() {
+                return shapes.filter(s => selectedShapes.has(s.id));
+            }
+
+            function groupSelected() {
+                const selected = getSelectedShapes();
+                if (selected.length < 2) return;
+
+                let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                const allLabelIds = [];
+
+                selected.forEach(s => {
+                    allLabelIds.push(...s.labelIds);
+                    if (s.type === 'point' || s.type === 'element') {
+                        minX = Math.min(minX, s.data.x);
+                        minY = Math.min(minY, s.data.y);
+                        maxX = Math.max(maxX, s.data.x);
+                        maxY = Math.max(maxY, s.data.y);
+                    } else if (s.type === 'rectangle') {
+                        minX = Math.min(minX, s.data.left);
+                        minY = Math.min(minY, s.data.top);
+                        maxX = Math.max(maxX, s.data.left + s.data.width);
+                        maxY = Math.max(maxY, s.data.top + s.data.height);
+                    }
+                });
+
+                selected.forEach(s => removeShape(s));
+
+                const rectShape = new Shape('rectangle', {
+                    left: minX, top: minY,
+                    width: maxX - minX, height: maxY - minY,
+                    x1: minX, y1: minY, x2: maxX, y2: maxY
+                });
+                rectShape.labelIds = [...new Set(allLabelIds)];
+                addShape(rectShape);
+            }
+
+            // ==================== CONTEXT MENUS ====================
+            function showContextMenu(e, shape) {
+                contextMenuTarget = shape;
+                contextMenu.style.display = 'block';
+                contextMenu.style.left = e.clientX + 'px';
+                contextMenu.style.top = e.clientY + 'px';
+            }
+
+            function showLabelContextMenu(e, label) {
+                contextMenuTarget = label;
+                contextMenu.style.display = 'block';
+                contextMenu.style.left = e.clientX + 'px';
+                contextMenu.style.top = e.clientY + 'px';
+            }
+
+            function hideContextMenu() {
+                contextMenu.style.display = 'none';
+                contextMenuTarget = null;
+            }
+
+            // ==================== COORDINATE HELPERS ====================
+            function getCoords(x, y, format) {
+                const vw = window.innerWidth;
+                const vh = window.innerHeight;
+                const pctX = ((x / vw) * 100).toFixed(2);
+                const pctY = ((y / vh) * 100).toFixed(2);
+                const pxX = Math.round(x);
+                const pxY = Math.round(y);
+
+                switch (format) {
+                    case 'percent': return `${pctX}%, ${pctY}%`;
+                    case 'pixel': return `${pxX}px, ${pxY}px`;
+                    case 'css': return `left:${pctX}%;top:${pctY}%;`;
+                    default: return `${pctX}%, ${pctY}% [${pxX}px, ${pxY}px]`;
+                }
+            }
+
+            function getCoordsObj(x, y) {
+                return {
+                    percentX: ((x / window.innerWidth) * 100).toFixed(2),
+                    percentY: ((y / window.innerHeight) * 100).toFixed(2),
+                    pixelX: Math.round(x),
+                    pixelY: Math.round(y)
+                };
+            }
+
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            // ==================== OUTPUT ====================
+            function updateOutput() {
+                let lines = [];
+
+                // Points
+                const points = shapes.filter(s => s.type === 'point' || s.type === 'element');
+                if (points.length > 0) {
+                    lines.push('🔴 Points/Elements:');
+                    points.forEach((s, i) => {
+                        const marker = s.selected ? '▶' : ' ';
+                        const labels = s.labelIds.map(id => {
+                            const l = textLabels.find(tl => tl.id === id);
+                            return l ? `"${l.text}"` : '';
+                        }).filter(Boolean).join(', ');
+                        const labelStr = labels ? ` [${labels}]` : '';
+                        lines.push(`  ${marker} #${i + 1}: ${getCoords(s.data.x, s.data.y, coordSelect.value)}${labelStr}`);
+                    });
+                }
+
+                // Rectangles
+                const rects = shapes.filter(s => s.type === 'rectangle');
+                if (rects.length > 0) {
+                    if (lines.length) lines.push('');
+                    lines.push('🟢 Rectangles:');
+                    rects.forEach((s, i) => {
+                        const marker = s.selected ? '▶' : ' ';
+                        const labels = s.labelIds.map(id => {
+                            const l = textLabels.find(tl => tl.id === id);
+                            return l ? `"${l.text}"` : '';
+                        }).filter(Boolean).join(', ');
+                        const labelStr = labels ? ` [${labels}]` : '';
+                        lines.push(`  ${marker} #${i + 1}: ${s.data.width}x${s.data.height}px${labelStr}`);
+                    });
+                }
+
+                // Freehand
+                const freehands = shapes.filter(s => s.type === 'freehand');
+                if (freehands.length > 0) {
+                    if (lines.length) lines.push('');
+                    lines.push('🟣 Freehand:');
+                    freehands.forEach((s, i) => {
+                        const marker = s.selected ? '▶' : ' ';
+                        const labels = s.labelIds.map(id => {
+                            const l = textLabels.find(tl => tl.id === id);
+                            return l ? `"${l.text}"` : '';
+                        }).filter(Boolean).join(', ');
+                        const labelStr = labels ? ` [${labels}]` : '';
+                        lines.push(`  ${marker} #${i + 1}: ${s.data.points.length} points${labelStr}`);
+                    });
+                }
+
+                // Labels
+                if (textLabels.length > 0) {
+                    if (lines.length) lines.push('');
+                    lines.push('💬 Text Labels:');
+                    textLabels.forEach((l, i) => {
+                        const marker = l.selected ? '▶' : ' ';
+                        const linked = l.linkedShapeIds.length > 0 ? ' (linked)' : '';
+                        lines.push(`  ${marker} #${i + 1}: "${l.text}"${linked}`);
+                    });
+                }
+
+                if (lines.length === 0) {
+                    lines.push('Ready to annotate. Click to start!\nDouble-click shapes to add labels.');
+                }
+
+                outputDiv.textContent = lines.join('\n');
+            }
+
+            // ==================== EXPORT ====================
+            function exportJSON() {
+                const data = {
+                    viewport: { width: window.innerWidth, height: window.innerHeight },
+                    shapes: shapes.map(s => ({
+                        id: s.id,
+                        type: s.type,
+                        data: s.data,
+                        labels: s.labelIds.map(id => {
+                            const l = textLabels.find(tl => tl.id === id);
+                            return l ? { id: l.id, text: l.text, position: getCoordsObj(l.x, l.y) } : null;
+                        }).filter(Boolean)
+                    })),
+                    textLabels: textLabels.map(l => ({
+                        id: l.id,
+                        text: l.text,
+                        position: getCoordsObj(l.x, l.y),
+                        linkedShapes: l.linkedShapeIds
+                    })),
+                    totalShapes: shapes.length,
+                    totalLabels: textLabels.length
+                };
+                return JSON.stringify(data, null, 2);
+            }
+
+            function exportCSS() {
+                let css = '/* Generated by ClickPoint Pro */\n';
+                shapes.forEach(s => {
+                    if (s.type === 'point' || s.type === 'element') {
+                        const obj = getCoordsObj(s.data.x, s.data.y);
+                        const label = s.labelIds.map(id => textLabels.find(l => l.id === id))
+                            .filter(Boolean).map(l => l.text).join(', ');
+                        css += `/* ${label || `Shape #${s.id}`} */\n`;
+                        css += `.element-${s.id} {\n  position: absolute;\n  left: ${obj.percentX}%;\n  top: ${obj.percentY}%;\n}\n\n`;
+                    } else if (s.type === 'rectangle') {
+                        const topLeft = getCoordsObj(s.data.left, s.data.top);
+                        const label = s.labelIds.map(id => textLabels.find(l => l.id === id))
+                            .filter(Boolean).map(l => l.text).join(', ');
+                        css += `/* ${label || `Region #${s.id}`} */\n`;
+                        css += `.region-${s.id} {\n  position: absolute;\n  left: ${topLeft.percentX}%;\n  top: ${topLeft.percentY}%;\n  width: ${((s.data.width / window.innerWidth) * 100).toFixed(2)}%;\n  height: ${((s.data.height / window.innerHeight) * 100).toFixed(2)}%;\n}\n\n`;
+                    }
+                });
+                return css;
+            }
+
+            function exportSelenium() {
+                let code = '# Generated by ClickPoint Pro\nfrom selenium.webdriver.common.action_chains import ActionChains\n\n';
+                shapes.forEach(s => {
+                    if (s.type === 'point' || s.type === 'element') {
+                        const pct = getCoordsObj(s.data.x, s.data.y);
+                        const label = s.labelIds.map(id => textLabels.find(l => l.id === id))
+                            .filter(Boolean).map(l => l.text).join(', ');
+                        code += `# ${label || `Shape #${s.id}`}\n`;
+                        code += `actions = ActionChains(driver)\n`;
+                        code += `actions.move_by_offset(int(window.innerWidth * ${pct.percentX / 100}), int(window.innerHeight * ${pct.percentY / 100})).click().perform()\n\n`;
+                    }
+                });
+                return code;
+            }
+
+            function exportMarkdown() {
+                let md = '# Annotation Report\n\n';
+                md += `**Viewport:** ${window.innerWidth}×${window.innerHeight}px\n\n`;
+
+                if (shapes.length > 0) {
+                    md += '## Shapes\n\n';
+                    shapes.forEach(s => {
+                        const labels = s.labelIds.map(id => textLabels.find(l => l.id === id))
+                            .filter(Boolean).map(l => l.text);
+                        const labelStr = labels.length > 0 ? ` — *${labels.join(', ')}*` : '';
+                        md += `- **${s.type}** #${s.id}${labelStr}\n`;
+                        if (s.type === 'point' || s.type === 'element') {
+                            md += `  - Position: ${getCoords(s.data.x, s.data.y, 'both')}\n`;
+                        } else if (s.type === 'rectangle') {
+                            md += `  - Size: ${s.data.width}×${s.data.height}px\n`;
+                            md += `  - Position: ${Math.round(s.data.left)},${Math.round(s.data.top)}\n`;
+                        }
+                    });
+                }
+
+                if (textLabels.length > 0) {
+                    md += '\n## Text Labels\n\n';
+                    textLabels.forEach(l => {
+                        md += `- **"${l.text}"** at ${getCoords(l.x, l.y, 'both')}\n`;
+                    });
+                }
+
+                return md;
+            }
+
+            function exportAIPrompt() {
+                let prompt = 'I need you to build a UI based on these annotations:\n\n';
+                prompt += `Viewport: ${window.innerWidth}x${window.innerHeight}px\n\n`;
+
+                const labeled = shapes.filter(s => s.labelIds.length > 0);
+                if (labeled.length > 0) {
+                    prompt += '## Annotated Elements:\n';
+                    labeled.forEach(s => {
+                        const labels = s.labelIds.map(id => textLabels.find(l => l.id === id))
+                            .filter(Boolean).map(l => l.text);
+                        prompt += `- ${labels.join(' | ')}: `;
+                        if (s.type === 'point' || s.type === 'element') {
+                            prompt += `at position ${getCoords(s.data.x, s.data.y, 'percent')}`;
+                        } else if (s.type === 'rectangle') {
+                            prompt += `region ${Math.round(s.data.width)}x${Math.round(s.data.height)}px starting at ${getCoords(s.data.left, s.data.top, 'percent')}`;
+                        }
+                        prompt += '\n';
+                    });
+                }
+
+                prompt += '\n## All Annotations:\n';
+                prompt += outputDiv.textContent;
+
+                return prompt;
+            }
+
+            function copyToClipboard(text, buttonEl) {
+                navigator.clipboard.writeText(text).then(() => {
+                    if (buttonEl) {
+                        const orig = buttonEl.textContent;
+                        buttonEl.textContent = '✅ Copied!';
+                        setTimeout(() => buttonEl.textContent = orig, 2000);
+                    }
+                }).catch(() => {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = text;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                });
+            }
+
+            // ==================== UNDO/REDO ====================
+            function updateUndoState() {
+                undoStack.push({
+                    shapes: shapes.map(s => ({ ...s, element: null })),
+                    textLabels: textLabels.map(l => ({ ...l, element: null, connectorLine: null }))
+                });
+                if (undoStack.length > 50) undoStack.shift();
+                redoStack = [];
+            }
+
+            function undo() {
+                if (undoStack.length === 0) return;
+                const currentState = {
+                    shapes: shapes.map(s => ({ ...s, element: null })),
+                    textLabels: textLabels.map(l => ({ ...l, element: null, connectorLine: null }))
+                };
+                redoStack.push(currentState);
+
+                const prevState = undoStack.pop();
+                restoreState(prevState);
+            }
+
+            function redo() {
+                if (redoStack.length === 0) return;
+                const currentState = {
+                    shapes: shapes.map(s => ({ ...s, element: null })),
+                    textLabels: textLabels.map(l => ({ ...l, element: null, connectorLine: null }))
+                };
+                undoStack.push(currentState);
+
+                const nextState = redoStack.pop();
+                restoreState(nextState);
+            }
+
+            function restoreState(state) {
+                // Clear current
+                shapes.forEach(s => { if (s.element) s.element.remove(); });
+                textLabels.forEach(l => {
+                    if (l.connectorLine) l.connectorLine.remove();
+                    if (l.element) l.element.remove();
+                });
+                shapes = [];
+                textLabels = [];
+                selectedShapes.clear();
+                selectedLabels.clear();
+
+                // Restore shapes
+                state.shapes.forEach(sData => {
+                    const shape = new Shape(sData.type, sData.data);
+                    shape.id = sData.id;
+                    shape.labelIds = sData.labelIds || [];
+                    shape.element = createShapeElement(shape);
+                    overlay.appendChild(shape.element);
+                    shapes.push(shape);
+                });
+
+                // Restore labels
+                (state.textLabels || []).forEach(lData => {
+                    const label = new TextLabel(lData.x, lData.y, lData.text, lData.linkedShapeIds || []);
+                    label.id = lData.id;
+                    label.createdAt = lData.createdAt || '';
+                    label.element = createTextLabelElement(label);
+                    overlay.appendChild(label.element);
+
+                    if (label.linkedShapeIds.length > 0) {
+                        const shape = shapes.find(s => s.id === label.linkedShapeIds[0]);
+                        if (shape) {
+                            label.connectorLine = createConnectorLine(label, shape);
+                            overlay.appendChild(label.connectorLine);
+                        }
+                    }
+                    textLabels.push(label);
+                });
+
+                updateOutput();
+                updateMinimap();
+            }
+
+            // ==================== MINIMAP ====================
+            function updateMinimap() {
+                const canvas = minimapCanvas;
+                const ctx = canvas.getContext('2d');
+                canvas.width = minimap.clientWidth;
+                canvas.height = minimap.clientHeight;
+
+                const scaleX = canvas.width / window.innerWidth;
+                const scaleY = canvas.height / window.innerHeight;
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = 'rgba(30, 30, 46, 0.8)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                shapes.forEach(s => {
+                    ctx.fillStyle = s.selected ? '#89b4fa' :
+                        s.type === 'point' || s.type === 'element' ? '#f38ba8' :
+                        s.type === 'rectangle' ? '#a6e3a1' : '#cba6f7';
+
+                    if (s.type === 'point' || s.type === 'element') {
+                        ctx.beginPath();
+                        ctx.arc(s.data.x * scaleX, s.data.y * scaleY, 3, 0, Math.PI * 2);
+                        ctx.fill();
+                    } else if (s.type === 'rectangle') {
+                        ctx.fillRect(s.data.left * scaleX, s.data.top * scaleY,
+                            s.data.width * scaleX, s.data.height * scaleY);
+                    }
+                });
+
+                // Draw labels as tiny dots
+                textLabels.forEach(l => {
+                    ctx.fillStyle = '#94e2d5';
+                    ctx.beginPath();
+                    ctx.arc(l.x * scaleX, l.y * scaleY, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            }
+
+            // ==================== GRID & RULERS ====================
+            function toggleGrid() {
+                gridVisible = !gridVisible;
+                gridVisible ? createGrid() : removeGrid();
+            }
+
+            function createGrid() {
+                const spacing = 50;
+                for (let x = spacing; x < window.innerWidth; x += spacing) {
+                    const line = document.createElement('div');
+                    line.style.cssText = `position:fixed;left:${x}px;top:0;width:1px;height:100%;background:rgba(255,255,255,0.05);z-index:2147483645;pointer-events:none;`;
+                    overlay.appendChild(line);
+                    gridLines.push(line);
+                }
+                for (let y = spacing; y < window.innerHeight; y += spacing) {
+                    const line = document.createElement('div');
+                    line.style.cssText = `position:fixed;left:0;top:${y}px;width:100%;height:1px;background:rgba(255,255,255,0.05);z-index:2147483645;pointer-events:none;`;
+                    overlay.appendChild(line);
+                    gridLines.push(line);
+                }
+            }
+
+            function removeGrid() {
+                gridLines.forEach(l => l.remove());
+                gridLines = [];
+            }
+
+            function toggleRulers() {
+                rulersVisible = !rulersVisible;
+                rulersVisible ? createRulers() : removeRulers();
+            }
+
+            function createRulers() {
+                const hLine = document.createElement('div');
+                hLine.id = 'ruler-h';
+                hLine.style.cssText = `position:fixed;left:0;width:100%;height:1px;background:rgba(137,180,250,0.5);z-index:2147483647;pointer-events:none;display:none;`;
+                const vLine = document.createElement('div');
+                vLine.id = 'ruler-v';
+                vLine.style.cssText = `position:fixed;top:0;width:1px;height:100%;background:rgba(137,180,250,0.5);z-index:2147483647;pointer-events:none;display:none;`;
+                overlay.appendChild(hLine);
+                overlay.appendChild(vLine);
+                rulerElements = [hLine, vLine];
+            }
+
+            function removeRulers() {
+                rulerElements.forEach(l => l.remove());
+                rulerElements = [];
+            }
+
+            function updateRulers(e) {
+                if (!rulersVisible) return;
+                const hLine = document.getElementById('ruler-h');
+                const vLine = document.getElementById('ruler-v');
+                if (hLine && vLine) {
+                    hLine.style.top = e.clientY + 'px';
+                    hLine.style.display = 'block';
+                    vLine.style.left = e.clientX + 'px';
+                    vLine.style.display = 'block';
+                }
+            }
+
+            function toggleLabels() {
+                labelsVisible = !labelsVisible;
+                textLabels.forEach(l => {
+                    if (l.element) l.element.style.display = labelsVisible ? 'block' : 'none';
+                    if (l.connectorLine) l.connectorLine.style.display = labelsVisible ? 'block' : 'none';
+                });
+            }
+
+            // ==================== PANEL DRAGGING ====================
+            function initPanelDrag() {
+                dragHandle.addEventListener('mousedown', (e) => {
+                    if (e.target.closest('.handle-btn')) return;
+                    isPanelDragging = true;
+                    const rect = controls.getBoundingClientRect();
+                    panelDragOffset = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+                    controls.style.transition = 'none';
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if (!isPanelDragging) return;
+                    const x = e.clientX - panelDragOffset.x;
+                    const y = e.clientY - panelDragOffset.y;
+                    controls.style.left = Math.max(0, Math.min(window.innerWidth - controls.offsetWidth, x)) + 'px';
+                    controls.style.top = Math.max(0, Math.min(window.innerHeight - controls.offsetHeight, y)) + 'px';
+
+                    // Also handle label dragging
+                    if (isLabelDragging && draggingLabel) {
+                        draggingLabel.x = e.clientX - labelDragOffset.x;
+                        draggingLabel.y = e.clientY - labelDragOffset.y;
+                        if (draggingLabel.element) {
+                            draggingLabel.element.style.left = draggingLabel.x + 'px';
+                            draggingLabel.element.style.top = draggingLabel.y + 'px';
+                        }
+                        updateConnectorLine(draggingLabel);
+                    }
+                });
+
+                document.addEventListener('mouseup', () => {
+                    isPanelDragging = false;
+                    controls.style.transition = '';
+
+                    if (isLabelDragging && draggingLabel) {
+                        isLabelDragging = false;
+                        draggingLabel = null;
+                        updateMinimap();
+                        updateUndoState();
+                    }
+                });
+            }
+
+            // ==================== EVENT HANDLERS ====================
+            function handleMouseDown(e) {
+                if (e.target.closest('#controls') || e.target.closest('#minimap') ||
+                    e.target.closest('.text-label') || e.target.closest('#contextMenu')) return;
+
+                hideContextMenu();
+
+                if (currentMode === 'rectangle') {
+                    isDragging = true;
+                    dragStart = { x: e.clientX, y: e.clientY };
+                } else if (currentMode === 'freehand') {
+                    isDragging = true;
+                    currentFreehandPoints = [{ x: e.clientX, y: e.clientY }];
+                    currentFreehandSVG = createFreehandElement(new Shape('freehand', { points: currentFreehandPoints }));
+                    overlay.appendChild(currentFreehandSVG);
+                } else if (currentMode === 'measure') {
+                    isMeasuring = true;
+                    measureStart = { x: e.clientX, y: e.clientY };
+                    measureLine = document.createElement('div');
+                    measureLine.style.cssText = `position:fixed;pointer-events:none;z-index:2147483647;border-top:2px dashed #f9e2af;transform-origin:0 0;`;
+                    overlay.appendChild(measureLine);
+
+                    measureLabel = document.createElement('div');
+                    measureLabel.className = 'measure-label';
+                    measureLabel.style.left = e.clientX + 'px';
+                    measureLabel.style.top = (e.clientY - 25) + 'px';
+                    overlay.appendChild(measureLabel);
+                }
+            }
+
+            function handleMouseMove(e) {
+                updateRulers(e);
+
+                if (isDragging && currentMode === 'freehand') {
+                    currentFreehandPoints.push({ x: e.clientX, y: e.clientY });
+                    if (currentFreehandSVG) {
+                        const path = currentFreehandSVG.querySelector('path');
+                        const d = currentFreehandPoints.map((p, i) =>
+                            (i === 0 ? 'M' : 'L') + p.x + ' ' + p.y
+                        ).join(' ');
+                        path.setAttribute('d', d);
+                    }
+                } else if (isMeasuring && measureStart && measureLine && measureLabel) {
+                    const dx = e.clientX - measureStart.x;
+                    const dy = e.clientY - measureStart.y;
+                    const dist = Math.round(Math.sqrt(dx * dx + dy * dy));
+                    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+                    measureLine.style.left = measureStart.x + 'px';
+                    measureLine.style.top = measureStart.y + 'px';
+                    measureLine.style.width = dist + 'px';
+                    measureLine.style.transform = `rotate(${angle}deg)`;
+
+                    measureLabel.style.left = ((measureStart.x + e.clientX) / 2) + 'px';
+                    measureLabel.style.top = ((measureStart.y + e.clientY) / 2 - 25) + 'px';
+                    measureLabel.textContent = `${dist}px`;
+                }
+            }
+
+            function handleMouseUp(e) {
+                if (e.target.closest('#controls') || e.target.closest('#minimap') ||
+                    e.target.closest('.text-label')) return;
+
+                if (currentMode === 'point' && !isDragging) {
+                    const shape = new Shape('point', { x: e.clientX, y: e.clientY });
+                    addShape(shape);
+                    updateUndoState();
+                } else if (currentMode === 'label' && !isDragging) {
+                    const text = prompt('Enter label text:', '');
+                    if (text && text.trim()) {
+                        addTextLabel(e.clientX, e.clientY, text.trim());
+                    }
+                } else if (currentMode === 'rectangle' && isDragging && dragStart) {
+                    const left = Math.min(dragStart.x, e.clientX);
+                    const top = Math.min(dragStart.y, e.clientY);
+                    const width = Math.abs(e.clientX - dragStart.x);
+                    const height = Math.abs(e.clientY - dragStart.y);
+
+                    if (width > 3 && height > 3) {
+                        const shape = new Shape('rectangle', {
+                            left, top, width, height,
+                            x1: dragStart.x, y1: dragStart.y,
+                            x2: e.clientX, y2: e.clientY
+                        });
+                        addShape(shape);
+                        updateUndoState();
+                    }
+                } else if (currentMode === 'freehand' && isDragging) {
+                    currentFreehandPoints.push({ x: e.clientX, y: e.clientY });
+                    if (currentFreehandSVG && currentFreehandPoints.length >= 2) {
+                        currentFreehandSVG.remove();
+                        const shape = new Shape('freehand', { points: [...currentFreehandPoints] });
+                        addShape(shape);
+                        updateUndoState();
+                    } else if (currentFreehandSVG) {
+                        currentFreehandSVG.remove();
+                    }
+                } else if (currentMode === 'measure' && isMeasuring) {
+                    if (measureLine && measureLabel) {
+                        measureLine.style.opacity = '0.5';
+                        measureLabel.style.opacity = '0.7';
+                        setTimeout(() => {
+                            measureLine.remove();
+                            measureLabel.remove();
+                        }, 5000);
+                    }
+                }
+
+                isDragging = false;
+                dragStart = null;
+                currentFreehandPoints = [];
+                currentFreehandSVG = null;
+                isMeasuring = false;
+                measureStart = null;
+                measureLine = null;
+                measureLabel = null;
+            }
+
+            function handleElementClick(e) {
+                if (e.target.closest('#controls') || e.target.closest('#minimap') ||
+                    e.target.closest('.text-label')) return;
+
+                const el = document.elementFromPoint(e.clientX, e.clientY);
+                if (!el || el === overlay) return;
+
+                const rect = el.getBoundingClientRect();
+                const cx = rect.left + rect.width / 2;
+                const cy = rect.top + rect.height / 2;
+
+                const tag = el.tagName.toLowerCase();
+                const id = el.id ? `#${el.id}` : '';
+                const cls = Array.from(el.classList).map(c => `.${c}`).join('');
+                const selector = `${tag}${id}${cls}` || tag;
+
+                const shape = new Shape('element', {
+                    x: cx, y: cy,
+                    selector: selector,
+                    rect: { left: rect.left, top: rect.top, width: rect.width, height: rect.height }
+                });
+                addShape(shape);
+                updateUndoState();
+            }
+
+            // ==================== MODE MANAGEMENT ====================
+            function setMode(mode) {
+                currentMode = mode;
+                deleteMode = (mode === 'delete');
+                overlay.classList.toggle('delete-mode', deleteMode);
+                overlay.classList.toggle('text-mode', mode === 'label');
+                overlay.style.cursor =
+                    mode === 'element' || mode === 'delete' ? 'pointer' :
+                    mode === 'label' ? 'text' : 'crosshair';
+
+                statusDiv.textContent = `Mode: ${modeSelect.options[modeSelect.selectedIndex]?.text || mode} | Double-click shape = add label | Right-click = menu`;
+            }
+
+            // ==================== KEYBOARD SHORTCUTS ====================
+            function handleKeyboard(e) {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' ||
+                    e.target.tagName === 'SELECT' || e.target.isContentEditable) return;
+
+                switch (e.key) {
+                    case '1': modeSelect.value = 'point';
+                        setMode('point');
+                        break;
+                    case '2': modeSelect.value = 'rectangle';
+                        setMode('rectangle');
+                        break;
+                    case '3': modeSelect.value = 'freehand';
+                        setMode('freehand');
+                        break;
+                    case '4': modeSelect.value = 'element';
+                        setMode('element');
+                        break;
+                    case '5': modeSelect.value = 'label';
+                        setMode('label');
+                        break;
+                    case '6': modeSelect.value = 'measure';
+                        setMode('measure');
+                        break;
+                    case '7': modeSelect.value = 'delete';
+                        setMode('delete');
+                        break;
+                    case 'Delete':
+                    case 'Backspace':
+                        e.preventDefault();
+                        getSelectedShapes().forEach(s => removeShape(s));
+                        selectedLabels.forEach(id => {
+                            const l = textLabels.find(tl => tl.id === id);
+                            if (l) removeTextLabel(l);
+                        });
+                        break;
+                    case 'z':
+                        if (e.ctrlKey || e.metaKey) {
+                            e.preventDefault();
+                            e.shiftKey ? redo() : undo();
+                        }
+                        break;
+                    case 'y':
+                        if (e.ctrlKey || e.metaKey) {
+                            e.preventDefault();
+                            redo();
+                        }
+                        break;
+                    case 'a':
+                        if (e.ctrlKey || e.metaKey) {
+                            e.preventDefault();
+                            selectAll();
+                        }
+                        break;
+                    case 'Escape':
+                        deselectAll();
+                        hideContextMenu();
+                        break;
+                }
+            }
+
+            // ==================== INITIALIZATION ====================
+            function init() {
+                initPanelDrag();
+                setMode(modeSelect.value);
+                modeSelect.addEventListener('change', () => setMode(modeSelect.value));
+
+                overlay.addEventListener('mousedown', handleMouseDown);
+                overlay.addEventListener('mousemove', handleMouseMove);
+                overlay.addEventListener('mouseup', handleMouseUp);
+                overlay.addEventListener('click', (e) => {
+                    if (currentMode === 'element' && !isDragging) handleElementClick(e);
+                });
+
+                overlay.addEventListener('selectstart', (e) => e.preventDefault());
+
+                // Click anywhere to hide context menu
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('#contextMenu')) hideContextMenu();
+                });
+
+                // Context menu actions
+                document.getElementById('ctxAddLabel').addEventListener('click', () => {
+                    if (contextMenuTarget && contextMenuTarget instanceof Shape) {
+                        promptAddLabel(contextMenuTarget);
+                    }
+                    hideContextMenu();
+                });
+                document.getElementById('ctxEditLabel').addEventListener('click', () => {
+                    if (contextMenuTarget && contextMenuTarget instanceof TextLabel) {
+                        startEditingLabel(contextMenuTarget);
+                    } else if (contextMenuTarget instanceof Shape && contextMenuTarget.labelIds.length > 0) {
+                        const label = textLabels.find(l => l.id === contextMenuTarget.labelIds[0]);
+                        if (label) startEditingLabel(label);
+                    }
+                    hideContextMenu();
+                });
+                document.getElementById('ctxDuplicate').addEventListener('click', () => {
+                    if (contextMenuTarget instanceof Shape) {
+                        const newShape = new Shape(contextMenuTarget.type,
+                            JSON.parse(JSON.stringify(contextMenuTarget.data)));
+                        newShape.labelIds = [...contextMenuTarget.labelIds];
+                        addShape(newShape);
+                        updateUndoState();
+                    }
+                    hideContextMenu();
+                });
+                document.getElementById('ctxDelete').addEventListener('click', () => {
+                    if (contextMenuTarget instanceof Shape) {
+                        removeShape(contextMenuTarget);
+                    } else if (contextMenuTarget instanceof TextLabel) {
+                        removeTextLabel(contextMenuTarget);
+                    }
+                    hideContextMenu();
+                });
+
+                // Quick label button
+                addLabelBtn.addEventListener('click', () => {
+                    const text = quickLabelInput.value.trim();
+                    if (!text) return;
+                    const selected = getSelectedShapes();
+                    if (selected.length > 0) {
+                        const shape = selected[selected.length - 1];
+                        promptAddLabel(shape);
+                        // Override the prompt with our text
+                        const label = textLabels[textLabels.length - 1];
+                        if (label) {
+                            label.text = text;
+                            label.element.querySelector('.label-content').textContent = text;
+                        }
+                    } else if (shapes.length > 0) {
+                        const shape = shapes[shapes.length - 1];
+                        let x = shape.data.x || shape.data.left || 100;
+                        let y = (shape.data.y || shape.data.top || 100) - 40;
+                        addTextLabel(x + 20, y, text, [shape.id]);
+                    } else {
+                        addTextLabel(window.innerWidth / 2, window.innerHeight / 2, text);
+                    }
+                    quickLabelInput.value = '';
+                    updateOutput();
+                });
+
+                // Enter key in quick label input
+                quickLabelInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        addLabelBtn.click();
+                    }
+                });
+
+                // Buttons
+                document.getElementById('undoBtn').addEventListener('click', undo);
+                document.getElementById('redoBtn').addEventListener('click', redo);
+                document.getElementById('clearBtn').addEventListener('click', () => {
+                    shapes.forEach(s => { if (s.element) s.element.remove(); });
+                    textLabels.forEach(l => {
+                        if (l.connectorLine) l.connectorLine.remove();
+                        if (l.element) l.element.remove();
+                    });
+                    shapes = [];
+                    textLabels = [];
+                    selectedShapes.clear();
+                    selectedLabels.clear();
+                    updateOutput();
+                    updateMinimap();
+                    updateUndoState();
+                });
+                document.getElementById('selectAllBtn').addEventListener('click', selectAll);
+                document.getElementById('deselectBtn').addEventListener('click', deselectAll);
+                document.getElementById('groupBtn').addEventListener('click', groupSelected);
+                document.getElementById('copyBtn').addEventListener('click', () => {
+                    copyToClipboard(outputDiv.textContent, document.getElementById('copyBtn'));
+                });
+                document.getElementById('exportJsonBtn').addEventListener('click', () => {
+                    copyToClipboard(exportJSON(), document.getElementById('exportJsonBtn'));
+                });
+                document.getElementById('exportCssBtn').addEventListener('click', () => {
+                    copyToClipboard(exportCSS(), document.getElementById('exportCssBtn'));
+                });
+                document.getElementById('exportSeleniumBtn').addEventListener('click', () => {
+                    copyToClipboard(exportSelenium(), document.getElementById('exportSeleniumBtn'));
+                });
+                document.getElementById('exportMarkdownBtn').addEventListener('click', () => {
+                    copyToClipboard(exportMarkdown(), document.getElementById('exportMarkdownBtn'));
+                });
+                document.getElementById('exportPromptBtn').addEventListener('click', () => {
+                    copyToClipboard(exportAIPrompt(), document.getElementById('exportPromptBtn'));
+                });
+                document.getElementById('gridBtn').addEventListener('click', toggleGrid);
+                document.getElementById('rulersBtn').addEventListener('click', toggleRulers);
+                document.getElementById('showLabelsBtn').addEventListener('click', toggleLabels);
+                document.getElementById('pinBtn').addEventListener('click', function () {
+                    controls.style.opacity = controls.style.opacity === '0.3' ? '1' : '0.3';
+                });
+                document.getElementById('minimizeBtn').addEventListener('click', () => {
+                    controls.classList.toggle('minimized');
+                });
+
+                opacitySlider.addEventListener('input', () => {
+                    const val = opacitySlider.value / 100;
+                    document.querySelectorAll('.marker, .rectangle, .freehand-path').forEach(el => {
+                        el.style.opacity = val;
+                    });
+                });
+
+                minimap.addEventListener('click', (e) => {
+                    const rect = minimap.getBoundingClientRect();
+                    const x = ((e.clientX - rect.left) / rect.width) * window.innerWidth;
+                    const y = ((e.clientY - rect.top) / rect.height) * window.innerHeight;
+                    window.scrollTo(x - window.innerWidth / 2, y - window.innerHeight / 2);
+                });
+
+                document.addEventListener('keydown', handleKeyboard);
+                updateMinimap();
+            }
+
+            init();
+        })();
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ClickPoint Studio Remix</title>
+    <style>
+        :root {
+            --bg: #1e1e2e;
+            --surface: #313244;
+            --text: #cdd6f4;
+            --subtext: #a6adc8;
+            --blue: #89b4fa;
+            --green: #a6e3a1;
+            --red: #f38ba8;
+            --yellow: #f9e2af;
+            --mauve: #cba6f7;
+            --teal: #94e2d5;
+            --border: #45475a;
+            --shadow: 0 8px 32px rgba(0,0,0,0.6);
+            --surfaceGlass: rgba(49, 50, 68, 0.86);
+            --glow: 0 0 24px rgba(137,180,250,0.26);
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background:
+                radial-gradient(circle at 20% 20%, rgba(137,180,250,0.13), transparent 28%),
+                radial-gradient(circle at 80% 0%, rgba(203,166,247,0.12), transparent 24%),
+                var(--bg);
+            color: var(--text);
+            overflow: hidden;
+            min-height: 100vh;
+        }
+
+        /* Control Panel */
+        #controls {
+            position: fixed; top: 20px; left: 20px;
+            z-index: 2147483647;
+            background: linear-gradient(180deg, var(--surfaceGlass), rgba(30,30,46,0.92));
+            backdrop-filter: blur(14px);
+            border: 1px solid var(--border);
+            border-radius: 16px; padding: 0;
+            box-shadow: var(--shadow);
+            width: 350px; max-height: 85vh;
+            overflow-y: auto; font-size: 13px;
+            user-select: none;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+        #controls.minimized { max-height: 42px; overflow: hidden; }
+        #controls.minimized #panel-content { display: none; }
+
+        #drag-handle {
+            padding: 12px 16px; background: var(--surface);
+            border-radius: 16px 16px 0 0; cursor: grab;
+            display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+        }
+        #drag-handle:active { cursor: grabbing; }
+        #drag-handle h3 { margin: 0; font-size: 14px; font-weight: 600; pointer-events: none; }
+        .handle-buttons { display: flex; gap: 6px; }
+        .handle-btn {
+            width: 28px; height: 28px; border: none; border-radius: 8px;
+            background: transparent; color: var(--text); cursor: pointer;
+            font-size: 16px; display: flex; align-items: center; justify-content: center;
+        }
+        .handle-btn:hover { background: var(--border); }
+
+        #panel-content { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+        .section { border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .section:last-child { border-bottom: none; padding-bottom: 0; }
+        .section-label {
+            font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;
+            color: var(--subtext); margin-bottom: 6px; font-weight: 600;
+        }
+        label { display: block; margin: 4px 0 2px; font-size: 11px; color: var(--subtext); }
+        select, button, input {
+            width: 100%; padding: 8px 10px; margin: 2px 0;
+            border: 1px solid var(--border); border-radius: 8px;
+            background: var(--bg); color: var(--text); font-size: 13px;
+            cursor: pointer; transition: all 0.15s; font-family: inherit;
+        }
+        select:hover, button:hover { border-color: var(--blue); }
+        select:focus, input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 2px rgba(137,180,250,0.2); }
+        button { font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        button.primary { background: var(--blue); color: var(--bg); border: none; font-weight: 600; }
+        button.success { background: var(--green); color: var(--bg); border: none; font-weight: 600; }
+        button.danger { background: var(--red); color: var(--bg); border: none; }
+        .button-row { display: flex; gap: 6px; }
+        .button-row button { flex: 1; }
+
+        #output {
+            background: #11111b; padding: 10px; border-radius: 8px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 11px; white-space: pre-wrap; word-break: break-word;
+            max-height: 150px; overflow-y: auto; border: 1px solid var(--border); line-height: 1.5;
+        }
+        #status {
+            font-size: 10px; color: var(--subtext); text-align: center;
+            padding: 4px; background: var(--bg); border-radius: 6px; margin-top: 4px;
+        }
+        #quickLabelContainer { display: flex; gap: 6px; align-items: center; }
+        #quickLabelInput { flex: 1; padding: 6px 8px; font-size: 12px; }
+        #addLabelBtn { width: auto; padding: 6px 12px; font-size: 12px; white-space: nowrap; }
+
+        /* Hotkeys Modal */
+        #hotkeysModal {
+            position: fixed; z-index: 2147483648; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 16px; padding: 24px; box-shadow: var(--shadow);
+            display: none; max-width: 500px; width: 90%;
+        }
+        #hotkeysModal h3 { margin: 0 0 16px 0; font-size: 16px; }
+        #hotkeysModal table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        #hotkeysModal td { padding: 6px 8px; border-bottom: 1px solid var(--border); }
+        #hotkeysModal td:first-child { font-family: monospace; background: var(--bg); border-radius: 4px; padding: 4px 8px; white-space: nowrap; }
+        #hotkeysModal button { margin-top: 16px; }
+
+        /* Overlay */
+        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2147483646; pointer-events: auto; cursor: crosshair; }
+        #overlay.delete-mode { cursor: pointer; }
+
+        /* Shapes */
+        .marker {
+            position: absolute; width: 14px; height: 14px;
+            transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+            background: var(--red); border: 2px solid var(--yellow);
+            border-radius: 50%; transform: translate(-50%,-50%);
+            pointer-events: auto; z-index: 2147483647; cursor: pointer;
+        }
+        .marker:hover { transform: translate(-50%,-50%) scale(1.4); box-shadow: 0 0 12px var(--red); }
+        .marker.selected { transform: translate(-50%,-50%) scale(1.5); box-shadow: 0 0 16px var(--blue); border-color: var(--blue); }
+        .marker.labeled { border-color: var(--teal); box-shadow: 0 0 8px var(--teal); }
+
+        .rectangle {
+            position: absolute; border: 2px dashed var(--green);
+            transition: border-color 0.12s ease, background 0.12s ease, box-shadow 0.12s ease;
+            background: rgba(166,227,161,0.12); pointer-events: auto;
+            z-index: 2147483646; cursor: pointer;
+        }
+        .rectangle:hover { border-color: var(--yellow); background: rgba(249,226,175,0.2); }
+        .rectangle.selected { border-color: var(--blue); border-style: solid; background: rgba(137,180,250,0.15); box-shadow: var(--glow); }
+        .rectangle.labeled { border-color: var(--teal); }
+
+        .drawing-preview-rect {
+            position: absolute; border: 2px solid var(--blue);
+            background: rgba(137,180,250,0.1); pointer-events: none; z-index: 2147483647;
+        }
+        .drawing-preview-size {
+            position: absolute; background: var(--surface); color: var(--blue);
+            padding: 2px 6px; border-radius: 4px; font-size: 10px;
+            font-family: monospace; pointer-events: none; z-index: 2147483647;
+            white-space: nowrap; box-shadow: var(--shadow); border: 1px solid var(--border);
+        }
+
+        svg.freehand-path {
+            position: absolute; top: 0; left: 0; pointer-events: auto;
+            z-index: 2147483646; cursor: pointer; overflow: visible;
+        }
+        svg.freehand-path path { fill: none; stroke: var(--mauve); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+        svg.freehand-path:hover path { stroke: var(--red); stroke-width: 5; }
+        svg.freehand-path.selected path { stroke: var(--blue); stroke-width: 5; }
+        svg.freehand-path.labeled path { stroke: var(--teal); }
+
+        svg.drawing-preview-freehand {
+            position: absolute; top: 0; left: 0; pointer-events: none;
+            z-index: 2147483647; overflow: visible;
+        }
+        svg.drawing-preview-freehand path { fill: none; stroke: var(--blue); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; opacity: 0.8; }
+
+        .text-label {
+            position: absolute; z-index: 2147483647; pointer-events: auto; cursor: move;
+            font-family: system-ui, sans-serif; font-size: 13px; color: var(--text);
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 8px; padding: 8px 12px; max-width: 300px;
+            word-wrap: break-word; box-shadow: var(--shadow);
+        }
+        .text-label:hover { border-color: var(--blue); box-shadow: 0 0 16px rgba(137,180,250,0.3); }
+        .text-label.selected { border-color: var(--blue); box-shadow: 0 0 20px rgba(137,180,250,0.5); }
+        .text-label.editing { border-color: var(--yellow); cursor: text; user-select: text; }
+        .text-label .label-content { min-height: 20px; line-height: 1.4; }
+        .text-label .label-timestamp { font-size: 9px; color: var(--subtext); margin-top: 4px; font-family: monospace; }
+
+        .label-connector { position: absolute; z-index: 2147483646; pointer-events: none; }
+        .label-connector line { stroke: var(--teal); stroke-width: 1.5; stroke-dasharray: 4 4; opacity: 0.7; }
+
+        .measure-label {
+            position: fixed; background: var(--surface); color: var(--yellow);
+            padding: 4px 8px; border-radius: 6px; font-size: 11px;
+            z-index: 2147483647; pointer-events: auto; cursor: pointer;
+            font-family: monospace; box-shadow: var(--shadow); border: 1px solid var(--border);
+        }
+        .measure-label:hover { background: var(--red); color: white; }
+        .measure-line-preview {
+            position: fixed; pointer-events: none; z-index: 2147483647;
+            border-top: 2px dashed var(--yellow); transform-origin: 0 0;
+        }
+
+        #contextMenu {
+            position: fixed; z-index: 2147483647; background: var(--surface);
+            border: 1px solid var(--border); border-radius: 10px; padding: 6px;
+            box-shadow: var(--shadow); display: none; min-width: 180px;
+        }
+        #contextMenu button {
+            width: 100%; text-align: left; padding: 8px 12px; border: none;
+            background: transparent; color: var(--text); border-radius: 6px;
+            cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 8px;
+        }
+        #contextMenu button:hover { background: var(--bg); }
+        #contextMenu button.danger { color: var(--red); }
+
+        #minimap {
+            position: fixed; bottom: 20px; right: 20px; width: 150px; height: 100px;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 10px; z-index: 2147483647; opacity: 0.6;
+            transition: opacity 0.2s; cursor: pointer; overflow: hidden; box-shadow: var(--shadow);
+        }
+        #minimap:hover { opacity: 0.9; }
+        #minimap canvas { width: 100%; height: 100%; }
+
+        #toast {
+            position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 12px);
+            z-index: 2147483648; background: rgba(17,17,27,0.94); color: var(--text);
+            border: 1px solid var(--border); border-radius: 999px; padding: 9px 14px;
+            box-shadow: var(--shadow); opacity: 0; pointer-events: none;
+            transition: opacity 0.18s ease, transform 0.18s ease; font-size: 12px;
+        }
+        #toast.show { opacity: 1; transform: translate(-50%, 0); }
+    </style>
+</head>
+<body>
+
+<div id="hotkeysModal">
+    <h3>⌨️ Keyboard Shortcuts</h3>
+    <table>
+        <tr><td>1</td><td>Point mode</td></tr>
+        <tr><td>2</td><td>Rectangle mode</td></tr>
+        <tr><td>3</td><td>Freehand mode</td></tr>
+        <tr><td>4</td><td>Element picker mode</td></tr>
+        <tr><td>5</td><td>Text label mode</td></tr>
+        <tr><td>6</td><td>Measure mode</td></tr>
+        <tr><td>7</td><td>Delete mode</td></tr>
+        <tr><td>Ctrl+Z</td><td>Undo</td></tr>
+        <tr><td>Ctrl+Y</td><td>Redo</td></tr>
+        <tr><td>Ctrl+A</td><td>Select all</td></tr>
+        <tr><td>Delete / Backspace</td><td>Delete selected</td></tr>
+        <tr><td>Escape</td><td>Deselect all / Clear previews</td></tr>
+        <tr><td>Shift+Click</td><td>Quick delete any shape</td></tr>
+        <tr><td>Ctrl+Click</td><td>Multi-select shapes</td></tr>
+        <tr><td>Right-click</td><td>Context menu</td></tr>
+        <tr><td>Double-click shape</td><td>Add label</td></tr>
+        <tr><td>?</td><td>Show this help</td></tr>
+    </table>
+    <button onclick="document.getElementById('hotkeysModal').style.display='none'">Close</button>
+</div>
+
+<div id="contextMenu">
+    <button id="ctxAddLabel">💬 Add Label</button>
+    <button id="ctxEditLabel">✏️ Edit Label</button>
+    <button id="ctxDuplicate">📋 Duplicate</button>
+    <button id="ctxDelete" class="danger">🗑️ Delete</button>
+</div>
+
+<div id="controls">
+    <div id="drag-handle">
+        <h3>📍 ClickPoint Studio</h3>
+        <div class="handle-buttons">
+            <button class="handle-btn" id="helpBtn" title="Keyboard shortcuts (?)">?</button>
+            <button class="handle-btn" id="pinBtn" title="Pin/Unpin">📌</button>
+            <button class="handle-btn" id="minimizeBtn" title="Minimize">−</button>
+        </div>
+    </div>
+    <div id="panel-content">
+        <div class="section">
+            <div class="section-label">🎨 Mode (keys 1-7)</div>
+            <select id="mode">
+                <option value="point">🎯 Point (1)</option>
+                <option value="rectangle">⬜ Rectangle (2)</option>
+                <option value="freehand">✏️ Freehand (3)</option>
+                <option value="element">🧩 Element Picker (4)</option>
+                <option value="label">💬 Text Label (5)</option>
+                <option value="measure">📏 Measure (6)</option>
+                <option value="delete">🗑️ Delete Mode (7)</option>
+            </select>
+        </div>
+
+        <div class="section">
+            <div class="section-label">💬 Quick Label</div>
+            <div id="quickLabelContainer">
+                <input type="text" id="quickLabelInput" placeholder="Type label...">
+                <button id="addLabelBtn" class="primary" style="width:auto;">Add</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-label">📐 Output Format</div>
+            <select id="coords">
+                <option value="both">Both (% + px)</option>
+                <option value="percent">Percentage (%)</option>
+                <option value="pixel">Pixels (px)</option>
+                <option value="css">CSS Units</option>
+            </select>
+        </div>
+
+        <div class="section">
+            <div class="section-label">🎨 Visuals</div>
+            <div class="button-row">
+                <button id="gridBtn">⊞ Grid</button>
+                <button id="rulersBtn">📏 Rulers</button>
+                <button id="showLabelsBtn">💬 Labels</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-label">⚡ Actions</div>
+            <div class="button-row">
+                <button id="undoBtn">↩ Undo</button>
+                <button id="redoBtn">↪ Redo</button>
+                <button id="clearBtn" class="danger">🗑 Clear</button>
+            </div>
+            <div class="button-row" style="margin-top:4px;">
+                <button id="selectAllBtn">☐ Select All</button>
+                <button id="deselectBtn">□ Deselect</button>
+                <button id="groupBtn" style="background:var(--teal);color:var(--bg);">⊞ Group</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-label">💾 Export</div>
+            <button id="copyBtn" class="primary">📋 Copy Text Output</button>
+            <div class="button-row" style="margin-top:4px;">
+                <button id="exportJsonBtn" class="success">💾 JSON (full data)</button>
+                <button id="exportCssBtn">🎨 CSS Positions</button>
+            </div>
+            <div class="button-row" style="margin-top:4px;">
+                <button id="exportMarkdownBtn">📝 Markdown</button>
+                <button id="exportPromptBtn" style="background:var(--mauve);color:var(--bg);">🤖 AI Prompt</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-label">📋 Output</div>
+            <div id="output">Ready. Press ? for shortcuts. Start clicking; chaos becomes coordinates.</div>
+        </div>
+        <div id="status">Mode: Point | ? = shortcuts</div>
+    </div>
+</div>
+
+<div id="minimap"><canvas id="minimapCanvas"></canvas></div>
+<div id="overlay"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+    const overlay=document.getElementById('overlay');
+    const controls=document.getElementById('controls');
+    const dragHandle=document.getElementById('drag-handle');
+    const modeSelect=document.getElementById('mode');
+    const coordSelect=document.getElementById('coords');
+    const outputDiv=document.getElementById('output');
+    const statusDiv=document.getElementById('status');
+    const minimap=document.getElementById('minimap');
+    const minimapCanvas=document.getElementById('minimapCanvas');
+    const contextMenu=document.getElementById('contextMenu');
+    const quickLabelInput=document.getElementById('quickLabelInput');
+    const addLabelBtn=document.getElementById('addLabelBtn');
+    const toast=document.getElementById('toast');
+
+    let shapes=[], textLabels=[], shapeIdCounter=0, labelIdCounter=0;
+    let selectedShapes=new Set(), selectedLabels=new Set();
+    let undoStack=[], redoStack=[];
+    let currentMode='point', deleteMode=false;
+    let isDragging=false, dragStart=null;
+    let isPanelDragging=false, panelDragOffset={x:0,y:0};
+    let currentFreehandPoints=[];
+    let gridVisible=false, rulersVisible=false, labelsVisible=true;
+    let gridLines=[], rulerElements=[];
+    let isMeasuring=false, measureStart=null, measureLine=null, measureLabel=null;
+    let contextMenuTarget=null;
+    let isLabelDragging=false, labelDragOffset={x:0,y:0}, draggingLabel=null;
+    let previewRect=null, previewSizeLabel=null, previewFreehandSVG=null;
+    let persistentMeasures=[];
+
+    class Shape {
+        constructor(type,data){ this.id=shapeIdCounter++; this.type=type; this.data=data; this.element=null; this.selected=false; this.labelIds=[]; }
+    }
+    class TextLabel {
+        constructor(x,y,text,linkedShapeIds=[]){ this.id=labelIdCounter++; this.x=x; this.y=y; this.text=text; this.linkedShapeIds=linkedShapeIds; this.element=null; this.connectorLine=null; this.selected=false; this.createdAt=new Date().toLocaleTimeString(); }
+    }
+
+    function createRectPreview(x1,y1,x2,y2){
+        const left=Math.min(x1,x2), top=Math.min(y1,y2), w=Math.abs(x2-x1), h=Math.abs(y2-y1);
+        if(!previewRect){ previewRect=document.createElement('div'); previewRect.className='drawing-preview-rect'; overlay.appendChild(previewRect); }
+        previewRect.style.cssText=`left:${left}px;top:${top}px;width:${w}px;height:${h}px;display:block;`;
+        if(!previewSizeLabel){ previewSizeLabel=document.createElement('div'); previewSizeLabel.className='drawing-preview-size'; overlay.appendChild(previewSizeLabel); }
+        previewSizeLabel.textContent=`${Math.round(w)}×${Math.round(h)} px | ${((w/window.innerWidth)*100).toFixed(1)}%×${((h/window.innerHeight)*100).toFixed(1)}%`;
+        previewSizeLabel.style.cssText=`left:${Math.min(left+w+8,window.innerWidth-150)}px;top:${Math.min(top+h+8,window.innerHeight-30)}px;display:block;`;
+    }
+    function removeRectPreview(){ if(previewRect)previewRect.style.display='none'; if(previewSizeLabel)previewSizeLabel.style.display='none'; }
+    function createFreehandPreview(pts){
+        if(!previewFreehandSVG){ previewFreehandSVG=document.createElementNS('http://www.w3.org/2000/svg','svg'); previewFreehandSVG.setAttribute('class','drawing-preview-freehand'); previewFreehandSVG.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:2147483647;'; const p=document.createElementNS('http://www.w3.org/2000/svg','path'); previewFreehandSVG.appendChild(p); overlay.appendChild(previewFreehandSVG); }
+        const d=pts.map((p,i)=>(i===0?'M':'L')+p.x+' '+p.y).join(' ');
+        previewFreehandSVG.querySelector('path').setAttribute('d',d);
+        previewFreehandSVG.style.display='block';
+    }
+    function removeFreehandPreview(){ if(previewFreehandSVG)previewFreehandSVG.style.display='none'; }
+    function createMeasurePreview(x1,y1,x2,y2){
+        const dx=x2-x1, dy=y2-y1, dist=Math.round(Math.sqrt(dx*dx+dy*dy)), angle=Math.atan2(dy,dx)*180/Math.PI;
+        if(!measureLine){ measureLine=document.createElement('div'); measureLine.className='measure-line-preview'; overlay.appendChild(measureLine); }
+        measureLine.style.cssText=`left:${x1}px;top:${y1}px;width:${dist}px;transform:rotate(${angle}deg);display:block;`;
+        if(!measureLabel){ measureLabel=document.createElement('div'); measureLabel.className='measure-label'; measureLabel.title='Click to remove'; overlay.appendChild(measureLabel); }
+        const mx=(x1+x2)/2, my=(y1+y2)/2;
+        measureLabel.style.cssText=`left:${mx}px;top:${my-25}px;display:block;`;
+        measureLabel.textContent=`${dist}px`;
+    }
+    function finalizeMeasure(x1,y1,x2,y2){
+        const dx=x2-x1, dy=y2-y1, dist=Math.round(Math.sqrt(dx*dx+dy*dy)), angle=Math.atan2(dy,dx)*180/Math.PI;
+        const line=measureLine, label=measureLabel;
+        if(line) line.style.opacity='0.4';
+        if(label){
+            label.style.opacity='0.8';
+            label.style.pointerEvents='auto';
+            label.style.cursor='pointer';
+            label.title='Click to remove this measurement';
+            label.addEventListener('click', function handler(){
+                if(line) line.remove();
+                label.remove();
+                persistentMeasures=persistentMeasures.filter(m=>m.line!==line&&m.label!==label);
+            },{once:true});
+            showToast(`Measured ${dist}px`);
+        }
+        persistentMeasures.push({line,label});
+        measureLine=null; measureLabel=null;
+    }
+    function removeAllMeasures(){
+        persistentMeasures.forEach(m=>{ if(m.line)m.line.remove(); if(m.label)m.label.remove(); });
+        persistentMeasures=[];
+        if(measureLine)measureLine.remove(); if(measureLabel)measureLabel.remove();
+        measureLine=null; measureLabel=null;
+    }
+
+    function createShapeElement(shape){
+        let el=document.createElement('div');
+        switch(shape.type){
+            case'point': el.className='marker'; el.style.cssText=`left:${shape.data.x}px;top:${shape.data.y}px;`; break;
+            case'rectangle': el.className='rectangle'; el.style.cssText=`left:${shape.data.left}px;top:${shape.data.top}px;width:${shape.data.width}px;height:${shape.data.height}px;`; break;
+            case'freehand': return createFreehandEl(shape);
+            case'element': el.className='marker'; el.style.cssText=`left:${shape.data.x}px;top:${shape.data.y}px;background:#94e2d5;border:2px solid #89b4fa;`; break;
+        }
+        if(shape.labelIds.length) el.classList.add('labeled');
+        el.addEventListener('click',e=>handleShapeClick(shape,e));
+        el.addEventListener('contextmenu',e=>{ e.preventDefault(); e.stopPropagation(); showContextMenu(e,shape); });
+        el.addEventListener('dblclick',e=>{ e.stopPropagation(); promptAddLabel(shape); });
+        return el;
+    }
+    function createFreehandEl(shape){
+        const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+        svg.setAttribute('class','freehand-path'); if(shape.labelIds.length) svg.classList.add('labeled');
+        svg.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:auto;z-index:2147483646;';
+        const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+        path.setAttribute('d',shape.data.points.map((p,i)=>(i===0?'M':'L')+p.x+' '+p.y).join(' '));
+        svg.appendChild(path);
+        svg.addEventListener('click',e=>handleShapeClick(shape,e));
+        svg.addEventListener('contextmenu',e=>{ e.preventDefault(); e.stopPropagation(); showContextMenu(e,shape); });
+        svg.addEventListener('dblclick',e=>{ e.stopPropagation(); promptAddLabel(shape); });
+        return svg;
+    }
+    function createTextLabelEl(label){
+        const el=document.createElement('div'); el.className='text-label';
+        el.style.cssText=`left:${label.x}px;top:${label.y}px;`;
+        el.innerHTML=`<div class="label-content">${escapeHtml(label.text)}</div><div class="label-timestamp">${label.createdAt}</div>`;
+        if(label.selected) el.classList.add('selected');
+        el.addEventListener('click',e=>{ e.stopPropagation(); if(deleteMode||e.shiftKey){ removeTextLabel(label); return; } if(e.ctrlKey||e.metaKey) toggleLabelSel(label); else{ deselectAll(); selectLabel(label); } });
+        el.addEventListener('dblclick',e=>{ e.stopPropagation(); startEditLabel(label); });
+        el.addEventListener('mousedown',e=>{ if(label._editing)return; if(e.target.closest('.label-content')&&!e.ctrlKey&&!e.metaKey){ isLabelDragging=true; draggingLabel=label; labelDragOffset={x:e.clientX-label.x,y:e.clientY-label.y}; el.style.cursor='grabbing'; e.preventDefault(); } });
+        el.addEventListener('contextmenu',e=>{ e.preventDefault(); e.stopPropagation(); showLabelCtxMenu(e,label); });
+        return el;
+    }
+    function createConnector(label,shape){
+        const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+        svg.setAttribute('class','label-connector'); svg.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:2147483645;';
+        const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+        let sx,sy;
+        if(shape.type==='point'||shape.type==='element'){ sx=shape.data.x; sy=shape.data.y; }
+        else if(shape.type==='rectangle'){ sx=shape.data.left+shape.data.width/2; sy=shape.data.top+shape.data.height/2; }
+        else if(shape.type==='freehand'&&shape.data.points.length){ const m=Math.floor(shape.data.points.length/2); sx=shape.data.points[m].x; sy=shape.data.points[m].y; }
+        else{ sx=label.x; sy=label.y; }
+        line.setAttribute('x1',sx); line.setAttribute('y1',sy); line.setAttribute('x2',label.x+50); line.setAttribute('y2',label.y+20);
+        svg.appendChild(line); return svg;
+    }
+    function updateConnector(label){
+        if(label.connectorLine&&label.linkedShapeIds.length){ const s=shapes.find(s=>s.id===label.linkedShapeIds[0]); if(s){ label.connectorLine.remove(); label.connectorLine=createConnector(label,s); overlay.appendChild(label.connectorLine); } }
+    }
+
+    function addTextLabel(x,y,text,linked=[]){
+        const label=new TextLabel(x,y,text,linked); label.element=createTextLabelEl(label); overlay.appendChild(label.element);
+        linked.forEach(id=>{ const s=shapes.find(s=>s.id===id); if(s&&!s.labelIds.includes(label.id)){ s.labelIds.push(label.id); if(s.element)s.element.classList.add('labeled'); } });
+        if(linked.length){ const s=shapes.find(s=>s.id===linked[0]); if(s){ label.connectorLine=createConnector(label,s); overlay.appendChild(label.connectorLine); } }
+        textLabels.push(label); updateOutput(); updateMinimap(); updateUndoState(); return label;
+    }
+    function removeTextLabel(label){
+        if(label.connectorLine) label.connectorLine.remove(); if(label.element) label.element.remove();
+        label.linkedShapeIds.forEach(id=>{ const s=shapes.find(s=>s.id===id); if(s){ s.labelIds=s.labelIds.filter(lid=>lid!==label.id); if(!s.labelIds.length&&s.element)s.element.classList.remove('labeled'); } });
+        const idx=textLabels.indexOf(label); if(idx!==-1)textLabels.splice(idx,1); selectedLabels.delete(label.id);
+        updateOutput(); updateMinimap(); updateUndoState();
+    }
+    function promptAddLabel(shape){
+        const text=prompt('Label text for this shape:',''); if(!text||!text.trim())return;
+        let x,y;
+        if(shape.type==='point'||shape.type==='element'){ x=shape.data.x+20; y=shape.data.y-40; }
+        else if(shape.type==='rectangle'){ x=shape.data.left+shape.data.width+10; y=shape.data.top; }
+        else if(shape.type==='freehand'&&shape.data.points.length){ const lp=shape.data.points[shape.data.points.length-1]; x=lp.x+20; y=lp.y-20; }
+        else{ x=100; y=100; }
+        addTextLabel(x,y,text.trim(),[shape.id]);
+    }
+    function startEditLabel(label){
+        if(label._editing)return; label._editing=true;
+        const el=label.element, content=el.querySelector('.label-content');
+        const original=label.text;
+        el.classList.add('editing'); content.contentEditable='true'; content.focus();
+        const r=document.createRange(); r.selectNodeContents(content); const s=window.getSelection(); s.removeAllRanges(); s.addRange(r);
+        const done=()=>{
+            label._editing=false; content.contentEditable='false'; el.classList.remove('editing');
+            const next=content.textContent.trim();
+            label.text=next||original; content.textContent=label.text;
+            content.removeEventListener('keydown',onKeydown);
+            updateOutput(); updateUndoState(); showToast('Label updated');
+        };
+        const onKeydown=e=>{
+            if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); content.blur(); }
+            if(e.key==='Escape'){ content.textContent=original; content.blur(); }
+        };
+        content.addEventListener('blur',done,{once:true});
+        content.addEventListener('keydown',onKeydown);
+    }
+    function selectLabel(l){ l.selected=true; selectedLabels.add(l.id); if(l.element)l.element.classList.add('selected'); updateOutput(); }
+    function deselectLabel(l){ l.selected=false; selectedLabels.delete(l.id); if(l.element)l.element.classList.remove('selected'); updateOutput(); }
+    function toggleLabelSel(l){ l.selected?deselectLabel(l):selectLabel(l); }
+
+    function addShape(shape){ shape.element=createShapeElement(shape); overlay.appendChild(shape.element); shapes.push(shape); updateOutput(); updateMinimap(); updateUndoState(); showToast(`${shape.type} added`); }
+    function removeShape(shape){ [...shape.labelIds].forEach(id=>{ const l=textLabels.find(tl=>tl.id===id); if(l)removeTextLabel(l); }); if(shape.element)shape.element.remove(); const i=shapes.indexOf(shape); if(i!==-1)shapes.splice(i,1); selectedShapes.delete(shape.id); updateOutput(); updateMinimap(); updateUndoState(); showToast(`${shape.type} removed`); }
+    function handleShapeClick(shape,e){ e.stopPropagation(); if(deleteMode||e.shiftKey){ removeShape(shape); return; } if(e.ctrlKey||e.metaKey){ selectedShapes.has(shape.id)?deselectShape(shape):selectShape(shape); } else{ deselectAll(); selectShape(shape); } }
+    function selectShape(s){ s.selected=true; selectedShapes.add(s.id); if(s.element)s.element.classList.add('selected'); updateOutput(); }
+    function deselectShape(s){ s.selected=false; selectedShapes.delete(s.id); if(s.element)s.element.classList.remove('selected'); updateOutput(); }
+    function deselectAll(){ shapes.forEach(s=>deselectShape(s)); textLabels.forEach(l=>deselectLabel(l)); }
+    function selectAll(){ shapes.forEach(s=>selectShape(s)); textLabels.forEach(l=>selectLabel(l)); }
+    function getSelected(){ return shapes.filter(s=>selectedShapes.has(s.id)); }
+    function groupSelected(){
+        const sel=getSelected(); if(sel.length<2)return;
+        let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity,allLids=[];
+        sel.forEach(s=>{ allLids.push(...s.labelIds); if(s.type==='point'||s.type==='element'){ minX=Math.min(minX,s.data.x); minY=Math.min(minY,s.data.y); maxX=Math.max(maxX,s.data.x); maxY=Math.max(maxY,s.data.y); } else if(s.type==='rectangle'){ minX=Math.min(minX,s.data.left); minY=Math.min(minY,s.data.top); maxX=Math.max(maxX,s.data.left+s.data.width); maxY=Math.max(maxY,s.data.top+s.data.height); } });
+        sel.forEach(s=>removeShape(s));
+        const r=new Shape('rectangle',{left:minX,top:minY,width:maxX-minX,height:maxY-minY,x1:minX,y1:minY,x2:maxX,y2:maxY}); r.labelIds=[...new Set(allLids)]; addShape(r);
+    }
+
+    function showContextMenu(e,shape){
+        contextMenuTarget=shape; contextMenu.style.display='block'; contextMenu.style.left=e.clientX+'px'; contextMenu.style.top=e.clientY+'px';
+        document.getElementById('ctxEditLabel').style.display=shape.labelIds.length?'flex':'none';
+        document.getElementById('ctxDuplicate').style.display='flex';
+    }
+    function showLabelCtxMenu(e,label){
+        contextMenuTarget=label; contextMenu.style.display='block'; contextMenu.style.left=e.clientX+'px'; contextMenu.style.top=e.clientY+'px';
+        document.getElementById('ctxEditLabel').style.display='flex';
+        document.getElementById('ctxDuplicate').style.display='none';
+    }
+    function hideCtxMenu(){ contextMenu.style.display='none'; contextMenuTarget=null; }
+
+    function getCoords(x,y,fmt){
+        const vw=window.innerWidth,vh=window.innerHeight,px=((x/vw)*100).toFixed(2),py=((y/vh)*100).toFixed(2),rx=Math.round(x),ry=Math.round(y);
+        switch(fmt){ case'percent':return`${px}%, ${py}%`; case'pixel':return`${rx}px, ${ry}px`; case'css':return`left:${px}%;top:${py}%;`; default:return`${px}%, ${py}% [${rx}px, ${ry}px]`; }
+    }
+    function getCoordsObj(x,y){ return{percentX:((x/window.innerWidth)*100).toFixed(2),percentY:((y/window.innerHeight)*100).toFixed(2),pixelX:Math.round(x),pixelY:Math.round(y)}; }
+    function escapeHtml(t){ const d=document.createElement('div'); d.textContent=t; return d.innerHTML; }
+    function showToast(message){
+        if(!toast)return;
+        toast.textContent=message; toast.classList.add('show');
+        clearTimeout(showToast._timer);
+        showToast._timer=setTimeout(()=>toast.classList.remove('show'),1600);
+    }
+
+    function updateOutput(){
+        let lines=[];
+        const pts=shapes.filter(s=>s.type==='point'||s.type==='element');
+        if(pts.length){ lines.push('🔴 Points/Elements:'); pts.forEach((s,i)=>{ const m=s.selected?'▶':' '; const lbs=s.labelIds.map(id=>{ const l=textLabels.find(tl=>tl.id===id); return l?`"${l.text}"`:''; }).filter(Boolean).join(', '); const ls=lbs?` [${lbs}]`:''; lines.push(`  ${m} #${i+1}: ${getCoords(s.data.x,s.data.y,coordSelect.value)}${ls}`); }); }
+        const rects=shapes.filter(s=>s.type==='rectangle');
+        if(rects.length){ if(lines.length)lines.push(''); lines.push('🟢 Rectangles:'); rects.forEach((s,i)=>{ const m=s.selected?'▶':' '; const lbs=s.labelIds.map(id=>{ const l=textLabels.find(tl=>tl.id===id); return l?`"${l.text}"`:''; }).filter(Boolean).join(', '); const ls=lbs?` [${lbs}]`:''; lines.push(`  ${m} #${i+1}: ${s.data.width}×${s.data.height}px @ ${getCoords(s.data.left,s.data.top,coordSelect.value)}${ls}`); }); }
+        const fhs=shapes.filter(s=>s.type==='freehand');
+        if(fhs.length){ if(lines.length)lines.push(''); lines.push('🟣 Freehand:'); fhs.forEach((s,i)=>{ const m=s.selected?'▶':' '; const lbs=s.labelIds.map(id=>{ const l=textLabels.find(tl=>tl.id===id); return l?`"${l.text}"`:''; }).filter(Boolean).join(', '); const ls=lbs?` [${lbs}]`:''; lines.push(`  ${m} #${i+1}: ${s.data.points.length} points${ls}`); }); }
+        if(textLabels.length){ if(lines.length)lines.push(''); lines.push('💬 Labels:'); textLabels.forEach((l,i)=>{ const m=l.selected?'▶':' '; const lk=l.linkedShapeIds.length?' (linked)':''; lines.push(`  ${m} #${i+1}: "${l.text}" @ ${getCoords(l.x,l.y,coordSelect.value)}${lk}`); }); }
+        if(!lines.length) lines.push('Ready. Click to start!\nPress ? for shortcuts.');
+        outputDiv.textContent=lines.join('\n');
+    }
+
+    function exportJSON(){
+        return JSON.stringify({viewport:{width:window.innerWidth,height:window.innerHeight},shapes:shapes.map(s=>({id:s.id,type:s.type,data:s.data,position:s.type==='point'||s.type==='element'?getCoordsObj(s.data.x,s.data.y):s.type==='rectangle'?{topLeft:getCoordsObj(s.data.left,s.data.top),size:{width:s.data.width,height:s.data.height,percentWidth:((s.data.width/window.innerWidth)*100).toFixed(2)+'%',percentHeight:((s.data.height/window.innerHeight)*100).toFixed(2)+'%'}}:null,labels:s.labelIds.map(id=>{const l=textLabels.find(tl=>tl.id===id); return l?{id:l.id,text:l.text,position:getCoordsObj(l.x,l.y)}:null;}).filter(Boolean)})),textLabels:textLabels.map(l=>({id:l.id,text:l.text,position:getCoordsObj(l.x,l.y),linkedShapes:l.linkedShapeIds})),totalShapes:shapes.length,totalLabels:textLabels.length},null,2);
+    }
+    function exportCSS(){
+        let css='/* ClickPoint Pro - Position Export */\n'; shapes.forEach(s=>{ const lbl=s.labelIds.map(id=>textLabels.find(l=>l.id===id)).filter(Boolean).map(l=>l.text).join(', ');
+            if(s.type==='point'||s.type==='element'){ const o=getCoordsObj(s.data.x,s.data.y); css+=`/* ${lbl||`Element #${s.id}`} */\n.element-${s.id}{\n  position:absolute;\n  left:${o.percentX}%;\n  top:${o.percentY}%;\n}\n\n`; }
+            else if(s.type==='rectangle'){ const tl=getCoordsObj(s.data.left,s.data.top); css+=`/* ${lbl||`Region #${s.id}`} */\n.region-${s.id}{\n  position:absolute;\n  left:${tl.percentX}%;\n  top:${tl.percentY}%;\n  width:${((s.data.width/window.innerWidth)*100).toFixed(2)}%;\n  height:${((s.data.height/window.innerHeight)*100).toFixed(2)}%;\n}\n\n`; } }); return css;
+    }
+    function exportMarkdown(){
+        let md=`# Annotation Report\n\n**Viewport:** ${window.innerWidth}×${window.innerHeight}px\n\n`; if(shapes.length){ md+='## Shapes\n\n'; shapes.forEach(s=>{ const lbs=s.labelIds.map(id=>textLabels.find(l=>l.id===id)).filter(Boolean).map(l=>l.text); const ls=lbs.length?` — *${lbs.join(', ')}*`:''; md+=`- **${s.type}** #${s.id}${ls}\n`; if(s.type==='point'||s.type==='element') md+=`  - Position: ${getCoords(s.data.x,s.data.y,'both')}\n`; else if(s.type==='rectangle'){ md+=`  - Size: ${s.data.width}×${s.data.height}px\n`; md+=`  - Position: ${getCoords(s.data.left,s.data.top,'both')}\n`; } }); } if(textLabels.length){ md+='\n## Labels\n\n'; textLabels.forEach(l=>{ md+=`- **"${l.text}"** at ${getCoords(l.x,l.y,'both')}\n`; }); } return md;
+    }
+    function exportAIPrompt(){
+        let p='I need you to build a UI based on these annotations:\n\n'; p+=`Viewport: ${window.innerWidth}x${window.innerHeight}px\n\n`; const labeled=shapes.filter(s=>s.labelIds.length); if(labeled.length){ p+='## Annotated Elements:\n'; labeled.forEach(s=>{ const lbs=s.labelIds.map(id=>textLabels.find(l=>l.id===id)).filter(Boolean).map(l=>l.text); p+=`- ${lbs.join(' | ')}: `; if(s.type==='point'||s.type==='element') p+=`position ${getCoords(s.data.x,s.data.y,'percent')}`; else if(s.type==='rectangle') p+=`region ${Math.round(s.data.width)}×${Math.round(s.data.height)}px at ${getCoords(s.data.left,s.data.top,'percent')}`; p+='\n'; }); p+='\n'; } p+='## All Annotations:\n'+outputDiv.textContent; return p;
+    }
+    function copyToClipboard(text,btnEl){
+        const finish=()=>{ if(btnEl){ const o=btnEl.textContent; btnEl.textContent='✅ Copied!'; setTimeout(()=>btnEl.textContent=o,1600); } showToast('Copied to clipboard'); };
+        if(navigator.clipboard&&window.isSecureContext){ navigator.clipboard.writeText(text).then(finish).catch(()=>fallbackCopy(text,finish)); }
+        else fallbackCopy(text,finish);
+    }
+    function fallbackCopy(text,finish){ const ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); finish(); }
+
+    function captureState(){
+        return {
+            shapeIdCounter, labelIdCounter,
+            shapes:shapes.map(s=>({id:s.id,type:s.type,data:JSON.parse(JSON.stringify(s.data)),labelIds:[...(s.labelIds||[])]})),
+            textLabels:textLabels.map(l=>({id:l.id,x:l.x,y:l.y,text:l.text,linkedShapeIds:[...(l.linkedShapeIds||[])],createdAt:l.createdAt}))
+        };
+    }
+    function stateKey(state){ return JSON.stringify(state); }
+    function updateUndoState(){
+        const next=captureState(), nextKey=stateKey(next), last=undoStack[undoStack.length-1];
+        if(last&&last._key===nextKey)return;
+        next._key=nextKey; undoStack.push(next);
+        if(undoStack.length>50)undoStack.shift();
+        redoStack=[];
+    }
+    function undo(){
+        if(undoStack.length<=1){ showToast('Nothing to undo'); return; }
+        redoStack.push(undoStack.pop());
+        restoreState(undoStack[undoStack.length-1]);
+        showToast('Undone');
+    }
+    function redo(){
+        if(!redoStack.length){ showToast('Nothing to redo'); return; }
+        const state=redoStack.pop(); undoStack.push(state); restoreState(state);
+        showToast('Redone');
+    }
+    function restoreState(state){
+        shapes.forEach(s=>{if(s.element)s.element.remove();}); textLabels.forEach(l=>{if(l.connectorLine)l.connectorLine.remove(); if(l.element)l.element.remove();});
+        shapes=[]; textLabels=[]; selectedShapes.clear(); selectedLabels.clear();
+        (state.shapes||[]).forEach(sd=>{ const s=new Shape(sd.type,JSON.parse(JSON.stringify(sd.data))); s.id=sd.id; s.labelIds=[...(sd.labelIds||[])]; s.element=createShapeElement(s); overlay.appendChild(s.element); shapes.push(s); });
+        (state.textLabels||[]).forEach(ld=>{ const l=new TextLabel(ld.x,ld.y,ld.text,[...(ld.linkedShapeIds||[])]); l.id=ld.id; l.createdAt=ld.createdAt||''; l.element=createTextLabelEl(l); overlay.appendChild(l.element); if(l.linkedShapeIds.length){ const s=shapes.find(s=>s.id===l.linkedShapeIds[0]); if(s){ l.connectorLine=createConnector(l,s); overlay.appendChild(l.connectorLine); } } textLabels.push(l); });
+        shapeIdCounter=state.shapeIdCounter??(Math.max(-1,...shapes.map(s=>s.id))+1);
+        labelIdCounter=state.labelIdCounter??(Math.max(-1,...textLabels.map(l=>l.id))+1);
+        updateOutput(); updateMinimap();
+    }
+
+    function updateMinimap(){
+        const c=minimapCanvas,ctx=c.getContext('2d'); c.width=minimap.clientWidth; c.height=minimap.clientHeight;
+        const sx=c.width/window.innerWidth, sy=c.height/window.innerHeight;
+        ctx.clearRect(0,0,c.width,c.height); ctx.fillStyle='rgba(30,30,46,0.8)'; ctx.fillRect(0,0,c.width,c.height);
+        shapes.forEach(s=>{ ctx.fillStyle=s.selected?'#89b4fa':s.type==='point'||s.type==='element'?'#f38ba8':s.type==='rectangle'?'#a6e3a1':'#cba6f7'; if(s.type==='point'||s.type==='element'){ ctx.beginPath(); ctx.arc(s.data.x*sx,s.data.y*sy,3,0,Math.PI*2); ctx.fill(); } else if(s.type==='rectangle'){ ctx.fillRect(s.data.left*sx,s.data.top*sy,s.data.width*sx,s.data.height*sy); } });
+        textLabels.forEach(l=>{ ctx.fillStyle='#94e2d5'; ctx.beginPath(); ctx.arc(l.x*sx,l.y*sy,2,0,Math.PI*2); ctx.fill(); });
+    }
+
+    function toggleGrid(){ gridVisible=!gridVisible; if(gridVisible){ const sp=50; for(let x=sp;x<window.innerWidth;x+=sp){ const l=document.createElement('div'); l.style.cssText=`position:fixed;left:${x}px;top:0;width:1px;height:100%;background:rgba(255,255,255,0.05);z-index:2147483645;pointer-events:none;`; overlay.appendChild(l); gridLines.push(l); } for(let y=sp;y<window.innerHeight;y+=sp){ const l=document.createElement('div'); l.style.cssText=`position:fixed;left:0;top:${y}px;width:100%;height:1px;background:rgba(255,255,255,0.05);z-index:2147483645;pointer-events:none;`; overlay.appendChild(l); gridLines.push(l); } } else{ gridLines.forEach(l=>l.remove()); gridLines=[]; } }
+    function toggleRulers(){ rulersVisible=!rulersVisible; if(rulersVisible){ const h=document.createElement('div'); h.id='ruler-h'; h.style.cssText='position:fixed;left:0;width:100%;height:1px;background:rgba(137,180,250,0.5);z-index:2147483647;pointer-events:none;display:none;'; const v=document.createElement('div'); v.id='ruler-v'; v.style.cssText='position:fixed;top:0;width:1px;height:100%;background:rgba(137,180,250,0.5);z-index:2147483647;pointer-events:none;display:none;'; overlay.appendChild(h); overlay.appendChild(v); rulerElements=[h,v]; } else{ rulerElements.forEach(l=>l.remove()); rulerElements=[]; } }
+    function updateRulers(e){ if(!rulersVisible)return; const h=document.getElementById('ruler-h'),v=document.getElementById('ruler-v'); if(h&&v){ h.style.top=e.clientY+'px'; h.style.display='block'; v.style.left=e.clientX+'px'; v.style.display='block'; } }
+    function toggleLabels(){ labelsVisible=!labelsVisible; textLabels.forEach(l=>{ if(l.element)l.element.style.display=labelsVisible?'block':'none'; if(l.connectorLine)l.connectorLine.style.display=labelsVisible?'block':'none'; }); }
+
+    function initPanelDrag(){
+        dragHandle.addEventListener('mousedown',e=>{ if(e.target.closest('.handle-btn'))return; isPanelDragging=true; const r=controls.getBoundingClientRect(); panelDragOffset={x:e.clientX-r.left,y:e.clientY-r.top}; controls.style.transition='none'; });
+        document.addEventListener('mousemove',e=>{ if(!isPanelDragging)return; controls.style.left=Math.max(0,Math.min(window.innerWidth-controls.offsetWidth,e.clientX-panelDragOffset.x))+'px'; controls.style.top=Math.max(0,Math.min(window.innerHeight-controls.offsetHeight,e.clientY-panelDragOffset.y))+'px'; });
+        document.addEventListener('mouseup',()=>{ isPanelDragging=false; controls.style.transition=''; });
+    }
+
+    function handleMouseDown(e){
+        if(e.target.closest('#controls')||e.target.closest('#minimap')||e.target.closest('.text-label')||e.target.closest('#contextMenu')||e.target.closest('#hotkeysModal'))return;
+        hideCtxMenu();
+        if(currentMode==='rectangle'){ isDragging=true; dragStart={x:e.clientX,y:e.clientY}; createRectPreview(e.clientX,e.clientY,e.clientX,e.clientY); }
+        else if(currentMode==='freehand'){ isDragging=true; currentFreehandPoints=[{x:e.clientX,y:e.clientY}]; createFreehandPreview(currentFreehandPoints); }
+        else if(currentMode==='measure'){ isMeasuring=true; measureStart={x:e.clientX,y:e.clientY}; createMeasurePreview(e.clientX,e.clientY,e.clientX,e.clientY); }
+    }
+    function handleMouseMove(e){
+        updateRulers(e);
+        if(isDragging&&currentMode==='rectangle'&&dragStart) createRectPreview(dragStart.x,dragStart.y,e.clientX,e.clientY);
+        else if(isDragging&&currentMode==='freehand'){ currentFreehandPoints.push({x:e.clientX,y:e.clientY}); createFreehandPreview(currentFreehandPoints); }
+        else if(isMeasuring&&measureStart) createMeasurePreview(measureStart.x,measureStart.y,e.clientX,e.clientY);
+        if(isLabelDragging&&draggingLabel){ draggingLabel.x=e.clientX-labelDragOffset.x; draggingLabel.y=e.clientY-labelDragOffset.y; if(draggingLabel.element){ draggingLabel.element.style.left=draggingLabel.x+'px'; draggingLabel.element.style.top=draggingLabel.y+'px'; } updateConnector(draggingLabel); }
+    }
+    function handleMouseUp(e){
+        if(e.target.closest('#controls')||e.target.closest('#minimap')||e.target.closest('.text-label'))return;
+        if(currentMode==='point'&&!isDragging&&!isMeasuring){ addShape(new Shape('point',{x:e.clientX,y:e.clientY})); updateUndoState(); }
+        else if(currentMode==='label'&&!isDragging&&!isMeasuring){ const t=prompt('Label text:',''); if(t&&t.trim())addTextLabel(e.clientX,e.clientY,t.trim()); }
+        else if(currentMode==='rectangle'&&isDragging&&dragStart){ const l=Math.min(dragStart.x,e.clientX),t=Math.min(dragStart.y,e.clientY),w=Math.abs(e.clientX-dragStart.x),h=Math.abs(e.clientY-dragStart.y); removeRectPreview(); if(w>3&&h>3){ addShape(new Shape('rectangle',{left:l,top:t,width:w,height:h,x1:dragStart.x,y1:dragStart.y,x2:e.clientX,y2:e.clientY})); updateUndoState(); } }
+        else if(currentMode==='freehand'&&isDragging){ currentFreehandPoints.push({x:e.clientX,y:e.clientY}); removeFreehandPreview(); if(currentFreehandPoints.length>=2){ addShape(new Shape('freehand',{points:[...currentFreehandPoints]})); updateUndoState(); } }
+        else if(currentMode==='measure'&&isMeasuring&&measureStart){ finalizeMeasure(measureStart.x,measureStart.y,e.clientX,e.clientY); }
+        isDragging=false; dragStart=null; currentFreehandPoints=[]; isMeasuring=false; measureStart=null;
+        if(isLabelDragging&&draggingLabel){ isLabelDragging=false; draggingLabel=null; updateMinimap(); updateUndoState(); }
+    }
+    function getUnderlyingElement(x,y){
+        const previousPointerEvents=overlay.style.pointerEvents;
+        overlay.style.pointerEvents='none';
+        const el=document.elementFromPoint(x,y);
+        overlay.style.pointerEvents=previousPointerEvents;
+        return el;
+    }
+    function handleElementClick(e){
+        if(e.target.closest('#controls')||e.target.closest('#minimap')||e.target.closest('.text-label'))return;
+        const el=getUnderlyingElement(e.clientX,e.clientY);
+        if(!el||el===document.documentElement||el===document.body){ showToast('No page element under cursor'); return; }
+        const r=el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
+        const tag=el.tagName.toLowerCase(),id=el.id?`#${el.id}`:'',cls=Array.from(el.classList).map(c=>`.${c}`).join(''),sel=`${tag}${id}${cls}`||tag;
+        addShape(new Shape('element',{x:cx,y:cy,selector:sel,rect:{left:r.left,top:r.top,width:r.width,height:r.height}}));
+        showToast(`Picked ${sel}`);
+    }
+
+    function setMode(m){
+        currentMode=m; deleteMode=(m==='delete'); overlay.classList.toggle('delete-mode',deleteMode);
+        overlay.style.cursor=m==='element'||m==='delete'?'pointer':m==='label'?'text':'crosshair';
+        const label=modeSelect.options[modeSelect.selectedIndex]?.text||m;
+        statusDiv.textContent=`Mode: ${label} | Shapes: ${shapes.length} | Labels: ${textLabels.length}`;
+    }
+    function handleKeyboard(e){
+        if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.tagName==='SELECT'||e.target.isContentEditable)return;
+        switch(e.key){
+            case'?': e.preventDefault(); document.getElementById('hotkeysModal').style.display='block'; break;
+            case'1': modeSelect.value='point'; setMode('point'); break;
+            case'2': modeSelect.value='rectangle'; setMode('rectangle'); break;
+            case'3': modeSelect.value='freehand'; setMode('freehand'); break;
+            case'4': modeSelect.value='element'; setMode('element'); break;
+            case'5': modeSelect.value='label'; setMode('label'); break;
+            case'6': modeSelect.value='measure'; setMode('measure'); break;
+            case'7': modeSelect.value='delete'; setMode('delete'); break;
+            case'Delete':case'Backspace': e.preventDefault(); getSelected().forEach(s=>removeShape(s)); selectedLabels.forEach(id=>{const l=textLabels.find(tl=>tl.id===id); if(l)removeTextLabel(l);}); break;
+            case'z': if(e.ctrlKey||e.metaKey){ e.preventDefault(); e.shiftKey?redo():undo(); } break;
+            case'y': if(e.ctrlKey||e.metaKey){ e.preventDefault(); redo(); } break;
+            case'a': if(e.ctrlKey||e.metaKey){ e.preventDefault(); selectAll(); } break;
+            case'Escape': deselectAll(); hideCtxMenu(); removeRectPreview(); removeFreehandPreview(); removeAllMeasures(); break;
+        }
+    }
+
+    function init(){
+        initPanelDrag(); setMode(modeSelect.value); modeSelect.addEventListener('change',()=>setMode(modeSelect.value));
+        overlay.addEventListener('mousedown',handleMouseDown); overlay.addEventListener('mousemove',handleMouseMove); overlay.addEventListener('mouseup',handleMouseUp);
+        overlay.addEventListener('click',e=>{ if(currentMode==='element'&&!isDragging&&!isMeasuring)handleElementClick(e); });
+        overlay.addEventListener('selectstart',e=>e.preventDefault());
+        document.addEventListener('click',e=>{ if(!e.target.closest('#contextMenu'))hideCtxMenu(); });
+        document.getElementById('ctxAddLabel').addEventListener('click',()=>{ if(contextMenuTarget&&contextMenuTarget instanceof Shape)promptAddLabel(contextMenuTarget); hideCtxMenu(); });
+        document.getElementById('ctxEditLabel').addEventListener('click',()=>{ if(contextMenuTarget instanceof TextLabel)startEditLabel(contextMenuTarget); else if(contextMenuTarget instanceof Shape&&contextMenuTarget.labelIds.length){ const l=textLabels.find(tl=>tl.id===contextMenuTarget.labelIds[0]); if(l)startEditLabel(l); } hideCtxMenu(); });
+        document.getElementById('ctxDuplicate').addEventListener('click',()=>{ if(contextMenuTarget instanceof Shape){ const ns=new Shape(contextMenuTarget.type,JSON.parse(JSON.stringify(contextMenuTarget.data))); ns.labelIds=[...contextMenuTarget.labelIds]; addShape(ns); updateUndoState(); } hideCtxMenu(); });
+        document.getElementById('ctxDelete').addEventListener('click',()=>{ if(contextMenuTarget instanceof Shape)removeShape(contextMenuTarget); else if(contextMenuTarget instanceof TextLabel)removeTextLabel(contextMenuTarget); hideCtxMenu(); });
+        addLabelBtn.addEventListener('click',()=>{ const tx=quickLabelInput.value.trim(); if(!tx)return; const sel=getSelected(); let ts=sel.length>0?sel[sel.length-1]:(shapes.length>0?shapes[shapes.length-1]:null); if(ts){ let x,y; if(ts.type==='point'||ts.type==='element'){ x=ts.data.x+20; y=ts.data.y-40; } else if(ts.type==='rectangle'){ x=ts.data.left+ts.data.width+10; y=ts.data.top; } else if(ts.type==='freehand'&&ts.data.points.length){ const lp=ts.data.points[ts.data.points.length-1]; x=lp.x+20; y=lp.y-20; } else{ x=100; y=100; } addTextLabel(x,y,tx,[ts.id]); } else addTextLabel(window.innerWidth/2,window.innerHeight/2,tx); quickLabelInput.value=''; updateOutput(); });
+        quickLabelInput.addEventListener('keydown',e=>{ if(e.key==='Enter')addLabelBtn.click(); });
+        document.getElementById('undoBtn').addEventListener('click',undo); document.getElementById('redoBtn').addEventListener('click',redo);
+        document.getElementById('clearBtn').addEventListener('click',()=>{ shapes.forEach(s=>{if(s.element)s.element.remove();}); textLabels.forEach(l=>{if(l.connectorLine)l.connectorLine.remove(); if(l.element)l.element.remove();}); shapes=[]; textLabels=[]; selectedShapes.clear(); selectedLabels.clear(); removeRectPreview(); removeFreehandPreview(); removeAllMeasures(); updateOutput(); updateMinimap(); updateUndoState(); });
+        document.getElementById('selectAllBtn').addEventListener('click',selectAll); document.getElementById('deselectBtn').addEventListener('click',deselectAll);
+        document.getElementById('groupBtn').addEventListener('click',groupSelected);
+        document.getElementById('copyBtn').addEventListener('click',()=>copyToClipboard(outputDiv.textContent,document.getElementById('copyBtn')));
+        document.getElementById('exportJsonBtn').addEventListener('click',()=>copyToClipboard(exportJSON(),document.getElementById('exportJsonBtn')));
+        document.getElementById('exportCssBtn').addEventListener('click',()=>copyToClipboard(exportCSS(),document.getElementById('exportCssBtn')));
+        document.getElementById('exportMarkdownBtn').addEventListener('click',()=>copyToClipboard(exportMarkdown(),document.getElementById('exportMarkdownBtn')));
+        document.getElementById('exportPromptBtn').addEventListener('click',()=>copyToClipboard(exportAIPrompt(),document.getElementById('exportPromptBtn')));
+        document.getElementById('gridBtn').addEventListener('click',toggleGrid); document.getElementById('rulersBtn').addEventListener('click',toggleRulers);
+        document.getElementById('showLabelsBtn').addEventListener('click',toggleLabels);
+        document.getElementById('helpBtn').addEventListener('click',()=>document.getElementById('hotkeysModal').style.display='block');
+        document.getElementById('pinBtn').addEventListener('click',function(){ controls.style.opacity=controls.style.opacity==='0.3'?'1':'0.3'; });
+        document.getElementById('minimizeBtn').addEventListener('click',()=>controls.classList.toggle('minimized'));
+        minimap.addEventListener('click',e=>{ const r=minimap.getBoundingClientRect(); window.scrollTo(((e.clientX-r.left)/r.width)*window.innerWidth-window.innerWidth/2,((e.clientY-r.top)/r.height)*window.innerHeight-window.innerHeight/2); });
+        document.addEventListener('keydown',handleKeyboard);
+        updateUndoState();
+        updateMinimap();
+        showToast('ClickPoint Studio ready');
+    }
+    init();
+})();
+</script>
+</body>
+</html>

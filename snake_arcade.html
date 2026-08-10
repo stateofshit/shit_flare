@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Arcade Game</title>
+    <style>
+        :root {
+            --bg: #1e1e2e;
+            --surface: #313244;
+            --text: #cdd6f4;
+            --subtext: #a6adc8;
+            --blue: #89b4fa;
+            --green: #a6e3a1;
+            --red: #f38ba8;
+            --yellow: #f9e2af;
+            --mauve: #cba6f7;
+            --teal: #94e2d5;
+            --border: #45475a;
+            --shadow: 0 8px 32px rgba(0,0,0,0.6);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background:
+                radial-gradient(circle at 20% 20%, rgba(137,180,250,0.13), transparent 28%),
+                radial-gradient(circle at 80% 0%, rgba(203,166,247,0.12), transparent 24%),
+                var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ── Game Container ── */
+        #game-wrapper {
+            position: absolute;
+            left: 517px;
+            top: 92px;
+            width: 633px;
+            height: 414px;
+            background: linear-gradient(180deg, rgba(49,50,68,0.92), rgba(30,30,46,0.95));
+            backdrop-filter: blur(14px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: var(--shadow), 0 0 24px rgba(137,180,250,0.15);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* ── Header ── */
+        #game-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            border-radius: 16px 16px 0 0;
+            flex-shrink: 0;
+        }
+        #game-header h2 {
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            background: linear-gradient(135deg, var(--teal), var(--blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        #score-display {
+            display: flex;
+            gap: 18px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .score-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--subtext);
+        }
+        .score-item span {
+            color: var(--text);
+            font-variant-numeric: tabular-nums;
+            font-size: 14px;
+        }
+        .score-item.high span { color: var(--yellow); }
+
+        /* ── Canvas Area ── */
+        #game-canvas-wrap {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: radial-gradient(ellipse at center, rgba(49,50,68,0.5), transparent 70%);
+        }
+        canvas {
+            border-radius: 8px;
+            display: block;
+        }
+
+        /* ── Overlay ── */
+        #overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(30,30,46,0.82);
+            backdrop-filter: blur(6px);
+            border-radius: 0 0 16px 16px;
+            z-index: 10;
+            transition: opacity 0.3s;
+        }
+        #overlay.hidden { opacity: 0; pointer-events: none; }
+        #overlay-message {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+        #overlay-sub {
+            font-size: 13px;
+            color: var(--subtext);
+            margin-bottom: 18px;
+        }
+        #overlay button {
+            padding: 10px 32px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--teal), var(--blue));
+            color: #1e1e2e;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            letter-spacing: 0.3px;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        #overlay button:hover {
+            transform: scale(1.04);
+            box-shadow: 0 0 20px rgba(137,180,250,0.35);
+        }
+
+        /* ── Footer Controls ── */
+        #game-footer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 10px 20px;
+            border-top: 1px solid var(--border);
+            flex-shrink: 0;
+            font-size: 11px;
+            color: var(--subtext);
+        }
+        .key-hint {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .key-badge {
+            display: inline-block;
+            padding: 2px 7px;
+            border-radius: 5px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text);
+            min-width: 20px;
+            text-align: center;
+        }
+        #difficulty-select {
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            font-size: 11px;
+            cursor: pointer;
+            margin-left: auto;
+        }
+
+        /* ── Label ── */
+        #annotation-label {
+            position: absolute;
+            left: 1160px;
+            top: 92px;
+            font-size: 12px;
+            color: var(--subtext);
+            font-style: italic;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-wrapper">
+        <!-- Header -->
+        <div id="game-header">
+            <h2>🐍 SNAKE ARCADE</h2>
+            <div id="score-display">
+                <div class="score-item">🍎 <span id="score">0</span></div>
+                <div class="score-item high">🏆 <span id="high-score">0</span></div>
+            </div>
+        </div>
+
+        <!-- Canvas -->
+        <div id="game-canvas-wrap">
+            <canvas id="game-canvas"></canvas>
+            <div id="overlay">
+                <div id="overlay-message">🐍 Ready?</div>
+                <div id="overlay-sub">Press SPACE or tap to start</div>
+                <button id="start-btn">▶ Play</button>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div id="game-footer">
+            <div class="key-hint"><span class="key-badge">↑</span><span class="key-badge">↓</span><span class="key-badge">←</span><span class="key-badge">→</span> Move</div>
+            <div class="key-hint"><span class="key-badge">P</span> Pause</div>
+            <div class="key-hint"><span class="key-badge">R</span> Restart</div>
+            <select id="difficulty-select">
+                <option value="easy">🐢 Easy</option>
+                <option value="normal" selected>⚡ Normal</option>
+                <option value="hard">🔥 Hard</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Annotation label -->
+    <div id="annotation-label">← "hey put a game in here!"</div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('game-canvas');
+            const ctx = canvas.getContext('2d');
+            const overlay = document.getElementById('overlay');
+            const overlayMsg = document.getElementById('overlay-message');
+            const overlaySub = document.getElementById('overlay-sub');
+            const startBtn = document.getElementById('start-btn');
+            const scoreEl = document.getElementById('score');
+            const highScoreEl = document.getElementById('high-score');
+            const difficultySelect = document.getElementById('difficulty-select');
+
+            // ── Game Config ──
+            const COLS = 30;
+            const ROWS = 18;
+            const CELL = 20;
+            const GAP = 1;
+            const TOTAL = CELL + GAP;
+            canvas.width = COLS * TOTAL + GAP;
+            canvas.height = ROWS * TOTAL + GAP;
+
+            const SPEEDS = { easy: 110, normal: 75, hard: 45 };
+
+            // ── State ──
+            let snake, food, direction, nextDirection, score, highScore, gameLoop, speed;
+            let running = false;
+            let paused = false;
+
+            // Load high score
+            try { highScore = parseInt(localStorage.getItem('snake_highscore')) || 0; }
+            catch(e) { highScore = 0; }
+            highScoreEl.textContent = highScore;
+
+            function saveHighScore() {
+                if (score > highScore) {
+                    highScore = score;
+                    highScoreEl.textContent = highScore;
+                    try { localStorage.setItem('snake_highscore', highScore); } catch(e) {}
+                }
+            }
+
+            // ── Init ──
+            function init() {
+                const midX = Math.floor(COLS / 2);
+                const midY = Math.floor(ROWS / 2);
+                snake = [
+                    { x: midX, y: midY },
+                    { x: midX - 1, y: midY },
+                    { x: midX - 2, y: midY },
+                ];
+                direction = { x: 1, y: 0 };
+                nextDirection = { x: 1, y: 0 };
+                score = 0;
+                scoreEl.textContent = '0';
+                speed = SPEEDS[difficultySelect.value] || SPEEDS.normal;
+                placeFood();
+            }
+
+            function placeFood() {
+                const occupied = new Set(snake.map(s => `${s.x},${s.y}`));
+                const free = [];
+                for (let x = 0; x < COLS; x++) {
+                    for (let y = 0; y < ROWS; y++) {
+                        if (!occupied.has(`${x},${y}`)) free.push({ x, y });
+                    }
+                }
+                if (free.length === 0) return; // win
+                food = free[Math.floor(Math.random() * free.length)];
+            }
+
+            // ── Draw ──
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Grid dots
+                ctx.fillStyle = 'rgba(69,71,90,0.25)';
+                for (let x = 0; x <= COLS; x++) {
+                    for (let y = 0; y <= ROWS; y++) {
+                        ctx.beginPath();
+                        ctx.arc(x * TOTAL + GAP, y * TOTAL + GAP, 1, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                // Snake body
+                snake.forEach((seg, i) => {
+                    const px = seg.x * TOTAL + GAP;
+                    const py = seg.y * TOTAL + GAP;
+                    const t = i / Math.max(snake.length - 1, 1);
+
+                    // Gradient from head (bright) to tail (dim)
+                    const r = Math.round(137 + t * (162 - 137));
+                    const g = Math.round(180 + t * (227 - 180));
+                    const b = Math.round(250 + t * (161 - 250));
+                    ctx.fillStyle = `rgb(${r},${g},${b})`;
+
+                    const radius = i === 0 ? 5 : 4;
+                    roundRect(ctx, px + 1, py + 1, CELL - 2, CELL - 2, radius);
+                    ctx.fill();
+
+                    // Head eyes
+                    if (i === 0) {
+                        ctx.fillStyle = '#1e1e2e';
+                        const ex = px + CELL / 2;
+                        const ey = py + CELL / 2;
+                        const edx = direction.x * 4;
+                        const edy = direction.y * 4;
+                        ctx.beginPath();
+                        ctx.arc(ex + edx - 2, ey + edy - 2, 2.5, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.beginPath();
+                        ctx.arc(ex + edx + 2, ey + edy + 2, 2.5, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                });
+
+                // Food (pulsing)
+                const fp = performance.now() / 300;
+                const foodScale = 1 + Math.sin(fp) * 0.15;
+                const fx = food.x * TOTAL + GAP + CELL / 2;
+                const fy = food.y * TOTAL + GAP + CELL / 2;
+                ctx.save();
+                ctx.translate(fx, fy);
+                ctx.scale(foodScale, foodScale);
+                ctx.fillStyle = '#f38ba8';
+                ctx.shadowColor = 'rgba(243,139,168,0.7)';
+                ctx.shadowBlur = 8;
+                ctx.beginPath();
+                ctx.arc(0, 0, CELL / 2 - 2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                // Leaf
+                ctx.fillStyle = '#a6e3a1';
+                ctx.beginPath();
+                ctx.ellipse(0, -CELL / 2 + 1, 3, 5, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            function roundRect(ctx, x, y, w, h, r) {
+                ctx.beginPath();
+                ctx.moveTo(x + r, y);
+                ctx.lineTo(x + w - r, y);
+                ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+                ctx.lineTo(x + w, y + h - r);
+                ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+                ctx.lineTo(x + r, y + h);
+                ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+                ctx.lineTo(x, y + r);
+                ctx.quadraticCurveTo(x, y, x + r, y);
+                ctx.closePath();
+            }
+
+            // ── Tick ──
+            function tick() {
+                if (!running || paused) return;
+
+                direction = { ...nextDirection };
+                const head = snake[0];
+                const newHead = { x: head.x + direction.x, y: head.y + direction.y };
+
+                // Wall collision → die
+                if (newHead.x < 0 || newHead.x >= COLS || newHead.y < 0 || newHead.y >= ROWS) {
+                    return gameOver();
+                }
+
+                // Self collision
+                if (snake.some(s => s.x === newHead.x && s.y === newHead.y)) {
+                    return gameOver();
+                }
+
+                snake.unshift(newHead);
+
+                if (newHead.x === food.x && newHead.y === food.y) {
+                    score += speed <= 50 ? 15 : 10;
+                    scoreEl.textContent = score;
+                    placeFood();
+                    // Speed up slightly
+                    if (gameLoop) clearInterval(gameLoop);
+                    speed = Math.max(35, speed - 0.5);
+                    gameLoop = setInterval(tick, speed);
+                } else {
+                    snake.pop();
+                }
+
+                draw();
+            }
+
+            function gameOver() {
+                running = false;
+                if (gameLoop) { clearInterval(gameLoop); gameLoop = null; }
+                saveHighScore();
+                overlayMsg.textContent = '💀 Game Over';
+                overlaySub.textContent = `Score: ${score}  |  Best: ${highScore}`;
+                startBtn.textContent = '🔄 Retry';
+                overlay.classList.remove('hidden');
+                draw();
+            }
+
+            function startGame() {
+                init();
+                running = true;
+                paused = false;
+                if (gameLoop) clearInterval(gameLoop);
+                gameLoop = setInterval(tick, speed);
+                overlay.classList.add('hidden');
+                draw();
+            }
+
+            function togglePause() {
+                if (!running) return;
+                paused = !paused;
+                if (paused) {
+                    overlayMsg.textContent = '⏸ Paused';
+                    overlaySub.textContent = 'Press P or SPACE to resume';
+                    startBtn.textContent = '▶ Resume';
+                    overlay.classList.remove('hidden');
+                } else {
+                    overlay.classList.add('hidden');
+                }
+            }
+
+            // ── Input ──
+            const KEY_MAP = {
+                ArrowUp:    { x: 0, y: -1 },
+                ArrowDown:  { x: 0, y: 1 },
+                ArrowLeft:  { x: -1, y: 0 },
+                ArrowRight: { x: 1, y: 0 },
+                w: { x: 0, y: -1 },
+                s: { x: 0, y: 1 },
+                a: { x: -1, y: 0 },
+                d: { x: 1, y: 0 },
+            };
+
+            document.addEventListener('keydown', (e) => {
+                const dir = KEY_MAP[e.key];
+                if (dir) {
+                    e.preventDefault();
+                    // Prevent 180° reversal
+                    if (dir.x !== -direction.x || dir.y !== -direction.y) {
+                        nextDirection = dir;
+                    }
+                    // If not running, start on arrow key
+                    if (!running) startGame();
+                    return;
+                }
+
+                if (e.key === ' ' || e.key === 'Spacebar') {
+                    e.preventDefault();
+                    if (!running) startGame();
+                    else togglePause();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    e.preventDefault();
+                    togglePause();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    e.preventDefault();
+                    startGame();
+                }
+            });
+
+            // Touch / click on canvas to start
+            canvas.addEventListener('click', () => {
+                if (!running) startGame();
+                else togglePause();
+            });
+
+            startBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (paused) togglePause();
+                else startGame();
+            });
+
+            difficultySelect.addEventListener('change', () => {
+                speed = SPEEDS[difficultySelect.value] || SPEEDS.normal;
+                if (running && !paused) {
+                    if (gameLoop) clearInterval(gameLoop);
+                    gameLoop = setInterval(tick, speed);
+                }
+            });
+
+            // ── Initial draw ──
+            init();
+            draw();
+        })();
+    </script>
+</body>
+</html>
